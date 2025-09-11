@@ -1,0 +1,29 @@
+<svg width="120" height="120" border-radius="50%" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- White background -->
+  <rect width="120" height="120" fill="white" />
+
+  <defs>
+    <linearGradient id="gradientBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="pawGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="60" cy="60" r="45" fill="url(#gradientBg)" stroke="#2563eb" stroke-width="2"/>
+  <path d="M25 45 L35 45 L40 75 L75 75 L80 55 L45 55"
+        fill="none" stroke="#2563eb" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="45" cy="85" r="4" fill="#2563eb"/>
+  <circle cx="70" cy="85" r="4" fill="#2563eb"/>
+  <ellipse cx="60" cy="55" rx="8" ry="10" fill="url(#pawGradient)"/>
+  <ellipse cx="52" cy="42" rx="4" ry="6" fill="url(#pawGradient)"/>
+  <ellipse cx="60" cy="38" rx="4" ry="6" fill="url(#pawGradient)"/>
+  <ellipse cx="68" cy="42" rx="4" ry="6" fill="url(#pawGradient)"/>
+  <ellipse cx="75" cy="48" rx="3" ry="5" fill="url(#pawGradient)"/>
+  <path d="M45 25 C42 22, 37 22, 37 28 C37 32, 45 40, 45 40 S53 32, 53 28 C53 22, 48 22, 45 25 Z"
+        fill="#ef4444" opacity="0.8"/>
+</svg>
