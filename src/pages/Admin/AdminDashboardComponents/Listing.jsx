@@ -166,7 +166,7 @@ const Listing = () => {
     <>
       <div className="max-w-7xl mx-auto bg-gray-50 h-screen flex flex-col">
 
-        <header className="bg-white shadow-sm sticky top-0 z-20 p-6">
+        <header className="bg-white  sticky top-0 z-20 p-6">
                     <div className="mb-4">
   <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
  Animal Listings
@@ -175,7 +175,7 @@ const Listing = () => {
 Manage all animal listings and posts
   </p>
 </div>
-          <h1 className="text-3xl font-bold mb-4">Recent Pet Posts</h1>
+
           <div className="flex gap-4">
             <input
               type="text"

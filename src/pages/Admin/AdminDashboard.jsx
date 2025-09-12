@@ -21,9 +21,8 @@ import {
 import Dashboard from "./AdminDashboardComponents/Dashboard";
 import Listing from "./AdminDashboardComponents/Listing"
 import Notifications from "./AdminDashboardComponents/Notifications"
-import Reports from "./AdminDashboardComponents/Reports"
 import UserAccountManagement from "./AdminDashboardComponents/UserAccountManagement"
-import AdminAccountManagement from "./AdminDashboardComponents/AdminAccountManagement"
+import AdminAccountManagement from "./AdminDashboardComponents/Register"
 
 // Logo Component
 const AnimalMarketHubLogo = ({ size = 40 }) => (
@@ -135,9 +134,8 @@ const AdminDashboard = () => {
     { name: "Dashboard", icon: Home, component: Dashboard },
     { name: "Animal Listings", icon: Store, component: Listing },
     { name: "Notifications", icon: Bell, component: Notifications },
-    { name: "Reports", icon: ClipboardList, component: Reports },
-    { name: "User Account's Management", icon: Users, component: UserAccountManagement },
-    { name: "Admin Account's Management", icon: User, component: AdminAccountManagement },
+    { name: "Account's Management", icon: Users, component: UserAccountManagement },
+    { name: "Register Accounts", icon: User, component: AdminAccountManagement },
   ];
 
   const SelectedComponent = navItems.find(item => item.name === selected)?.component;
@@ -290,7 +288,7 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <main className="lg:ml-72 pt-16 h-[calc(100vh-4rem)] overflow-y-auto">
-        <div className="p-4 sm:p-6">
+        <div className="">
         
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[600px]">
             <div className="p-4 sm:p-6">
