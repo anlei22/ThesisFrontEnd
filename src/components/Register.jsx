@@ -50,18 +50,7 @@ const RegistrationStepper = () => {
     { number: 2, title: "Phone Verification", icon: Phone },
     { number: 3, title: "Account Setup", icon: Mail },
     { number: 4, title: "Document Upload", icon: Camera },
-    { number: 5, title: "Complete", icon: CheckCircle },
-  ];
-
-  const animalOptions = [
-    "Chicken",
-    "Cow",
-    "Pig",
-    "Goat",
-    "Duck",
-    "Turkey",
-    "Sheep",
-    "Horse",
+    { number: 5, title: "Confirmation", icon: CheckCircle },
   ];
 
   const handleInputChange = (field, value) => {
@@ -303,36 +292,14 @@ const RegistrationStepper = () => {
                 onChange={(e) => handleInputChange("role", e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select role</option>
+                <option value="">Preferred</option>
                 <option value="buyer">Buyer</option>
                 <option value="seller">Seller</option>
                 <option value="both">Both (Buyer & Seller)</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Animals Interested In *
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {animalOptions.map((animal) => (
-                  <label
-                    key={animal}
-                    className="flex items-center space-x-2 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.animalInterests.includes(animal)}
-                      onChange={() =>
-                        handleArrayChange("animalInterests", animal)
-                      }
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                    />
-                    <span className="text-sm text-gray-700">{animal}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+          
           </div>
         );
 
@@ -683,100 +650,134 @@ const RegistrationStepper = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Progress Stepper */}
+        {/* Enhanced Progress Stepper */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => {
-              const StepIcon = step.icon;
-              const isActive = currentStep === step.number;
-              const isCompleted = currentStep > step.number;
+          <div className="relative">
+            {/* Background connecting line */}
+            <div className="absolute top-6 left-6 right-6 h-0.5 bg-gray-200 hidden md:block"></div>
+            
+            {/* Progress line that fills as steps complete */}
+            <div 
+              className="absolute top-6 left-6 h-0.5 bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500 ease-in-out hidden md:block"
+              style={{
+                width: `${Math.max(0, ((currentStep - 1) / (steps.length - 1)) * 100)}%`,
+                maxWidth: `calc(100% - 48px)`
+              }}
+            ></div>
 
-              return (
-                <div key={step.number} className="flex items-center">
-                  <div className="flex flex-col items-center">
+            <div className="flex items-center justify-between relative">
+              {steps.map((step, index) => {
+                const StepIcon = step.icon;
+                const isActive = currentStep === step.number;
+                const isCompleted = currentStep > step.number;
+
+                return (
+                  <div key={step.number} className="flex flex-col items-center relative">
+                    {/* Step Circle */}
                     <div
                       className={`
-                      w-12 h-12 rounded-full flex items-center justify-center border-2 transition-colors
-                      ${
-                        isActive
-                          ? "bg-blue-500 border-blue-500 text-white"
-                          : isCompleted
-                          ? "bg-green-500 border-green-500 text-white"
-                          : "bg-white border-gray-300 text-gray-400"
-                      }
-                    `}
+                        w-12 h-12 rounded-full flex items-center justify-center border-3 transition-all duration-300 relative z-10 shadow-lg
+                        ${
+                          isActive
+                            ? "bg-blue-500 border-blue-500 text-white scale-110 shadow-blue-200"
+                            : isCompleted
+                            ? "bg-green-500 border-green-500 text-white shadow-green-200"
+                            : "bg-white border-gray-300 text-gray-400 shadow-gray-200"
+                        }
+                      `}
                     >
-                      <StepIcon className="w-6 h-6" />
+                      {isCompleted ? (
+                        <CheckCircle className="w-6 h-6" />
+                      ) : (
+                        <StepIcon className="w-6 h-6" />
+                      )}
                     </div>
-                    <span
-                      className={`
-                      text-xs mt-2 font-medium
-                      ${
-                        isActive
-                          ? "text-blue-600"
-                          : isCompleted
-                          ? "text-green-600"
-                          : "text-gray-400"
-                      }
-                    `}
-                    >
-                      {step.title}
-                    </span>
-                  </div>
 
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`
-                      flex-1 h-1 mx-4 rounded transition-colors
-                      ${isCompleted ? "bg-green-500" : "bg-gray-200"}
-                    `}
-                    />
-                  )}
-                </div>
-              );
-            })}
+                    {/* Step Title */}
+                    <div className="mt-3 text-center">
+                      <span
+                        className={`
+                          text-sm font-medium block transition-colors duration-300
+                          ${
+                            isActive
+                              ? "text-blue-600"
+                              : isCompleted
+                              ? "text-green-600"
+                              : "text-gray-500"
+                          }
+                        `}
+                      >
+                        {step.title}
+                      </span>
+                      <span
+                        className={`
+                          text-xs mt-1 block transition-colors duration-300
+                          ${
+                            isActive
+                              ? "text-blue-500"
+                              : isCompleted
+                              ? "text-green-500"
+                              : "text-gray-400"
+                          }
+                        `}
+                      >
+                        Step {step.number}
+                      </span>
+                    </div>
+
+                    {/* Mobile connecting line */}
+                    {index < steps.length - 1 && (
+                      <div className="md:hidden absolute top-12 left-6 w-0.5 h-16 bg-gray-200">
+                        {isCompleted && (
+                          <div className="w-full bg-green-500 transition-all duration-500" style={{height: '100%'}}></div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Main Content */}
-   <div className="bg-white rounded-2xl shadow-xl p-8">
-  {renderStepContent()}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          {renderStepContent()}
 
-  {/* Navigation Buttons */}
-  {currentStep < 5 && (
-    <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-      {/* Left: Back to Login */}
-      <button
-        onClick={() => (window.location.href = "/login")}
-        className="text-blue-600 hover:text-blue-800 px-4 py-3 text-sm transition-colors"
-      >
-        ← Back to Login
-      </button>
+          {/* Navigation Buttons */}
+          {currentStep < 5 && (
+            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+              {/* Left: Back to Home */}
+              <button
+                onClick={() => (window.location.href = "/")}
+                className="text-blue-600 hover:text-blue-800 px-4 py-3 text-sm transition-colors"
+              >
+                ← Back to Home
+              </button>
 
-      {/* Right: Previous + Next */}
-      <div className="flex space-x-4">
-        <button
-          onClick={prevStep}
-          disabled={currentStep === 1}
-          className="flex items-center space-x-2 px-6 py-3 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Previous</span>
-        </button>
+              {/* Right: Previous + Next */}
+              <div className="flex space-x-4">
+                <button
+                  onClick={prevStep}
+                  disabled={currentStep === 1}
+                  className="flex items-center space-x-2 px-6 py-3 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Previous</span>
+                </button>
 
-        <button
-          onClick={nextStep}
-          disabled={!canProceed()}
-          className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span>{currentStep === 4 ? "Submit" : "Next"}</span>
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  )}
-</div>
-
+                <button
+                  onClick={nextStep}
+                  disabled={!canProceed()}
+                  className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                >
+                  <span>{currentStep === 4 ? "Submit" : "Next"}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
