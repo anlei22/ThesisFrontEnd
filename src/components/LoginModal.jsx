@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { X, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
+import { X, Mail, Lock, Eye, EyeOff, User ,UserIcon} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 const LoginModal = ({
   isOpen,
@@ -160,19 +160,39 @@ const LoginModal = ({
       />
     </svg>
 
+
+
+
+
+
+
+{/* Welcome Back + Subtitle */}
+
+
+
+                  
     {/* MarketHUB Text */}
-    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center sm:text-left">
-      Animal <span className="text-green-600">MarketHUB</span>
-    </h1>
+    <h1
+  className={`text-2xl sm:text-3xl font-bold text-center sm:text-left ${
+    darkMode ? 'text-white' : 'text-gray-800'
+  }`}
+>
+  Animal <span className="text-green-600">MarketHUB</span>
+</h1>
   </div>
 
   {/* Welcome Back + Subtitle */}
-  <h2 className="text-2xl font-bold mb-1 text-gray-800">
-    Welcome Back!
-  </h2>
-  <p className="text-gray-600 dark:text-gray-400 text-center">
-    Sign in to your account
-  </p>
+  <h2
+  className={`text-2xl font-bold mb-1 ${
+    darkMode ? 'text-white' : 'text-gray-800'
+  }`}
+>
+  Welcome Back!
+</h2>
+
+<p className="text-gray-600 dark:text-gray-400 text-center">
+  Sign in to your account
+</p>
 </div>
 
 
@@ -204,7 +224,7 @@ const LoginModal = ({
               Email Address
             </label>
             <div className="relative">
-              <Mail
+              <UserIcon
                 className={`w-5 h-5 absolute left-3 top-3.5 ${
                   darkMode ? "text-gray-400" : "text-gray-500"
                 }`}

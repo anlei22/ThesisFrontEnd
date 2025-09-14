@@ -8,21 +8,19 @@ import {
   PencilIcon,
   MapPinIcon,
   CalendarIcon,
-  LinkIcon,
   UserCircleIcon,
   QrCodeIcon,
   XMarkIcon,
   CheckIcon,
   PhoneIcon,
-  IdentificationIcon,
   ShieldCheckIcon,
   UserIcon,
   BuildingStorefrontIcon,
   ShoppingCartIcon,
-  EyeIcon,
-  EyeSlashIcon
+  EllipsisVerticalIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid, ShieldCheckIcon as ShieldCheckSolid } from '@heroicons/react/24/solid';
+import { StarIcon as StarIconSolid, ShieldCheckIcon as ShieldCheckSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 
 // Mock useAuth hook for demo
 const useAuth = () => ({
@@ -47,17 +45,267 @@ const LoginModal = ({ isOpen, onClose, darkMode }) => {
   );
 };
 
+// Post Options Dropdown Component
+const PostOptionsDropdown = ({ postId, onEdit, onDelete, darkMode }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+          darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
+        }`}
+      >
+        <EllipsisVerticalIcon className="w-5 h-5" />
+      </button>
+      
+      {isOpen && (
+        <>
+          <div 
+            className="fixed inset-0 z-10" 
+            onClick={() => setIsOpen(false)}
+          />
+          <div className={`absolute right-0 top-full mt-1 w-48 rounded-lg shadow-lg border z-20 ${
+            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <div className="py-1">
+              <button
+                onClick={() => {
+                  onEdit(postId);
+                  setIsOpen(false);
+                }}
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-2 ${
+                  darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                <PencilIcon className="w-4 h-4" />
+                <span>Edit Post</span>
+              </button>
+              <button
+                onClick={() => {
+                  onDelete(postId);
+                  setIsOpen(false);
+                }}
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center space-x-2 ${
+                  darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'
+                }`}
+              >
+                <TrashIcon className="w-4 h-4" />
+                <span>Delete Post</span>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// Edit Post Modal Component
+const EditPostModal = ({ isOpen, onClose, post, onSave, darkMode }) => {
+  const [editContent, setEditContent] = useState('');
+  const [editTitle, setEditTitle] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [editType, setEditType] = useState('');
+
+  useEffect(() => {
+    if (post) {
+      setEditContent(post.content || '');
+      setEditTitle(post.animalInfo?.title || '');
+      setEditPrice(post.animalInfo?.price || '');
+      setEditType(post.animalInfo?.type || '');
+    }
+  }, [post]);
+
+  const handleSave = () => {
+    const updatedPost = {
+      ...post,
+      content: editContent,
+      animalInfo: {
+        ...post.animalInfo,
+        title: editTitle,
+        price: editPrice,
+        type: editType
+      }
+    };
+    onSave(updatedPost);
+    onClose();
+  };
+
+  if (!isOpen || !post) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`max-w-lg w-full max-h-[90vh] overflow-y-auto rounded-xl ${
+        darkMode ? 'bg-gray-800' : 'bg-white'
+      }`}>
+        <div className="sticky top-0 bg-inherit border-b border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between">
+            <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Edit Post
+            </h2>
+            <button
+              onClick={onClose}
+              className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                darkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-4 space-y-4">
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              Title
+            </label>
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md ${
+                darkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
+              placeholder="Post title"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Price
+              </label>
+              <input
+                type="text"
+                value={editPrice}
+                onChange={(e) => setEditPrice(e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                placeholder="$0"
+              />
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Type
+              </label>
+              <input
+                type="text"
+                value={editType}
+                onChange={(e) => setEditType(e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                placeholder="Animal type"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              Description
+            </label>
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              rows="4"
+              className={`w-full px-3 py-2 border rounded-md ${
+                darkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
+              placeholder="Write your post content..."
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={onClose}
+              className={`px-4 py-2 border rounded-md ${
+                darkMode
+                  ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Delete Confirmation Modal
+const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, darkMode }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`max-w-md w-full p-6 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        <div className="text-center">
+          <TrashIcon className="w-12 h-12 mx-auto mb-4 text-red-500" />
+          <h2 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            Delete Post
+          </h2>
+          <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            Are you sure you want to delete this post? This action cannot be undone.
+          </p>
+        </div>
+
+        <div className="flex space-x-3">
+          <button
+            onClick={onClose}
+            className={`flex-1 px-4 py-2 border rounded-md ${
+              darkMode
+                ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const UserProfile = ({ darkMode = false }) => {
   const [activeTab, setActiveTab] = useState('posts');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showEditPost, setShowEditPost] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [averageRating, setAverageRating] = useState(4.2);
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [phoneVerified, setPhoneVerified] = useState(false);
+  const [likedPosts, setLikedPosts] = useState(new Set());
   
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -70,11 +318,45 @@ const UserProfile = ({ darkMode = false }) => {
     age: '',
     gender: '',
     birthdate: '',
-    userType: 'both', // 'buyer', 'seller', 'both'
+    userType: 'both',
     animalsInterested: [],
     avatar: '',
     coverPhoto: ''
   });
+
+  const [userPosts, setUserPosts] = useState([
+    {
+      id: 1,
+      content: "Just captured this amazing shot of a red fox in Yellowstone! The early morning light was perfect.",
+      images: ["https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=600&h=400&fit=crop"],
+      likes: 234,
+      comments: 18,
+      timestamp: "2 days ago",
+      animalInfo: {
+        title: "Beautiful Red Fox Photography",
+        type: "Wildlife Photography",
+        price: "$150",
+        availability: "available"
+      }
+    },
+    {
+      id: 2,
+      content: "Volunteer day at the local animal shelter. These puppies are looking for forever homes!",
+      images: [
+        "https://images.unsplash.com/photo-1552053831-71594a27632d?w=600&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=600&h=400&fit=crop"
+      ],
+      likes: 456,
+      comments: 32,
+      timestamp: "5 days ago",
+      animalInfo: {
+        title: "Adorable Rescue Puppies",
+        type: "Dog",
+        price: "Free",
+        availability: "available"
+      }
+    }
+  ]);
 
   const { user: authUser, isAuthenticated, logout } = useAuth();
 
@@ -84,7 +366,7 @@ const UserProfile = ({ darkMode = false }) => {
       const userData = {
         name: "Alex Johnson",
         email: "alex@example.com",
-        bio: "Animal lover and wildlife enthusiast. Welcome to my profile! 🐾",
+        bio: "Animal lover and wildlife enthusiast. Welcome to my profile!",
         location: "San Fernando, Central Luzon, PH",
         website: "alexwildlife.com",
         phone: "+63 912 345 6789",
@@ -98,7 +380,7 @@ const UserProfile = ({ darkMode = false }) => {
       };
       setEditForm(userData);
       setProfileData(userData);
-      setPhoneVerified(true); // Mock verified status
+      setPhoneVerified(true);
     }
   }, [isAuthenticated]);
 
@@ -108,7 +390,7 @@ const UserProfile = ({ darkMode = false }) => {
     joinDate: "Joined June 2023",
     followers: 156,
     following: 89,
-    posts: 23,
+    posts: userPosts.length,
     rating: averageRating,
     totalReviews: 12,
     isVerified: phoneVerified
@@ -135,40 +417,6 @@ const UserProfile = ({ darkMode = false }) => {
     "Guinea Pigs", "Reptiles", "Horses", "Farm Animals", "Exotic Pets"
   ];
 
-  const userPosts = [
-    {
-      id: 1,
-      content: "Just captured this amazing shot of a red fox in Yellowstone! The early morning light was perfect. 🦊",
-      images: ["https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=400&h=400&fit=crop"],
-      likes: 234,
-      comments: 18,
-      timestamp: "2 days ago",
-      animalInfo: {
-        title: "Beautiful Red Fox Photography",
-        type: "Wildlife Photography",
-        price: "$150",
-        availability: "available"
-      }
-    },
-    {
-      id: 2,
-      content: "Volunteer day at the local animal shelter. These puppies are looking for forever homes! 🐕❤️",
-      images: [
-        "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop"
-      ],
-      likes: 456,
-      comments: 32,
-      timestamp: "5 days ago",
-      animalInfo: {
-        title: "Adorable Rescue Puppies",
-        type: "Dog",
-        price: "Free",
-        availability: "available"
-      }
-    }
-  ];
-
   const reviews = [
     {
       id: 1,
@@ -188,6 +436,50 @@ const UserProfile = ({ darkMode = false }) => {
     }
   ];
 
+  // Post management functions
+  const handleEditPost = (postId) => {
+    const post = userPosts.find(p => p.id === postId);
+    if (post) {
+      setSelectedPost(post);
+      setShowEditPost(true);
+    }
+  };
+
+  const handleDeletePost = (postId) => {
+    setSelectedPost(userPosts.find(p => p.id === postId));
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeletePost = () => {
+    if (selectedPost) {
+      setUserPosts(prev => prev.filter(p => p.id !== selectedPost.id));
+    }
+    setShowDeleteConfirm(false);
+    setSelectedPost(null);
+  };
+
+  const handleSaveEditPost = (updatedPost) => {
+    setUserPosts(prev => prev.map(p => 
+      p.id === updatedPost.id ? updatedPost : p
+    ));
+  };
+
+  const toggleLike = (postId) => {
+    const newLikedPosts = new Set(likedPosts);
+    if (likedPosts.has(postId)) {
+      newLikedPosts.delete(postId);
+      setUserPosts(prev => prev.map(p => 
+        p.id === postId ? { ...p, likes: p.likes - 1 } : p
+      ));
+    } else {
+      newLikedPosts.add(postId);
+      setUserPosts(prev => prev.map(p => 
+        p.id === postId ? { ...p, likes: p.likes + 1 } : p
+      ));
+    }
+    setLikedPosts(newLikedPosts);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditForm(prev => ({
@@ -206,7 +498,6 @@ const UserProfile = ({ darkMode = false }) => {
   };
 
   const handleImageUpload = (type) => {
-    // Mock image upload - in real app, this would handle file selection and upload
     const mockImageUrl = type === 'avatar' 
       ? `https://images.unsplash.com/photo-${Date.now()}?w=150&h=150&fit=crop&crop=face`
       : `https://images.unsplash.com/photo-${Date.now()}?w=800&h=300&fit=crop`;
@@ -218,19 +509,17 @@ const UserProfile = ({ darkMode = false }) => {
   };
 
   const handleSaveProfile = () => {
-    // Mock API call
     setLoading(true);
     setTimeout(() => {
       setProfileData(editForm);
       setLoading(false);
       setShowEditProfile(false);
-      // Show success message
       alert('Profile updated successfully!');
     }, 1000);
   };
 
   const handlePhoneVerification = () => {
-    if (verificationCode === '123456') { // Mock verification
+    if (verificationCode === '123456') {
       setPhoneVerified(true);
       setShowPhoneVerification(false);
       alert('Phone number verified successfully!');
@@ -240,7 +529,6 @@ const UserProfile = ({ darkMode = false }) => {
   };
 
   const generateQRCode = () => {
-    // Mock QR code generation - in real app, use a QR code library
     const qrData = `https://animalapp.com/profile/${user.username}`;
     return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
   };
@@ -299,11 +587,11 @@ const UserProfile = ({ darkMode = false }) => {
   };
 
   return (
-    <div className="w-full py-4 sm:py-6 flex justify-center">
-      <div className="w-full max-w-4xl px-2 sm:px-0">
+    <div className="w-full py-4 sm:py-6 flex justify-center min-h-screen">
+      <div className="w-full max-w-4xl px-2 sm:px-4">
         
         {!isAuthenticated ? (
-          <div className={`text-center py-20 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg`}>
+          <div className={`text-center py-20 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg`}>
             <div className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               <UserCircleIcon className="w-20 h-20 mx-auto mb-4 text-gray-400" />
               <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -319,7 +607,7 @@ const UserProfile = ({ darkMode = false }) => {
             </button>
           </div>
         ) : loading ? (
-          <div className={`text-center py-20 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg`}>
+          <div className={`text-center py-20 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg`}>
             <div className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -330,49 +618,48 @@ const UserProfile = ({ darkMode = false }) => {
           </div>
         ) : (
           <>
-            {/* Cover Photo */}
-            <div className="relative h-48 sm:h-64 md:h-80 rounded-t-lg overflow-hidden">
+            {/* Clean Cover Photo - No Dark Overlay */}
+            <div className="relative h-48 sm:h-64 md:h-80 rounded-t-xl overflow-hidden shadow-lg">
               <img
                 src={user.coverPhoto}
                 alt="Cover"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               <button 
                 onClick={() => handleImageUpload('coverPhoto')}
-                className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 bg-black bg-opacity-50 text-white p-1.5 sm:p-2 rounded-full hover:bg-opacity-70 transition-all duration-200"
+                className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-full hover:bg-white transition-all duration-200 shadow-lg"
               >
-                <CameraIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <CameraIcon className="w-5 h-5" />
               </button>
             </div>
 
             {/* Profile Header */}
-            <div className={`relative px-3 sm:px-6 pb-4 sm:pb-6 transition-colors duration-300 ${
+            <div className={`relative px-4 sm:px-6 pb-6 rounded-b-xl transition-colors duration-300 ${
               darkMode ? 'bg-gray-800' : 'bg-white'
-            }`}>
+            } shadow-lg`}>
               {/* Avatar */}
               <div className="flex justify-center sm:justify-start">
-                <div className="relative -mt-12 sm:-mt-16 md:-mt-20">
+                <div className="relative -mt-16 md:-mt-20">
                   <img
                     src={user.avatar}
                     alt={user.name}
-                    className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full border-4 border-white object-cover"
+                    className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full border-4 border-white object-cover shadow-lg"
                   />
                   <button 
                     onClick={() => handleImageUpload('avatar')}
-                    className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-green-500 text-white p-1.5 sm:p-2 rounded-full hover:bg-green-600 transition-colors duration-200"
+                    className="absolute bottom-2 right-2 bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors duration-200 shadow-lg"
                   >
-                    <CameraIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <CameraIcon className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
               {/* Profile Info */}
-              <div className="mt-3 sm:mt-4 text-center sm:text-left">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                  <div>
+              <div className="mt-4 text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1">
                     <div className="flex items-center justify-center sm:justify-start space-x-2 mb-1">
-                      <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold ${
+                      <h1 className={`text-2xl sm:text-3xl font-bold ${
                         darkMode ? 'text-white' : 'text-gray-900'
                       }`}>
                         {user.name}
@@ -381,7 +668,7 @@ const UserProfile = ({ darkMode = false }) => {
                         <ShieldCheckSolid className="w-6 h-6 text-blue-500" title="Verified Account" />
                       )}
                     </div>
-                    <p className={`text-base sm:text-lg ${
+                    <p className={`text-lg ${
                       darkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>
                       {user.username}
@@ -394,32 +681,60 @@ const UserProfile = ({ darkMode = false }) => {
                     
                     {/* Animals Interested */}
                     {user.animalsInterested && user.animalsInterested.length > 0 && (
-                      <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-1">
+                      <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
                         {user.animalsInterested.slice(0, 3).map((animal, index) => (
-                          <span key={index} className={`text-xs px-2 py-1 rounded-md ${
-                            darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+                          <span key={index} className={`text-xs px-3 py-1 rounded-full font-medium ${
+                            darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
                           }`}>
                             {animal}
                           </span>
                         ))}
                         {user.animalsInterested.length > 3 && (
-                          <span className={`text-xs px-2 py-1 rounded-md ${
-                            darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+                          <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                            darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
                           }`}>
                             +{user.animalsInterested.length - 3} more
                           </span>
                         )}
                       </div>
                     )}
+
+                    {/* Stats Row */}
+                    <div className="mt-4 flex justify-center sm:justify-start space-x-6">
+                      <div className="text-center">
+                        <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {user.posts}
+                        </div>
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Posts
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {user.followers}
+                        </div>
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Followers
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {user.following}
+                        </div>
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Following
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="mt-3 sm:mt-0 flex justify-center sm:justify-end space-x-2 sm:space-x-3">
+                  <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row justify-center sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
                     <button
                       onClick={() => setShowQRCode(true)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors duration-300 ${
+                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md ${
                         darkMode
-                          ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                          ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600'
+                          : 'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300'
                       }`}
                     >
                       <QrCodeIcon className="w-4 h-4 inline mr-2" />
@@ -427,11 +742,7 @@ const UserProfile = ({ darkMode = false }) => {
                     </button>
                     <button
                       onClick={() => setShowEditProfile(true)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors duration-300 ${
-                        darkMode
-                          ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                      }`}
+                      className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
                     >
                       <PencilIcon className="w-4 h-4 inline mr-2" />
                       Edit Profile
@@ -440,7 +751,7 @@ const UserProfile = ({ darkMode = false }) => {
                 </div>
 
                 {/* Bio */}
-                <p className={`mt-4 text-sm sm:text-base leading-relaxed ${
+                <p className={`mt-4 text-base leading-relaxed ${
                   darkMode ? 'text-gray-300' : 'text-gray-700'
                 }`}>
                   {user.bio}
@@ -467,18 +778,20 @@ const UserProfile = ({ darkMode = false }) => {
                   )}
                 </div>
 
-                {/* Rating - Enhanced & Centered */}
-                <div className="mt-8 mb-2 flex flex-col items-center">
-                  <div className="px-6 py-4">
+                {/* Enhanced Rating Section */}
+                <div className="mt-6 flex justify-center">
+                  <div className={`px-8 py-4 rounded-xl ${
+                    darkMode ? 'bg-gray-700/50' : 'bg-gray-50'
+                  }`}>
                     <div className="flex items-center justify-center mb-2">
                       {renderStars(user.rating).map((star, index) => (
-                        <div key={index} className="transform scale-175 mx-1.5">
+                        <div key={index} className="transform scale-150 mx-1">
                           {star}
                         </div>
                       ))}
                     </div>
                     <div className="text-center">
-                      <span className={`text-4xl font-bold ${
+                      <span className={`text-3xl font-bold ${
                         darkMode ? 'text-green-400' : 'text-green-600'
                       }`}>
                         {user.rating.toFixed(1)}
@@ -496,86 +809,70 @@ const UserProfile = ({ darkMode = false }) => {
               </div>
             </div>
 
-            {/* Tabs */}
-            <div className={`border-b transition-colors duration-300 ${
+            {/* Clean Tabs Design */}
+            <div className={`mt-6 border-b transition-colors duration-300 ${
               darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-            }`}>
+            } rounded-t-xl shadow-lg`}>
               <div className="flex justify-center sm:justify-start px-6">
-                <button
-                  onClick={() => setActiveTab('posts')}
-                  className={`px-4 py-3 font-medium border-b-2 transition-colors duration-300 ${
-                    activeTab === 'posts'
-                      ? darkMode
-                        ? 'border-green-400 text-green-400'
-                        : 'border-green-500 text-green-600'
-                      : darkMode
-                        ? 'border-transparent text-gray-400 hover:text-gray-300'
-                        : 'border-transparent text-gray-600 hover:text-gray-700'
-                  }`}
-                >
-                  Posts
-                </button>
-                <button
-                  onClick={() => setActiveTab('listings')}
-                  className={`px-4 py-3 font-medium border-b-2 transition-colors duration-300 ${
-                    activeTab === 'listings'
-                      ? darkMode
-                        ? 'border-green-400 text-green-400'
-                        : 'border-green-500 text-green-600'
-                      : darkMode
-                        ? 'border-transparent text-gray-400 hover:text-gray-300'
-                        : 'border-transparent text-gray-600 hover:text-gray-700'
-                  }`}
-                >
-                  Listings
-                </button>
-                <button
-                  onClick={() => setActiveTab('reviews')}
-                  className={`px-4 py-3 font-medium border-b-2 transition-colors duration-300 ${
-                    activeTab === 'reviews'
-                      ? darkMode
-                        ? 'border-green-400 text-green-400'
-                        : 'border-green-500 text-green-600'
-                      : darkMode
-                        ? 'border-transparent text-gray-400 hover:text-gray-300'
-                        : 'border-transparent text-gray-600 hover:text-gray-700'
-                  }`}
-                >
-                  Feedback
-                </button>
+                {[
+                  { key: 'posts', label: 'Posts' },
+                  { key: 'listings', label: 'Listings' },
+                  { key: 'reviews', label: 'Reviews' }
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`px-6 py-4 font-medium border-b-2 transition-all duration-300 ${
+                      activeTab === tab.key
+                        ? darkMode
+                          ? 'border-green-400 text-green-400'
+                          : 'border-green-500 text-green-600'
+                        : darkMode
+                          ? 'border-transparent text-gray-400 hover:text-gray-300'
+                          : 'border-transparent text-gray-600 hover:text-gray-700'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Content */}
-            <div className={`transition-colors duration-300 ${
-              darkMode ? 'bg-gray-900' : 'bg-green-50'
+            {/* Content Area */}
+            <div className={`transition-colors duration-300 rounded-b-xl shadow-lg ${
+              darkMode ? 'bg-gray-900' : 'bg-gray-50'
             }`}>
               {activeTab === 'posts' ? (
-                <div className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  <div className="lg:col-span-12">
-                    <h3 className={`text-lg font-semibold mb-4 ${
-                      darkMode ? 'text-white' : 'text-gray-900'
-                    }`}>
-                      Recent Posts
-                    </h3>
-                    <div className="space-y-8">
-                      {userPosts.map((post) => (
-                        <div key={post.id} className={`rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${
-                          darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-green-100'
-                        }`}>
-                          <div className="px-5 pt-4 pb-2 flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <img 
-                                src={user.avatar} 
-                                alt={user.name}
-                                className="w-10 h-10 rounded-full object-cover border-2 border-green-500"
-                              />
-                              <div>
-                                <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{user.name}</h4>
-                                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{post.timestamp}</p>
-                              </div>
+                <div className="p-6">
+                  <h3 className={`text-xl font-semibold mb-6 ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    Recent Posts ({userPosts.length})
+                  </h3>
+                  <div className="space-y-6">
+                    {userPosts.map((post) => (
+                      <div key={post.id} className={`rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ${
+                        darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'
+                      }`}>
+                        {/* Post Header */}
+                        <div className="px-6 pt-4 pb-2 flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <img 
+                              src={user.avatar} 
+                              alt={user.name}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                            <div>
+                              <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {user.name}
+                              </h4>
+                              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {post.timestamp}
+                              </p>
                             </div>
-                            
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
                             <div className={`px-3 py-1 rounded-full text-xs font-medium ${
                               post.animalInfo.availability === 'available'
                                 ? darkMode ? 'bg-green-900/50 text-green-400' : 'bg-green-100 text-green-700'
@@ -583,79 +880,130 @@ const UserProfile = ({ darkMode = false }) => {
                             }`}>
                               {post.animalInfo.availability === 'available' ? 'Available' : 'Sold'}
                             </div>
+                            <PostOptionsDropdown 
+                              postId={post.id}
+                              onEdit={handleEditPost}
+                              onDelete={handleDeletePost}
+                              darkMode={darkMode}
+                            />
                           </div>
-                          
-                          <div className="px-5 pb-2">
-                            <h3 className={`text-lg font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                              {post.animalInfo.title}
-                            </h3>
-                            <div className="flex items-center space-x-2 mb-3">
-                              <span className={`text-sm font-medium ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                                {post.animalInfo.price}
-                              </span>
-                              <span className={`text-xs px-2 py-0.5 rounded-md ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
-                                {post.animalInfo.type}
-                              </span>
-                            </div>
-                            
-                            <p className={`text-sm leading-relaxed mb-3 ${
-                              darkMode ? 'text-gray-300' : 'text-gray-700'
+                        </div>
+                        
+                        {/* Post Content */}
+                        <div className="px-6 pb-4">
+                          <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {post.animalInfo.title}
+                          </h3>
+                          <div className="flex items-center space-x-3 mb-3">
+                            <span className={`text-lg font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                              {post.animalInfo.price}
+                            </span>
+                            <span className={`text-sm px-3 py-1 rounded-full ${
+                              darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
                             }`}>
-                              {post.content}
-                            </p>
+                              {post.animalInfo.type}
+                            </span>
                           </div>
                           
-                          {post.images && post.images.length > 0 && (
-                            <div className="relative">
+                          <p className={`text-sm leading-relaxed mb-4 ${
+                            darkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}>
+                            {post.content}
+                          </p>
+                        </div>
+                        
+                        {/* Post Images */}
+                        {post.images && post.images.length > 0 && (
+                          <div className="relative">
+                            {post.images.length === 1 ? (
                               <img
                                 src={post.images[0]}
                                 alt={post.animalInfo.title}
-                                className="w-full h-72 object-cover"
+                                className="w-full h-80 object-cover"
                               />
-                            </div>
-                          )}
-                          
-                          <div className={`px-5 py-4 flex items-center justify-between border-t ${
-                            darkMode ? 'border-gray-700' : 'border-gray-100'
-                          }`}>
-                            <div className="flex items-center space-x-6">
-                              <button className={`flex items-center space-x-1 group ${
-                                darkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-500 hover:text-red-500'
-                              }`}>
+                            ) : (
+                              <div className="grid grid-cols-2 gap-1">
+                                {post.images.slice(0, 2).map((image, index) => (
+                                  <img
+                                    key={index}
+                                    src={image}
+                                    alt={`${post.animalInfo.title} ${index + 1}`}
+                                    className="w-full h-60 object-cover"
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* Post Actions */}
+                        <div className={`px-6 py-4 flex items-center justify-between border-t ${
+                          darkMode ? 'border-gray-700' : 'border-gray-100'
+                        }`}>
+                          <div className="flex items-center space-x-6">
+                            <button 
+                              onClick={() => toggleLike(post.id)}
+                              className={`flex items-center space-x-2 group transition-colors ${
+                                likedPosts.has(post.id)
+                                  ? 'text-red-500'
+                                  : darkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-500 hover:text-red-500'
+                              }`}
+                            >
+                              {likedPosts.has(post.id) ? (
+                                <HeartIconSolid className="w-5 h-5" />
+                              ) : (
                                 <HeartIcon className="w-5 h-5 group-hover:fill-current" />
-                                <span className="text-sm">{post.likes}</span>
-                              </button>
-                              
-                              <button className={`flex items-center space-x-1 ${
-                                darkMode ? 'text-gray-400 hover:text-blue-400' : 'text-gray-500 hover:text-blue-500'
-                              }`}>
-                                <ChatBubbleOvalLeftIcon className="w-5 h-5" />
-                                <span className="text-sm">{post.comments}</span>
-                              </button>
-                              
-                              <button className={`flex items-center space-x-1 ${
+                              )}
+                              <span className="text-sm font-medium">{post.likes}</span>
+                            </button>
+                            
+                            <button className={`flex items-center space-x-2 group transition-colors ${
+                              darkMode ? 'text-gray-400 hover:text-blue-400' : 'text-gray-500 hover:text-blue-500'
+                            }`}>
+                              <ChatBubbleOvalLeftIcon className="w-5 h-5" />
+                              <span className="text-sm font-medium">{post.comments}</span>
+                            </button>
+                            
+                            <button 
+                              onClick={() => {
+                                if (navigator.share) {
+                                  navigator.share({
+                                    title: post.animalInfo.title,
+                                    text: post.content,
+                                    url: window.location.href
+                                  }).catch(() => {
+                                    navigator.clipboard.writeText(window.location.href);
+                                    alert('Link copied to clipboard!');
+                                  });
+                                } else {
+                                  navigator.clipboard.writeText(window.location.href);
+                                  alert('Link copied to clipboard!');
+                                }
+                              }}
+                              className={`flex items-center space-x-2 group transition-colors ${
                                 darkMode ? 'text-gray-400 hover:text-green-400' : 'text-gray-500 hover:text-green-500'
-                              }`}>
-                                <ShareIcon className="w-5 h-5" />
-                              </button>
-                            </div>
+                              }`}
+                            >
+                              <ShareIcon className="w-5 h-5" />
+                              <span className="text-sm font-medium">Share</span>
+                            </button>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ) : activeTab === 'listings' ? (
                 <div className="p-6">
-                  <h3 className={`text-lg font-semibold mb-4 ${
+                  <h3 className={`text-xl font-semibold mb-6 ${
                     darkMode ? 'text-white' : 'text-gray-900'
                   }`}>
-                    My Listings
+                    My Listings ({userPosts.length})
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {userPosts.map((post) => (
-                      <div key={post.id} className={`rounded-xl overflow-hidden shadow-md ${
-                        darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-green-100'
+                      <div key={post.id} className={`rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ${
+                        darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'
                       }`}>
                         <div className="relative h-48">
                           <img
@@ -663,23 +1011,31 @@ const UserProfile = ({ darkMode = false }) => {
                             alt={post.animalInfo.title}
                             className="w-full h-full object-cover"
                           />
-                          <div className={`absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                          <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${
                             post.animalInfo.availability === 'available'
                               ? 'bg-green-500 text-white'
                               : 'bg-red-500 text-white'
                           }`}>
                             {post.animalInfo.availability === 'available' ? 'Available' : 'Sold'}
                           </div>
+                          <div className="absolute top-3 left-3">
+                            <PostOptionsDropdown 
+                              postId={post.id}
+                              onEdit={handleEditPost}
+                              onDelete={handleDeletePost}
+                              darkMode={darkMode}
+                            />
+                          </div>
                         </div>
                         <div className="p-4">
-                          <h4 className={`font-medium text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          <h4 className={`font-semibold text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                             {post.animalInfo.title}
                           </h4>
-                          <p className={`text-sm mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          <p className={`text-sm mb-3 line-clamp-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                             {post.content}
                           </p>
                           <div className="flex justify-between items-center">
-                            <span className={`font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                            <span className={`font-bold text-lg ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
                               {post.animalInfo.price}
                             </span>
                             <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -692,60 +1048,84 @@ const UserProfile = ({ darkMode = false }) => {
                   </div>
                 </div>
               ) : (
-                <div className="p-6 space-y-4">
-                  <h3 className={`text-lg font-semibold mb-4 ${
+                <div className="p-6">
+                  <h3 className={`text-xl font-semibold mb-6 ${
                     darkMode ? 'text-white' : 'text-gray-900'
                   }`}>
                     Reviews & Feedback ({reviews.length})
                   </h3>
                   
-                  {reviews.map((review) => (
-                    <div key={review.id} className={`rounded-lg border p-4 transition-colors duration-300 ${
-                      darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-green-100'
-                    }`}>
-                      <div className="flex items-start space-x-3">
-                        <img
-                          src={review.reviewerAvatar}
-                          alt={review.reviewer}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className={`font-semibold ${
-                              darkMode ? 'text-white' : 'text-gray-900'
+                  <div className="space-y-4">
+                    {reviews.map((review) => (
+                      <div key={review.id} className={`rounded-xl border p-6 transition-colors duration-300 ${
+                        darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                      }`}>
+                        <div className="flex items-start space-x-4">
+                          <img
+                            src={review.reviewerAvatar}
+                            alt={review.reviewer}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className={`font-semibold ${
+                                darkMode ? 'text-white' : 'text-gray-900'
+                              }`}>
+                                {review.reviewer}
+                              </h4>
+                              <span className={`text-sm ${
+                                darkMode ? 'text-gray-400' : 'text-gray-500'
+                              }`}>
+                                {review.timestamp}
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center mb-3">
+                              {renderStars(review.rating)}
+                              <span className={`ml-2 text-sm font-medium ${
+                                darkMode ? 'text-green-400' : 'text-green-600'
+                              }`}>
+                                {review.rating.toFixed(1)}
+                              </span>
+                            </div>
+                            
+                            <p className={`text-sm leading-relaxed ${
+                              darkMode ? 'text-gray-300' : 'text-gray-700'
                             }`}>
-                              {review.reviewer}
-                            </h4>
-                            <span className={`text-sm ${
-                              darkMode ? 'text-gray-400' : 'text-gray-500'
-                            }`}>
-                              {review.timestamp}
-                            </span>
+                              {review.comment}
+                            </p>
                           </div>
-                          
-                          <div className="flex items-center mb-2">
-                            {renderStars(review.rating)}
-                            <span className={`ml-2 text-sm font-medium ${
-                              darkMode ? 'text-green-400' : 'text-green-600'
-                            }`}>
-                              {review.rating.toFixed(1)}
-                            </span>
-                          </div>
-                          
-                          <p className={`text-sm ${
-                            darkMode ? 'text-gray-300' : 'text-gray-700'
-                          }`}>
-                            {review.comment}
-                          </p>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
           </>
         )}
+
+        {/* Modals */}
+        <EditPostModal
+          isOpen={showEditPost}
+          onClose={() => {
+            setShowEditPost(false);
+            setSelectedPost(null);
+          }}
+          post={selectedPost}
+          onSave={handleSaveEditPost}
+          darkMode={darkMode}
+        />
+
+        <DeleteConfirmModal
+          isOpen={showDeleteConfirm}
+          onClose={() => {
+            setShowDeleteConfirm(false);
+            setSelectedPost(null);
+          }}
+          onConfirm={confirmDeletePost}
+          darkMode={darkMode}
+        />
 
         {/* Edit Profile Modal */}
         {showEditProfile && (
@@ -910,49 +1290,10 @@ const UserProfile = ({ darkMode = false }) => {
                       placeholder="Enter your age"
                     />
                   </div>
-
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Gender
-                    </label>
-                    <select
-                      name="gender"
-                      value={editForm.gender}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        darkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                    >
-                      <option value="">Select gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                      <option value="Prefer not to say">Prefer not to say</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Birth Date
-                    </label>
-                    <input
-                      type="date"
-                      name="birthdate"
-                      value={editForm.birthdate}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        darkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                    />
-                  </div>
                 </div>
 
-                {/* Location & Website */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Location & Bio */}
+                <div className="space-y-4">
                   <div>
                     <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       Location
@@ -973,40 +1314,21 @@ const UserProfile = ({ darkMode = false }) => {
 
                   <div>
                     <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Website
+                      Bio
                     </label>
-                    <input
-                      type="url"
-                      name="website"
-                      value={editForm.website}
+                    <textarea
+                      name="bio"
+                      value={editForm.bio}
                       onChange={handleInputChange}
+                      rows="3"
                       className={`w-full px-3 py-2 border rounded-md ${
                         darkMode 
                           ? 'bg-gray-700 border-gray-600 text-white' 
                           : 'bg-white border-gray-300 text-gray-900'
                       }`}
-                      placeholder="https://your-website.com"
+                      placeholder="Tell us about yourself and your interest in animals"
                     />
                   </div>
-                </div>
-
-                {/* Bio */}
-                <div>
-                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Bio
-                  </label>
-                  <textarea
-                    name="bio"
-                    value={editForm.bio}
-                    onChange={handleInputChange}
-                    rows="3"
-                    className={`w-full px-3 py-2 border rounded-md ${
-                      darkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
-                    placeholder="Tell us about yourself and your interest in animals"
-                  />
                 </div>
 
                 {/* User Type */}
@@ -1172,8 +1494,20 @@ const UserProfile = ({ darkMode = false }) => {
               <div className="space-y-3">
                 <button
                   onClick={() => {
-                    // Mock download functionality
-                    alert('QR code downloaded!');
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = function() {
+                      canvas.width = img.width;
+                      canvas.height = img.height;
+                      ctx.drawImage(img, 0, 0);
+                      const link = document.createElement('a');
+                      link.download = `${user.username}-qr-code.png`;
+                      link.href = canvas.toDataURL();
+                      link.click();
+                    };
+                    img.src = generateQRCode();
                   }}
                   className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                 >

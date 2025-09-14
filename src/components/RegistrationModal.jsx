@@ -22,7 +22,8 @@ import {
   const [registrationStep, setRegistrationStep] = useState(1);
   const [formData, setFormData] = useState({
     // Step 1 - Basic Info
-    name: '',
+    firstName: '',
+    lastName: '',
     address: '',
     phone: '',
     email: '',
@@ -123,8 +124,13 @@ import {
   const validateStep1 = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Full name is required';
+    
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
     }
 
     if (!formData.address.trim()) {
@@ -161,12 +167,13 @@ import {
       newErrors.birthday = 'Birthday is required';
     }
 
-    // username = Government ID (used as username)
-    if (!formData.username.trim()) {
-      newErrors.username = 'Government ID (username) is required';
-    } else if (!/^[A-Za-z0-9\-\s]{4,}$/.test(formData.username)) {
-      newErrors.username = 'Enter a valid ID (min 4 characters)';
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Enter a valid email';
     }
+
+   
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
@@ -412,9 +419,13 @@ import {
   </svg>
 
   {/* Text */}
-  <h1 className="text-2xl font-bold mb-1 text-gray-800">
-    Animal <span className="text-green-600">MarketHUB</span>
-  </h1>
+   <h1
+  className={`text-2xl sm:text-3xl font-bold text-center sm:text-left ${
+    darkMode ? 'text-white' : 'text-gray-800'
+  }`}
+>
+  Animal <span className="text-green-600">MarketHUB</span>
+</h1>
 </div>
 
 
@@ -481,33 +492,77 @@ import {
             {/* Step 1: Basic Information */}
             {registrationStep === 1 && (
               <>
-                <div className="space-y-2">
-                  <label className={`text-sm font-medium ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <UserIcon className={`w-5 h-5 absolute left-3 top-3.5 ${
-                      darkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`} />
-                    <input
-                      type="text"
-                      name="name"
-                      placeholder="Enter your full name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className={`w-full pl-11 pr-4 py-3.5 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500/20 focus:border-green-500 ${
-                        darkMode
-                          ? 'bg-gray-700/50 border-gray-600 text-white placeholder-gray-400'
-                          : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500'
-                      } ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
-                    />
-                  </div>
-                  {errors.name && (
-                    <p className="text-sm text-red-600 font-medium">{errors.name}</p>
-                  )}
-                </div>
+              <div className="space-y-2">
+  <label
+    className={`text-sm font-medium ${
+      darkMode ? "text-gray-300" : "text-gray-700"
+    }`}
+  >
+    Full Name
+  </label>
+  <div className="flex space-x-3">
+    {/* First Name */}
+    <div className="relative w-1/2">
+      <UserIcon
+        className={`w-5 h-5 absolute left-3 top-3.5 ${
+          darkMode ? "text-gray-400" : "text-gray-500"
+        }`}
+      />
+      <input
+        type="text"
+        name="firstName"
+        placeholder="First Name"
+        value={formData.firstName}
+        onChange={handleInputChange}
+        className={`w-full pl-11 pr-4 py-3.5 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500/20 focus:border-green-500 ${
+          darkMode
+            ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
+            : "bg-white border-gray-200 text-gray-900 placeholder-gray-500"
+        } ${
+          errors.firstName
+            ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+            : ""
+        }`}
+      />
+      {errors.firstName && (
+        <p className="text-sm text-red-600 font-medium mt-1">
+          {errors.firstName}
+        </p>
+      )}
+    </div>
+
+    {/* Last Name */}
+    <div className="relative w-1/2">
+      <UserIcon
+        className={`w-5 h-5 absolute left-3 top-3.5 ${
+          darkMode ? "text-gray-400" : "text-gray-500"
+        }`}
+      />
+      <input
+        type="text"
+        name="lastName"
+        placeholder="Last Name"
+        value={formData.lastName}
+        onChange={handleInputChange}
+        className={`w-full pl-11 pr-4 py-3.5 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500/20 focus:border-green-500 ${
+          darkMode
+            ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
+            : "bg-white border-gray-200 text-gray-900 placeholder-gray-500"
+        } ${
+          errors.lastName
+            ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+            : ""
+        }`}
+      />
+      {errors.lastName && (
+        <p className="text-sm text-red-600 font-medium mt-1">
+          {errors.lastName}
+        </p>
+      )}
+    </div>
+  </div>
+</div>
+
 
                 <div className="space-y-2">
                   <label className={`text-sm font-medium ${
@@ -548,6 +603,7 @@ import {
                       darkMode ? 'text-gray-400' : 'text-gray-500'
                     }`} />
                     <input
+                    maxLength={11}
                       type="tel"
                       name="phone"
                       placeholder="+63 900 000 0000"
@@ -673,33 +729,43 @@ import {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <label className={`text-sm font-medium ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Government ID (used as your username)
-                  </label>
-                  <div className="relative">
-                    <IdentificationIcon className={`w-5 h-5 absolute left-3 top-3.5 ${
-                      darkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`} />
-                    <input
-                      type="text"
-                      name="username"
-                      placeholder="Enter your Government ID (e.g., SSS, TIN) — this will be your username"
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      className={`w-full pl-11 pr-4 py-3.5 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500/20 focus:border-green-500 ${
-                        darkMode
-                          ? 'bg-gray-700/50 border-gray-600 text-white placeholder-gray-400'
-                          : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500'
-                      } ${errors.username ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
-                    />
-                  </div>
-                  {errors.username && (
-                    <p className="text-sm text-red-600 font-medium">{errors.username}</p>
-                  )}
-                </div>
+               <div className="space-y-2">
+  <label
+    className={`text-sm font-medium ${
+      darkMode ? "text-gray-300" : "text-gray-700"
+    }`}
+  >
+    Email
+  </label>
+  <div className="relative">
+    <UserIcon
+      className={`w-5 h-5 absolute left-3 top-3.5 ${
+        darkMode ? "text-gray-400" : "text-gray-500"
+      }`}
+    />
+    <input
+      type="email"
+      name="email"
+      placeholder="Enter your Email"
+      value={formData.email}
+      onChange={handleInputChange}
+      required
+      className={`w-full pl-11 pr-4 py-3.5 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500/20 focus:border-green-500 ${
+        darkMode
+          ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
+          : "bg-white border-gray-200 text-gray-900 placeholder-gray-500"
+      } ${
+        errors.email
+          ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+          : ""
+      }`}
+    />
+  </div>
+  {errors.email && (
+    <p className="text-sm text-red-600 font-medium">{errors.email}</p>
+  )}
+</div>
+
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -1093,8 +1159,8 @@ import {
                   ) : (
                     <>
                       <span>
-                        {registrationStep === 1 && 'Send Verification Code'}
-                        {registrationStep === 2 && 'Verify Phone'}
+                        {registrationStep === 1 && 'Continue'}
+                        {registrationStep === 2 && 'Verify'}
                         {registrationStep === 3 && 'Continue'}
                         {registrationStep === 4 && 'Complete Registration'}
                       </span>

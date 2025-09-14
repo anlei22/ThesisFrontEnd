@@ -59,23 +59,16 @@ const Dashboard = () => {
   // -------------------------
   // Listings by Category
   // -------------------------
-  const listingsData = [
-    { category: "Dog", listings: 40 },
-    { category: "Cat", listings: 35 },
-    { category: "Bird", listings: 20 },
-    { category: "Fish", listings: 25 },
-    { category: "Rabbit", listings: 15 },
-    { category: "Hamster", listings: 10 },
-    { category: "Guinea Pig", listings: 12 },
-    { category: "Ferret", listings: 5 },
-    { category: "Reptile", listings: 8 },
-    { category: "Horse", listings: 6 },
-    { category: "Goat", listings: 7 },
-    { category: "Sheep", listings: 4 },
-    { category: "Pig", listings: 9 },
-    { category: "Cow", listings: 11 },
-    { category: "Other", listings: 3 },
-  ];
+const listingsData = [
+  { category: "Carabao", listings: 25 },
+  { category: "Cow", listings: 30 },
+  { category: "Goat", listings: 35 },
+  { category: "Pig", listings: 45 },
+  { category: "Duck", listings: 20 },
+  { category: "Tilapia", listings: 18 },
+  { category: "Bangus", listings: 22 },
+  { category: "Rabbit", listings: 15 },
+];
 
   // -------------------------
   // User Roles Distribution
@@ -169,7 +162,19 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
+ {/* Listings by Category Chart */}
+      <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
+        <h3 className="text-lg font-bold text-gray-800 mb-4">Listings by Category</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={listingsData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="category" angle={-30} textAnchor="end" interval={0} height={80} />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="listings" fill="#10B981" radius={[6, 6, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Users Growth Chart */}
@@ -211,19 +216,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Listings by Category Chart */}
-      <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
-        <h3 className="text-lg font-bold text-gray-800 mb-4">Listings by Category</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={listingsData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="category" angle={-30} textAnchor="end" interval={0} height={80} />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="listings" fill="#10B981" radius={[6, 6, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+     
     </div>
   );
 };
