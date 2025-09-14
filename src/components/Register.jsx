@@ -80,8 +80,7 @@ const RegistrationStepper = () => {
       formData.birthday &&
       formData.age &&
       formData.sex &&
-      formData.role &&
-      formData.animalInterests.length > 0
+      formData.role
     );
   };
 
@@ -166,11 +165,14 @@ const RegistrationStepper = () => {
       case 1:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Personal Information
-            </h2>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                Personal Information
+              </h2>
+              <p className="text-gray-600">Please fill in your basic details</p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   First Name *
@@ -181,7 +183,7 @@ const RegistrationStepper = () => {
                   onChange={(e) =>
                     handleInputChange("firstName", e.target.value)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Enter first name"
                 />
               </div>
@@ -195,11 +197,11 @@ const RegistrationStepper = () => {
                   onChange={(e) =>
                     handleInputChange("middleName", e.target.value)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Enter middle name"
                 />
               </div>
-              <div>
+              <div className="sm:col-span-2 lg:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Surname *
                 </label>
@@ -207,13 +209,13 @@ const RegistrationStepper = () => {
                   type="text"
                   value={formData.surname}
                   onChange={(e) => handleInputChange("surname", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Enter surname"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number *
@@ -222,7 +224,7 @@ const RegistrationStepper = () => {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="+63 9XX XXX XXXX"
                 />
               </div>
@@ -236,7 +238,7 @@ const RegistrationStepper = () => {
                   onChange={(e) =>
                     handleInputChange("birthday", e.target.value)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
               </div>
             </div>
@@ -248,13 +250,13 @@ const RegistrationStepper = () => {
               <textarea
                 value={formData.address}
                 onChange={(e) => handleInputChange("address", e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
                 rows="3"
                 placeholder="Enter complete address"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Age *
@@ -263,7 +265,7 @@ const RegistrationStepper = () => {
                   type="number"
                   value={formData.age}
                   onChange={(e) => handleInputChange("age", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Enter age"
                 />
               </div>
@@ -274,67 +276,66 @@ const RegistrationStepper = () => {
                 <select
                   value={formData.sex}
                   onChange={(e) => handleInputChange("sex", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 >
                   <option value="">Select sex</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                 </select>
               </div>
+              <div className="sm:col-span-2 lg:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role *
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => handleInputChange("role", e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                >
+                  <option value="">Select preferred role</option>
+                  <option value="buyer">Buyer</option>
+                  <option value="seller">Seller</option>
+                  <option value="both">Both (Buyer & Seller)</option>
+                </select>
+              </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Role *
-              </label>
-              <select
-                value={formData.role}
-                onChange={(e) => handleInputChange("role", e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Preferred</option>
-                <option value="buyer">Buyer</option>
-                <option value="seller">Seller</option>
-                <option value="both">Both (Buyer & Seller)</option>
-              </select>
-            </div>
-
-          
           </div>
         );
 
       case 2:
         return (
-          <div className="space-y-6 text-center">
-            <div className="max-w-md mx-auto">
+          <div className="space-y-6">
+            <div className="max-w-md mx-auto text-center">
               <Phone className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
                 Phone Verification
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-8">
                 We've sent a verification code to{" "}
-                <strong>{formData.phone}</strong>
+                <span className="font-semibold text-gray-800">{formData.phone}</span>
               </p>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Verification Code
-                </label>
-                <input
-                  type="text"
-                  value={formData.verificationCode}
-                  onChange={(e) =>
-                    handleInputChange("verificationCode", e.target.value)
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-lg tracking-widest"
-                  placeholder="Enter 6-digit code"
-                  maxLength="6"
-                />
-              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Verification Code
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.verificationCode}
+                    onChange={(e) =>
+                      handleInputChange("verificationCode", e.target.value)
+                    }
+                    className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-lg tracking-widest font-mono transition-all"
+                    placeholder="000000"
+                    maxLength="6"
+                  />
+                </div>
 
-              <button className="mt-4 text-blue-500 hover:text-blue-700 text-sm">
-                Resend code
-              </button>
+                <button className="text-blue-500 hover:text-blue-700 text-sm font-medium transition-colors">
+                  Didn't receive code? Resend
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -343,13 +344,16 @@ const RegistrationStepper = () => {
         const passwordStrength = getPasswordStrength();
         return (
           <div className="space-y-6">
-            <div className="max-w-md mx-auto">
-              <Mail className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                Account Setup
-              </h2>
+            <div className="max-w-lg mx-auto">
+              <div className="text-center mb-8">
+                <Mail className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                  Account Setup
+                </h2>
+                <p className="text-gray-600">Create your login credentials</p>
+              </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Email Address *
@@ -358,7 +362,7 @@ const RegistrationStepper = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="Enter email address"
                   />
                 </div>
@@ -374,13 +378,13 @@ const RegistrationStepper = () => {
                       onChange={(e) =>
                         handleInputChange("password", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       placeholder="Enter password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-blue-500 transition-colors"
                     >
                       {showPassword ? (
                         <EyeOff className="h-5 w-5 text-gray-400" />
@@ -392,8 +396,8 @@ const RegistrationStepper = () => {
 
                   {/* Password Strength Indicator */}
                   {formData.password && (
-                    <div className="mt-2">
-                      <div className="flex items-center space-x-2 mb-2">
+                    <div className="mt-3 space-y-3">
+                      <div className="flex items-center space-x-3">
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
                           <div
                             className={`h-2 rounded-full transition-all duration-300 ${
@@ -411,7 +415,7 @@ const RegistrationStepper = () => {
                           />
                         </div>
                         <span
-                          className={`text-xs font-medium ${
+                          className={`text-sm font-medium ${
                             passwordStrength.color === "red"
                               ? "text-red-600"
                               : passwordStrength.color === "yellow"
@@ -425,52 +429,58 @@ const RegistrationStepper = () => {
 
                       {/* Password Requirements */}
                       {passwordStrength.strength < 4 && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                          <p className="text-xs font-medium text-yellow-800 mb-1">
-                            Password must contain:
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <p className="text-sm font-medium text-yellow-800 mb-2">
+                            Password requirements:
                           </p>
-                          <div className="text-xs text-yellow-700 space-y-1">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm">
                             <div
-                              className={
+                              className={`flex items-center space-x-2 ${
                                 passwordStrength.requirements.length
                                   ? "text-green-600"
-                                  : ""
-                              }
+                                  : "text-yellow-700"
+                              }`}
                             >
-                              • At least 8 characters{" "}
-                              {passwordStrength.requirements.length ? "✓" : "✗"}
+                              <span className="font-mono text-xs">
+                                {passwordStrength.requirements.length ? "✓" : "✗"}
+                              </span>
+                              <span>8+ characters</span>
                             </div>
                             <div
-                              className={
+                              className={`flex items-center space-x-2 ${
                                 passwordStrength.requirements.capital
                                   ? "text-green-600"
-                                  : ""
-                              }
+                                  : "text-yellow-700"
+                              }`}
                             >
-                              • One capital letter{" "}
-                              {passwordStrength.requirements.capital
-                                ? "✓"
-                                : "✗"}
+                              <span className="font-mono text-xs">
+                                {passwordStrength.requirements.capital ? "✓" : "✗"}
+                              </span>
+                              <span>Capital letter</span>
                             </div>
                             <div
-                              className={
+                              className={`flex items-center space-x-2 ${
                                 passwordStrength.requirements.number
                                   ? "text-green-600"
-                                  : ""
-                              }
+                                  : "text-yellow-700"
+                              }`}
                             >
-                              • One number{" "}
-                              {passwordStrength.requirements.number ? "✓" : "✗"}
+                              <span className="font-mono text-xs">
+                                {passwordStrength.requirements.number ? "✓" : "✗"}
+                              </span>
+                              <span>Number</span>
                             </div>
                             <div
-                              className={
+                              className={`flex items-center space-x-2 ${
                                 passwordStrength.requirements.symbol
                                   ? "text-green-600"
-                                  : ""
-                              }
+                                  : "text-yellow-700"
+                              }`}
                             >
-                              • One symbol (!@#$%^&*){" "}
-                              {passwordStrength.requirements.symbol ? "✓" : "✗"}
+                              <span className="font-mono text-xs">
+                                {passwordStrength.requirements.symbol ? "✓" : "✗"}
+                              </span>
+                              <span>Symbol (!@#$%^&*)</span>
                             </div>
                           </div>
                         </div>
@@ -490,7 +500,7 @@ const RegistrationStepper = () => {
                       onChange={(e) =>
                         handleInputChange("confirmPassword", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       placeholder="Confirm password"
                     />
                     <button
@@ -498,7 +508,7 @@ const RegistrationStepper = () => {
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-blue-500 transition-colors"
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="h-5 w-5 text-gray-400" />
@@ -509,14 +519,16 @@ const RegistrationStepper = () => {
                   </div>
                   {formData.confirmPassword &&
                     formData.password !== formData.confirmPassword && (
-                      <p className="text-xs text-red-600 mt-1">
-                        Passwords do not match
+                      <p className="text-sm text-red-600 mt-2 flex items-center space-x-1">
+                        <span className="font-mono text-xs">✗</span>
+                        <span>Passwords do not match</span>
                       </p>
                     )}
                   {formData.confirmPassword &&
                     formData.password === formData.confirmPassword && (
-                      <p className="text-xs text-green-600 mt-1">
-                        ✓ Passwords match
+                      <p className="text-sm text-green-600 mt-2 flex items-center space-x-1">
+                        <span className="font-mono text-xs">✓</span>
+                        <span>Passwords match</span>
                       </p>
                     )}
                 </div>
@@ -528,35 +540,54 @@ const RegistrationStepper = () => {
       case 4:
         return (
           <div className="space-y-6">
-            <div className="max-w-md mx-auto">
-              <Camera className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                Document Upload
-              </h2>
+            <div className="max-w-lg mx-auto">
+              <div className="text-center mb-8">
+                <Camera className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                  Document Upload
+                </h2>
+                <p className="text-gray-600">Upload your identification documents</p>
+              </div>
 
               {/* Photo Guidelines */}
-              <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 mb-6">
-                <h4 className="font-medium mb-2 text-blue-800">
-                  Photo Guidelines:
+              <div className="p-4 md:p-6 rounded-xl bg-blue-50 border border-blue-200 mb-8">
+                <h4 className="font-semibold mb-3 text-blue-800 flex items-center space-x-2">
+                  <Camera className="w-4 h-4" />
+                  <span>Photo Guidelines</span>
                 </h4>
-                <ul className="text-sm space-y-1 text-blue-700">
-                  <li>• Ensure all text on your ID is clearly visible</li>
-                  <li>• Take photos in good lighting</li>
-                  <li>• Avoid glare and shadows</li>
-                  <li>• Hold your ID close to your face in the selfie</li>
-                  <li>• Make sure your face is clearly visible</li>
+                <ul className="text-sm space-y-2 text-blue-700">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-500 mt-0.5">•</span>
+                    <span>Ensure all text on your ID is clearly visible</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-500 mt-0.5">•</span>
+                    <span>Take photos in good lighting conditions</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-500 mt-0.5">•</span>
+                    <span>Avoid glare and shadows on documents</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-500 mt-0.5">•</span>
+                    <span>Hold your ID close to your face in the selfie</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-500 mt-0.5">•</span>
+                    <span>Make sure your face is clearly visible</span>
+                  </li>
                 </ul>
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
                     Upload ID Picture *
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                    <Camera className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 mb-2">
-                      Click to upload your ID
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer">
+                    <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-sm text-gray-600 mb-4">
+                      Click to upload your government-issued ID
                     </p>
                     <input
                       type="file"
@@ -569,26 +600,29 @@ const RegistrationStepper = () => {
                     />
                     <label
                       htmlFor="id-upload"
-                      className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                      className="cursor-pointer bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors inline-block"
                     >
                       Choose File
                     </label>
                     {formData.idPhoto && (
-                      <p className="text-sm text-green-600 mt-2">
-                        ✓ {formData.idPhoto.name}
-                      </p>
+                      <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <p className="text-sm text-green-700 font-medium flex items-center justify-center space-x-2">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>{formData.idPhoto.name}</span>
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
                     Upload Selfie with ID *
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                    <Camera className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 mb-2">
-                      Click to upload selfie with ID
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer">
+                    <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-sm text-gray-600 mb-4">
+                      Take a selfie while holding your ID next to your face
                     </p>
                     <input
                       type="file"
@@ -601,14 +635,17 @@ const RegistrationStepper = () => {
                     />
                     <label
                       htmlFor="selfie-upload"
-                      className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                      className="cursor-pointer bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors inline-block"
                     >
                       Choose File
                     </label>
                     {formData.selfiePhoto && (
-                      <p className="text-sm text-green-600 mt-2">
-                        ✓ {formData.selfiePhoto.name}
-                      </p>
+                      <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <p className="text-sm text-green-700 font-medium flex items-center justify-center space-x-2">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>{formData.selfiePhoto.name}</span>
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -620,22 +657,32 @@ const RegistrationStepper = () => {
       case 5:
         return (
           <div className="text-center space-y-6">
-            <CheckCircle className="w-24 h-24 text-green-500 mx-auto" />
-            <h2 className="text-3xl font-bold text-gray-800">
-              Registration Complete!
-            </h2>
-            <div className="max-w-md mx-auto">
-              <p className="text-gray-600 mb-4">
+            <div className="max-w-lg mx-auto">
+              <CheckCircle className="w-24 h-24 text-green-500 mx-auto mb-6" />
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+                Registration Complete!
+              </h2>
+              <p className="text-gray-600 mb-8 text-lg">
                 Thank you for signing up! Your registration has been submitted
                 successfully.
               </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-blue-800">
-                  <strong>Please wait for admin approval</strong>
-                </p>
-                <p className="text-sm text-blue-600 mt-2">
+              
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 md:p-8">
+                <div className="flex items-center justify-center space-x-3 mb-4">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                  <p className="text-blue-800 font-semibold text-lg">
+                    Awaiting Admin Approval
+                  </p>
+                </div>
+                <p className="text-blue-700 leading-relaxed">
                   We'll review your application and notify you via email once
-                  approved. This process usually takes 1-2 business days.
+                  approved. This process typically takes 1-2 business days.
+                </p>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <p className="text-sm text-gray-500">
+                  Questions? Contact our support team
                 </p>
               </div>
             </div>
@@ -648,38 +695,38 @@ const RegistrationStepper = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 py-4 md:py-8 px-4">
+      <div className="max-w-6xl mx-auto">
         {/* Enhanced Progress Stepper */}
-        <div className="mb-8">
-          <div className="relative">
-            {/* Background connecting line */}
-            <div className="absolute top-6 left-6 right-6 h-0.5 bg-gray-200 hidden md:block"></div>
+        <div className="mb-6 md:mb-12">
+          <div className="relative px-2">
+            {/* Progress Line - only between circles */}
+            <div className="absolute top-4 md:top-6 left-10 md:left-14 right-10 md:right-14 h-0.5 md:h-1 bg-gray-200 rounded-full"></div>
             
             {/* Progress line that fills as steps complete */}
             <div 
-              className="absolute top-6 left-6 h-0.5 bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500 ease-in-out hidden md:block"
+              className="absolute top-4 md:top-6 left-10 md:left-14 h-0.5 md:h-1 bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-700 ease-out"
               style={{
                 width: `${Math.max(0, ((currentStep - 1) / (steps.length - 1)) * 100)}%`,
-                maxWidth: `calc(100% - 48px)`
+                maxWidth: `calc(100% - 80px)`
               }}
             ></div>
 
-            <div className="flex items-center justify-between relative">
+            <div className="flex items-start justify-between relative">
               {steps.map((step, index) => {
                 const StepIcon = step.icon;
                 const isActive = currentStep === step.number;
                 const isCompleted = currentStep > step.number;
 
                 return (
-                  <div key={step.number} className="flex flex-col items-center relative">
+                  <div key={step.number} className="flex flex-col items-center relative flex-1">
                     {/* Step Circle */}
                     <div
                       className={`
-                        w-12 h-12 rounded-full flex items-center justify-center border-3 transition-all duration-300 relative z-10 shadow-lg
+                        w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 md:border-3 transition-all duration-300 relative z-10 shadow-md md:shadow-lg flex-shrink-0
                         ${
                           isActive
-                            ? "bg-blue-500 border-blue-500 text-white scale-110 shadow-blue-200"
+                            ? "bg-blue-500 border-blue-500 text-white scale-105 md:scale-110 shadow-blue-200"
                             : isCompleted
                             ? "bg-green-500 border-green-500 text-white shadow-green-200"
                             : "bg-white border-gray-300 text-gray-400 shadow-gray-200"
@@ -687,17 +734,17 @@ const RegistrationStepper = () => {
                       `}
                     >
                       {isCompleted ? (
-                        <CheckCircle className="w-6 h-6" />
+                        <CheckCircle className="w-3 h-3 md:w-6 md:h-6" />
                       ) : (
-                        <StepIcon className="w-6 h-6" />
+                        <StepIcon className="w-3 h-3 md:w-6 md:h-6" />
                       )}
                     </div>
 
                     {/* Step Title */}
-                    <div className="mt-3 text-center">
+                    <div className="mt-1 md:mt-3 text-center px-0.5">
                       <span
                         className={`
-                          text-sm font-medium block transition-colors duration-300
+                          text-xs md:text-sm font-medium md:font-semibold block transition-colors duration-300 leading-tight
                           ${
                             isActive
                               ? "text-blue-600"
@@ -707,11 +754,12 @@ const RegistrationStepper = () => {
                           }
                         `}
                       >
-                        {step.title}
+                        <span className="hidden sm:inline">{step.title}</span>
+                        <span className="sm:hidden">Step {step.number}</span>
                       </span>
                       <span
                         className={`
-                          text-xs mt-1 block transition-colors duration-300
+                          text-xs mt-0.5 md:mt-1 block transition-colors duration-300 hidden sm:block
                           ${
                             isActive
                               ? "text-blue-500"
@@ -724,15 +772,6 @@ const RegistrationStepper = () => {
                         Step {step.number}
                       </span>
                     </div>
-
-                    {/* Mobile connecting line */}
-                    {index < steps.length - 1 && (
-                      <div className="md:hidden absolute top-12 left-6 w-0.5 h-16 bg-gray-200">
-                        {isCompleted && (
-                          <div className="w-full bg-green-500 transition-all duration-500" style={{height: '100%'}}></div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -741,43 +780,59 @@ const RegistrationStepper = () => {
         </div>
 
         {/* Main Content */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {renderStepContent()}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 md:p-8 lg:p-12">
+            {renderStepContent()}
+          </div>
 
           {/* Navigation Buttons */}
           {currentStep < 5 && (
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-              {/* Left: Back to Home */}
-              <button
-                onClick={() => (window.location.href = "/")}
-                className="text-blue-600 hover:text-blue-800 px-4 py-3 text-sm transition-colors"
-              >
-                ← Back to Home
-              </button>
-
-              {/* Right: Previous + Next */}
-              <div className="flex space-x-4">
+            <div className="bg-gray-50 px-6 py-4 md:px-8 md:py-6 lg:px-12 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+                {/* Left: Back to Home */}
                 <button
-                  onClick={prevStep}
-                  disabled={currentStep === 1}
-                  className="flex items-center space-x-2 px-6 py-3 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  onClick={() => (window.location.href = "/")}
+                  className="text-blue-600 hover:text-blue-800 px-4 py-2 text-sm transition-colors order-2 sm:order-1 text-center sm:text-left"
                 >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Previous</span>
+                  ← Back to Home
                 </button>
 
-                <button
-                  onClick={nextStep}
-                  disabled={!canProceed()}
-                  className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-                >
-                  <span>{currentStep === 4 ? "Submit" : "Next"}</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                {/* Right: Previous + Next */}
+                <div className="flex space-x-3 order-1 sm:order-2">
+                  <button
+                    onClick={prevStep}
+                    disabled={currentStep === 1}
+                    className="flex items-center justify-center space-x-2 px-4 md:px-6 py-3 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-1 sm:flex-none"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span className="hidden sm:inline">Previous</span>
+                  </button>
+
+                  <button
+                    onClick={nextStep}
+                    disabled={!canProceed()}
+                    className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-6 md:px-8 py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl flex-1 sm:flex-none"
+                  >
+                    <span>{currentStep === 4 ? "Submit" : "Next"}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </div>
+
+        {/* Footer for final step */}
+        {currentStep === 5 && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => (window.location.href = "/")}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+            >
+              Return to Home
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
