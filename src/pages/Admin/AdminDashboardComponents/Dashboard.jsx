@@ -34,27 +34,7 @@ const Dashboard = () => {
   ];
 
   // Generate monthly users growth from user createdAt
-  useEffect(() => {
-    const months = [
-      "Jan","Feb","Mar","Apr","May","Jun",
-      "Jul","Aug","Sep","Oct","Nov","Dec"
-    ];
 
-    // Count users per month
-    const counts = Array(12).fill(0);
-    usersFromDB.forEach(user => {
-      const monthIndex = new Date(user.createdAt).getMonth(); // 0-11
-      counts[monthIndex]++;
-    });
-
-    // Map to chart-friendly format
-    const formatted = counts.map((count, i) => ({
-      month: months[i],
-      users: count,
-    }));
-
-    setUsersGrowth(formatted);
-  }, []);
 
   // -------------------------
   // Listings by Category
@@ -63,6 +43,7 @@ const listingsData = [
   { category: "Carabao", listings: 25 },
   { category: "Cow", listings: 30 },
   { category: "Goat", listings: 35 },
+  { category: "Chicken", listings: 30 },
   { category: "Pig", listings: 45 },
   { category: "Duck", listings: 20 },
   { category: "Tilapia", listings: 18 },
@@ -73,14 +54,22 @@ const listingsData = [
   // -------------------------
   // User Roles Distribution
   // -------------------------
-  const userRoleData = [
-    { name: "Buyers", value: 50 },
-    { name: "Sellers", value: 35 },
-    { name: "Pending", value: 20 },
-    { name: "Banned", value: 10 },
-  ];
+const userRoleData = [
+  { name: "Admin", value: 15 },
+  { name: "Seller", value: 35 },
+  { name: "Buyer", value: 50 },
+  { name: "Pending Approve", value: 20 },
+  { name: "Disapprove", value: 10 },
+];
 
-  const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
+const COLORS = [
+  "#1D4ED8", // Admin - Dark Blue (authority, trust)
+  "#10B981", // Seller - Green (growth, money)
+  "#0ff50bff", // Buyer - Orange/Yellow (activity, purchase)
+  "#EAB308", // Pending Approve - Amber/Gold (waiting, caution)
+  "#DC2626", // Disapprove - Red (error, rejection)
+];
+
 
   // -------------------------
   // Icons
@@ -162,6 +151,7 @@ const listingsData = [
           </div>
         </div>
       </div>
+
  {/* Listings by Category Chart */}
       <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
         <h3 className="text-lg font-bold text-gray-800 mb-4">Listings by Category</h3>
@@ -175,46 +165,12 @@ const listingsData = [
           </BarChart>
         </ResponsiveContainer>
       </div>
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Users Growth Chart */}
-        <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">Users Growth</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={usersGrowth}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
-              <Line type="monotone" dataKey="users" stroke="#3B82F6" strokeWidth={3} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
 
-        {/* Pie Chart - User Roles */}
-        <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">User Roles Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={userRoleData}
-                cx="50%"
-                cy="50%"
-                outerRadius={110}
-                dataKey="value"
-                stroke="#fff"
-                strokeWidth={2}
-              >
-                {userRoleData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend verticalAlign="bottom" height={36} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+
+
+
+
+    
 
      
     </div>

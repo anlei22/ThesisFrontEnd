@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { useAuth } from '../context/AuthContext';
 import LoginModal from './LoginModal';
-import RegisterModal from './RegistrationModal';
+import RegisterModal from './Register';
 import LogoutConfirmModal from './LogoutConfirmModal';
 
 const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePost }) => {

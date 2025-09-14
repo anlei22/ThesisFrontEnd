@@ -554,5 +554,6 @@ const CreatePostModal = ({ darkMode, onClose }) => {
     </div>
   );
 };
-
 export default CreatePostModal;
+
+// animals dropdon
