@@ -1,45 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  StarIcon,
-  HeartIcon,
-  ChatBubbleOvalLeftIcon,
-  ShareIcon,
-  CameraIcon,
-  PencilIcon,
-  MapPinIcon,
-  CalendarIcon,
-  UserCircleIcon,
-  QrCodeIcon,
-  XMarkIcon,
-  CheckIcon,
-  PhoneIcon,
-  ShieldCheckIcon,
-  UserIcon,
-  BuildingStorefrontIcon,
-  ShoppingCartIcon,
-  EllipsisVerticalIcon,
-  TrashIcon
-} from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid, ShieldCheckIcon as ShieldCheckSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+  Star,
+  Heart,
+  MessageCircle,
+  Share,
+  Camera,
+  Edit,
+  MapPin,
+  Calendar,
+  User,
+  QrCode,
+  X,
 
-// Mock useAuth hook for demo
+  Phone,
+  ShieldCheck,
+  Users,
+  Store,
+  ShoppingCart,
+  MoreVertical,
+  Trash2
+} from 'lucide-react';
+
+// Mock useAuth hook
 const useAuth = () => ({
-  user: {
-    name: "Alex Johnson",
-    email: "alex@example.com"
-  },
+  user: { name: "Alex Johnson", email: "alex@example.com" },
   isAuthenticated: true,
   logout: () => console.log('Logout')
 });
 
-// Mock LoginModal component
+// Login Modal Component
 const LoginModal = ({ isOpen, onClose, darkMode }) => {
   if (!isOpen) return null;
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Login Required</h2>
-        <button onClick={onClose} className="px-4 py-2 bg-green-600 text-white rounded-lg">Close</button>
+        <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          Login Required
+        </h2>
+        <button onClick={onClose} className="px-4 py-2 bg-green-600 text-white rounded-lg">
+          Close
+        </button>
       </div>
     </div>
   );
@@ -57,7 +58,7 @@ const PostOptionsDropdown = ({ postId, onEdit, onDelete, darkMode }) => {
           darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
         }`}
       >
-        <EllipsisVerticalIcon className="w-5 h-5" />
+        <MoreVertical className="w-5 h-5" />
       </button>
       
       {isOpen && (
@@ -79,7 +80,7 @@ const PostOptionsDropdown = ({ postId, onEdit, onDelete, darkMode }) => {
                   darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
-                <PencilIcon className="w-4 h-4" />
+                <Edit className="w-4 h-4" />
                 <span>Edit Post</span>
               </button>
               <button
@@ -91,7 +92,7 @@ const PostOptionsDropdown = ({ postId, onEdit, onDelete, darkMode }) => {
                   darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'
                 }`}
               >
-                <TrashIcon className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" />
                 <span>Delete Post</span>
               </button>
             </div>
@@ -151,7 +152,7 @@ const EditPostModal = ({ isOpen, onClose, post, onSave, darkMode }) => {
                 darkMode ? 'text-gray-400' : 'text-gray-600'
               }`}
             >
-              <XMarkIcon className="w-5 h-5" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -251,7 +252,373 @@ const EditPostModal = ({ isOpen, onClose, post, onSave, darkMode }) => {
   );
 };
 
-// Delete Confirmation Modal
+// Edit Profile Modal Component
+const EditProfileModal = ({ isOpen, onClose, editForm, setEditForm, onSave, loading, darkMode }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className={`w-full max-w-4xl my-2 sm:my-4 rounded-xl shadow-2xl ${
+        darkMode ? 'bg-gray-800' : 'bg-white'
+      }`}>
+        <div className="sticky top-0 bg-inherit border-b border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between">
+            <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Edit Profile
+            </h2>
+            <button
+              onClick={onClose}
+              className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                darkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Profile Pictures */}
+          <div className="space-y-4">
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Profile Picture
+              </label>
+              <div className="flex items-center space-x-4">
+                <img
+                  src={editForm.profilePic || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"}
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+                <label className="cursor-pointer px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                  <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Change Photo
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const mockUrl = `https://images.unsplash.com/photo-${Date.now()}?w=150&h=150&fit=crop&crop=face`;
+                        setEditForm(prev => ({ ...prev, profilePic: mockUrl }));
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Cover Photo
+              </label>
+              <div className="space-y-2">
+                <img
+                  src={editForm.coverPhoto || "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=300&fit=crop"}
+                  alt="Cover"
+                  className="w-full h-32 rounded-lg object-cover"
+                />
+                <label className="cursor-pointer inline-block px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                  <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Change Cover
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const mockUrl = `https://images.unsplash.com/photo-${Date.now()}?w=800&h=300&fit=crop`;
+                        setEditForm(prev => ({ ...prev, coverPhoto: mockUrl }));
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Basic Info */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                First Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="firstName"
+                value={editForm.firstName}
+                onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                placeholder="Enter first name"
+                required
+              />
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Middle Name
+              </label>
+              <input
+                type="text"
+                name="middleName"
+                value={editForm.middleName}
+                onChange={(e) => setEditForm(prev => ({ ...prev, middleName: e.target.value }))}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                placeholder="Enter middle name"
+              />
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Last Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="surname"
+                value={editForm.surname}
+                onChange={(e) => setEditForm(prev => ({ ...prev, surname: e.target.value }))}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                placeholder="Enter last name"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Contact Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={editForm.email}
+                onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                placeholder="Enter email address"
+                required
+              />
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Phone Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={editForm.phone}
+                onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                placeholder="Enter phone number"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              Address <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="address"
+              value={editForm.address}
+              onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
+              className={`w-full px-3 py-2 border rounded-md ${
+                darkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
+              placeholder="Enter full address"
+              required
+            />
+          </div>
+
+          {/* Personal Details */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Birthday <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="birthday"
+                value={editForm.birthday}
+                onChange={(e) => setEditForm(prev => ({ ...prev, birthday: e.target.value }))}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                required
+              />
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Age <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="age"
+                value={editForm.age}
+                onChange={(e) => setEditForm(prev => ({ ...prev, age: e.target.value }))}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                placeholder="Enter age"
+                min="13"
+                max="120"
+                required
+              />
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Sex <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="sex"
+                value={editForm.sex}
+                onChange={(e) => setEditForm(prev => ({ ...prev, sex: e.target.value }))}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                required
+              >
+                <option value="">Select sex</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              User Role <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="role"
+              value={editForm.role}
+              onChange={(e) => setEditForm(prev => ({ ...prev, role: e.target.value }))}
+              className={`w-full px-3 py-2 border rounded-md ${
+                darkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
+              required
+            >
+              <option value="">Select role</option>
+              <option value="buyer">Buyer</option>
+              <option value="seller">Seller</option>
+              <option value="both">Buyer & Seller</option>
+            </select>
+          </div>
+
+          {/* Password Section */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <h3 className={`text-lg font-medium mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Change Password
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={editForm.password}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, password: e.target.value }))}
+                  className={`w-full px-3 py-2 border rounded-md ${
+                    darkMode 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
+                  placeholder="Enter new password"
+                />
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={editForm.confirmPassword}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  className={`w-full px-3 py-2 border rounded-md ${
+                    darkMode 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
+                  placeholder="Confirm new password"
+                />
+              </div>
+            </div>
+            {editForm.password && editForm.confirmPassword && editForm.password !== editForm.confirmPassword && (
+              <p className="text-red-500 text-sm mt-2">Passwords do not match</p>
+            )}
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className={`px-4 py-2 border rounded-md ${
+                darkMode
+                  ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              } disabled:opacity-50`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onSave}
+              disabled={loading}
+              className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center"
+            >
+              {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>}
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, darkMode }) => {
   if (!isOpen) return null;
 
@@ -259,7 +626,7 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, darkMode }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className={`max-w-md w-full p-6 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="text-center">
-          <TrashIcon className="w-12 h-12 mx-auto mb-4 text-red-500" />
+          <Trash2 className="w-12 h-12 mx-auto mb-4 text-red-500" />
           <h2 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             Delete Post
           </h2>
@@ -291,6 +658,97 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, darkMode }) => {
   );
 };
 
+// Phone Verification Modal
+const PhoneVerificationModal = ({ isOpen, onClose, onVerify, verificationCode, setVerificationCode, darkMode }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`max-w-md w-full p-6 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        <div className="text-center">
+          <Phone className="w-12 h-12 mx-auto mb-4 text-green-500" />
+          <h2 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            Verify Phone Number
+          </h2>
+          <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            Enter the verification code sent to your phone (use 123456 for demo)
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <input
+            type="text"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md text-center text-lg ${
+              darkMode 
+                ? 'bg-gray-700 border-gray-600 text-white' 
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
+            placeholder="Enter 6-digit code"
+            maxLength="6"
+          />
+          
+          <div className="flex space-x-3">
+            <button
+              onClick={onClose}
+              className={`flex-1 px-4 py-2 border rounded-md ${
+                darkMode
+                  ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onVerify}
+              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            >
+              Verify
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// QR Code Modal
+const QRCodeModal = ({ isOpen, onClose, user, darkMode }) => {
+  if (!isOpen) return null;
+
+  const generateQRCode = () => {
+    const qrData = `https://animalapp.com/profile/${user.username}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`max-w-md w-full p-6 rounded-xl text-center ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          My QR Code
+        </h2>
+        <div className="mb-4">
+          <img
+            src={generateQRCode()}
+            alt="QR Code"
+            className="w-48 h-48 mx-auto border rounded-lg"
+          />
+        </div>
+        <p className={`text-sm mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          Scan this code to view my profile
+        </p>
+        <button
+          onClick={onClose}
+          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const UserProfile = ({ darkMode = false }) => {
   const [activeTab, setActiveTab] = useState('posts');
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -301,7 +759,7 @@ const UserProfile = ({ darkMode = false }) => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [averageRating, setAverageRating] = useState(4.2);
+  const [averageRating] = useState(4.2);
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [phoneVerified, setPhoneVerified] = useState(false);
@@ -309,19 +767,23 @@ const UserProfile = ({ darkMode = false }) => {
   
   // Edit form state
   const [editForm, setEditForm] = useState({
-    name: '',
+    firstName: '',
+    middleName: '',
+    surname: '',
     email: '',
     bio: '',
-    location: '',
+    address: '',
     website: '',
     phone: '',
     age: '',
-    gender: '',
-    birthdate: '',
-    userType: 'both',
+    sex: '',
+    birthday: '',
+    role: 'both',
     animalsInterested: [],
-    avatar: '',
-    coverPhoto: ''
+    profilePic: '',
+    coverPhoto: '',
+    password: '',
+    confirmPassword: ''
   });
 
   const [userPosts, setUserPosts] = useState([
@@ -358,25 +820,29 @@ const UserProfile = ({ darkMode = false }) => {
     }
   ]);
 
-  const { user: authUser, isAuthenticated, logout } = useAuth();
+  const { user: authUser, isAuthenticated } = useAuth();
 
   // Initialize form with user data
   useEffect(() => {
     if (isAuthenticated) {
       const userData = {
-        name: "Alex Johnson",
+        firstName: "Alex",
+        middleName: "",
+        surname: "Johnson",
         email: "alex@example.com",
         bio: "Animal lover and wildlife enthusiast. Welcome to my profile!",
-        location: "San Fernando, Central Luzon, PH",
+        address: "San Fernando, Central Luzon, PH",
         website: "alexwildlife.com",
         phone: "+63 912 345 6789",
         age: "28",
-        gender: "Male",
-        birthdate: "1995-06-15",
-        userType: "both",
+        sex: "male",
+        birthday: "1995-06-15",
+        role: "both",
         animalsInterested: ["Dogs", "Cats", "Birds"],
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-        coverPhoto: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=300&fit=crop"
+        profilePic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        coverPhoto: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=300&fit=crop",
+        password: '',
+        confirmPassword: ''
       };
       setEditForm(userData);
       setProfileData(userData);
@@ -385,15 +851,21 @@ const UserProfile = ({ darkMode = false }) => {
   }, [isAuthenticated]);
 
   const user = isAuthenticated && profileData ? {
-    ...profileData,
-    username: `@${(profileData.name || "user").toLowerCase().replace(/\s+/g, '')}`,
+    name: `${profileData.firstName} ${profileData.surname}`.trim(),
+    username: `@${(profileData.firstName || "user").toLowerCase()}${(profileData.surname || "").toLowerCase()}`,
+    bio: profileData.bio,
+    location: profileData.address,
+    avatar: profileData.profilePic,
+    coverPhoto: profileData.coverPhoto,
+    phone: profileData.phone,
     joinDate: "Joined June 2023",
     followers: 156,
     following: 89,
     posts: userPosts.length,
     rating: averageRating,
     totalReviews: 12,
-    isVerified: phoneVerified
+    isVerified: phoneVerified,
+    userType: profileData.role
   } : {
     name: "Guest User",
     username: "@guest",
@@ -402,7 +874,6 @@ const UserProfile = ({ darkMode = false }) => {
     coverPhoto: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=300&fit=crop",
     location: "Unknown",
     joinDate: "Not logged in",
-    website: "example.com",
     followers: 0,
     following: 0,
     posts: 0,
@@ -411,11 +882,6 @@ const UserProfile = ({ darkMode = false }) => {
     isVerified: false,
     userType: 'both'
   };
-
-  const animalOptions = [
-    "Dogs", "Cats", "Birds", "Fish", "Rabbits", "Hamsters", 
-    "Guinea Pigs", "Reptiles", "Horses", "Farm Animals", "Exotic Pets"
-  ];
 
   const reviews = [
     {
@@ -488,24 +954,18 @@ const UserProfile = ({ darkMode = false }) => {
     }));
   };
 
-  const handleAnimalInterestToggle = (animal) => {
-    setEditForm(prev => ({
-      ...prev,
-      animalsInterested: prev.animalsInterested.includes(animal)
-        ? prev.animalsInterested.filter(a => a !== animal)
-        : [...prev.animalsInterested, animal]
-    }));
-  };
-
-  const handleImageUpload = (type) => {
-    const mockImageUrl = type === 'avatar' 
-      ? `https://images.unsplash.com/photo-${Date.now()}?w=150&h=150&fit=crop&crop=face`
-      : `https://images.unsplash.com/photo-${Date.now()}?w=800&h=300&fit=crop`;
-    
-    setEditForm(prev => ({
-      ...prev,
-      [type]: mockImageUrl
-    }));
+  const handleImageChange = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      const mockImageUrl = type === 'profilePic' 
+        ? `https://images.unsplash.com/photo-${Date.now()}?w=150&h=150&fit=crop&crop=face`
+        : `https://images.unsplash.com/photo-${Date.now()}?w=800&h=300&fit=crop`;
+      
+      setEditForm(prev => ({
+        ...prev,
+        [type]: mockImageUrl
+      }));
+    }
   };
 
   const handleSaveProfile = () => {
@@ -528,47 +988,38 @@ const UserProfile = ({ darkMode = false }) => {
     }
   };
 
-  const generateQRCode = () => {
-    const qrData = `https://animalapp.com/profile/${user.username}`;
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
-  };
-
   const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => {
       const starValue = index + 1;
       
       if (starValue <= rating) {
-        return (
-          <StarIconSolid key={index} className="w-5 h-5 text-yellow-400" />
-        );
+        return <Star key={index} className="w-5 h-5 text-yellow-400 fill-current" />;
       }
       
       if (starValue - rating < 1) {
         const percent = Math.round((rating - Math.floor(rating)) * 100);
         return (
           <div key={index} className="relative w-5 h-5">
-            <StarIconSolid className="w-5 h-5 absolute text-gray-300" />
+            <Star className="w-5 h-5 absolute text-gray-300 fill-current" />
             <div 
               className="absolute overflow-hidden" 
               style={{ width: `${percent}%`, height: '100%' }}
             >
-              <StarIconSolid className="w-5 h-5 text-yellow-400" />
+              <Star className="w-5 h-5 text-yellow-400 fill-current" />
             </div>
           </div>
         );
       }
       
-      return (
-        <StarIconSolid key={index} className="w-5 h-5 text-gray-300" />
-      );
+      return <Star key={index} className="w-5 h-5 text-gray-300 fill-current" />;
     });
   };
 
   const renderUserTypeBadge = (userType) => {
     const badges = {
-      buyer: { icon: ShoppingCartIcon, text: 'Buyer', color: 'blue' },
-      seller: { icon: BuildingStorefrontIcon, text: 'Seller', color: 'green' },
-      both: { icon: UserIcon, text: 'Buyer & Seller', color: 'purple' }
+      buyer: { icon: ShoppingCart, text: 'Buyer', color: 'blue' },
+      seller: { icon: Store, text: 'Seller', color: 'green' },
+      both: { icon: Users, text: 'Buyer & Seller', color: 'purple' }
     };
 
     const badge = badges[userType] || badges.both;
@@ -593,7 +1044,7 @@ const UserProfile = ({ darkMode = false }) => {
         {!isAuthenticated ? (
           <div className={`text-center py-20 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg`}>
             <div className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              <UserCircleIcon className="w-20 h-20 mx-auto mb-4 text-gray-400" />
+              <User className="w-20 h-20 mx-auto mb-4 text-gray-400" />
               <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 Profile Access Required
               </h2>
@@ -618,19 +1069,14 @@ const UserProfile = ({ darkMode = false }) => {
           </div>
         ) : (
           <>
-            {/* Clean Cover Photo - No Dark Overlay */}
+            {/* Cover Photo */}
             <div className="relative h-48 sm:h-64 md:h-80 rounded-t-xl overflow-hidden shadow-lg">
               <img
                 src={user.coverPhoto}
                 alt="Cover"
                 className="w-full h-full object-cover"
               />
-              <button 
-                onClick={() => handleImageUpload('coverPhoto')}
-                className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-full hover:bg-white transition-all duration-200 shadow-lg"
-              >
-                <CameraIcon className="w-5 h-5" />
-              </button>
+            
             </div>
 
             {/* Profile Header */}
@@ -645,12 +1091,7 @@ const UserProfile = ({ darkMode = false }) => {
                     alt={user.name}
                     className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full border-4 border-white object-cover shadow-lg"
                   />
-                  <button 
-                    onClick={() => handleImageUpload('avatar')}
-                    className="absolute bottom-2 right-2 bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors duration-200 shadow-lg"
-                  >
-                    <CameraIcon className="w-4 h-4" />
-                  </button>
+              
                 </div>
               </div>
 
@@ -665,7 +1106,7 @@ const UserProfile = ({ darkMode = false }) => {
                         {user.name}
                       </h1>
                       {user.isVerified && (
-                        <ShieldCheckSolid className="w-6 h-6 text-blue-500" title="Verified Account" />
+                        <ShieldCheck className="w-6 h-6 text-blue-500 fill-current" title="Verified Account" />
                       )}
                     </div>
                     <p className={`text-lg ${
@@ -674,57 +1115,8 @@ const UserProfile = ({ darkMode = false }) => {
                       {user.username}
                     </p>
                     
-                    {/* User Type Badge */}
                     <div className="flex justify-center sm:justify-start mt-2">
                       {renderUserTypeBadge(user.userType)}
-                    </div>
-                    
-                    {/* Animals Interested */}
-                    {user.animalsInterested && user.animalsInterested.length > 0 && (
-                      <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
-                        {user.animalsInterested.slice(0, 3).map((animal, index) => (
-                          <span key={index} className={`text-xs px-3 py-1 rounded-full font-medium ${
-                            darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
-                          }`}>
-                            {animal}
-                          </span>
-                        ))}
-                        {user.animalsInterested.length > 3 && (
-                          <span className={`text-xs px-3 py-1 rounded-full font-medium ${
-                            darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
-                          }`}>
-                            +{user.animalsInterested.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Stats Row */}
-                    <div className="mt-4 flex justify-center sm:justify-start space-x-6">
-                      <div className="text-center">
-                        <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {user.posts}
-                        </div>
-                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Posts
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {user.followers}
-                        </div>
-                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Followers
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {user.following}
-                        </div>
-                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Following
-                        </div>
-                      </div>
                     </div>
                   </div>
                   
@@ -737,381 +1129,344 @@ const UserProfile = ({ darkMode = false }) => {
                           : 'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300'
                       }`}
                     >
-                      <QrCodeIcon className="w-4 h-4 inline mr-2" />
+                      <QrCode className="w-4 h-4 inline mr-2" />
                       QR Code
                     </button>
                     <button
                       onClick={() => setShowEditProfile(true)}
                       className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
                     >
-                      <PencilIcon className="w-4 h-4 inline mr-2" />
+                      <Edit className="w-4 h-4 inline mr-2" />
                       Edit Profile
                     </button>
                   </div>
                 </div>
 
                 {/* Bio */}
-                <p className={`mt-4 text-base leading-relaxed ${
-                  darkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  {user.bio}
-                </p>
+                <div className="mt-4">
+                  <p className={`text-base leading-relaxed ${
+                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    {user.bio}
+                  </p>
+                </div>
 
-                {/* Details */}
-                <div className={`mt-4 flex flex-wrap gap-4 text-sm ${
-                  darkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  <div className="flex items-center">
-                    <MapPinIcon className="w-4 h-4 mr-1" />
-                    {user.location}
+                {/* Profile Stats */}
+               
+                {/* Additional Info */}
+                <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm">
+                  <div className={`flex items-center space-x-1 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    <MapPin className="w-4 h-4" />
+                    <span>{user.location}</span>
                   </div>
-                  <div className="flex items-center">
-                    <CalendarIcon className="w-4 h-4 mr-1" />
-                    {user.joinDate}
+                  <div className={`flex items-center space-x-1 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    <Calendar className="w-4 h-4" />
+                    <span>{user.joinDate}</span>
                   </div>
-                  {user.phone && (
-                    <div className="flex items-center">
-                      <PhoneIcon className="w-4 h-4 mr-1" />
-                      {user.phone}
-                      {user.isVerified && <CheckIcon className="w-3 h-3 ml-1 text-green-500" />}
-                    </div>
+                  {!user.isVerified && (
+                    <button
+                      onClick={() => setShowPhoneVerification(true)}
+                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      <Phone className="w-4 h-4" />
+                      <span>Verify Phone</span>
+                    </button>
                   )}
                 </div>
-
-                {/* Enhanced Rating Section */}
-                <div className="mt-6 flex justify-center">
-                  <div className={`px-8 py-4 rounded-xl ${
-                    darkMode ? 'bg-gray-700/50' : 'bg-gray-50'
+                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center max-w-md mx-auto sm:mx-0">
+                 
+                  
+                  <div className={`p-4 rounded-lg ${
+                    darkMode ? 'bg-gray-700' : 'bg-gray-50'
                   }`}>
-                    <div className="flex items-center justify-center mb-2">
-                      {renderStars(user.rating).map((star, index) => (
-                        <div key={index} className="transform scale-150 mx-1">
-                          {star}
-                        </div>
-                      ))}
+                    <div className="flex items-center justify-center space-x-1 mb-1">
+                      {renderStars(user.rating)}
                     </div>
-                    <div className="text-center">
-                      <span className={`text-3xl font-bold ${
-                        darkMode ? 'text-green-400' : 'text-green-600'
-                      }`}>
-                        {user.rating.toFixed(1)}
-                      </span>
-                      <p className={`text-sm mt-1 ${
-                        darkMode ? 'text-gray-400' : 'text-gray-600'
-                      }`}>
-                        {user.totalReviews > 0 
-                          ? `Based on ${user.totalReviews} ${user.totalReviews === 1 ? 'review' : 'reviews'}`
-                          : 'No reviews yet'}
-                      </p>
+                    <div className={`text-sm ${
+                      darkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+                      {user.rating.toFixed(1)} ({user.totalReviews} reviews)
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
 
-            {/* Clean Tabs Design */}
-            <div className={`mt-6 border-b transition-colors duration-300 ${
-              darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-            } rounded-t-xl shadow-lg`}>
-              <div className="flex justify-center sm:justify-start px-6">
-                {[
-                  { key: 'posts', label: 'Posts' },
-                  { key: 'listings', label: 'Listings' },
-                  { key: 'reviews', label: 'Reviews' }
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`px-6 py-4 font-medium border-b-2 transition-all duration-300 ${
-                      activeTab === tab.key
-                        ? darkMode
-                          ? 'border-green-400 text-green-400'
-                          : 'border-green-500 text-green-600'
-                        : darkMode
-                          ? 'border-transparent text-gray-400 hover:text-gray-300'
-                          : 'border-transparent text-gray-600 hover:text-gray-700'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+            {/* Tabs */}
+            <div className={`mt-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg`}>
+              <div className="border-b border-gray-200 dark:border-gray-700">
+                <nav className="flex space-x-8 px-6">
+                  {['posts', 'reviews'].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                        activeTab === tab
+                          ? 'border-green-500 text-green-600'
+                          : `border-transparent ${
+                              darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
+                            } hover:border-gray-300`
+                      }`}
+                    >
+                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                  ))}
+                </nav>
               </div>
-            </div>
 
-            {/* Content Area */}
-            <div className={`transition-colors duration-300 rounded-b-xl shadow-lg ${
-              darkMode ? 'bg-gray-900' : 'bg-gray-50'
-            }`}>
-              {activeTab === 'posts' ? (
-                <div className="p-6">
-                  <h3 className={`text-xl font-semibold mb-6 ${
-                    darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    Recent Posts ({userPosts.length})
-                  </h3>
+              <div className="p-6">
+                {activeTab === 'posts' && (
                   <div className="space-y-6">
-                    {userPosts.map((post) => (
-                      <div key={post.id} className={`rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ${
-                        darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'
-                      }`}>
-                        {/* Post Header */}
-                        <div className="px-6 pt-4 pb-2 flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <img 
-                              src={user.avatar} 
-                              alt={user.name}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                            <div>
-                              <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                {user.name}
-                              </h4>
-                              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {post.timestamp}
-                              </p>
+                    {userPosts.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className={`text-gray-400 mb-4`}>
+                          <Edit className="w-12 h-12 mx-auto" />
+                        </div>
+                        <h3 className={`text-lg font-medium mb-2 ${
+                          darkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
+                          No posts yet
+                        </h3>
+                        <p className={`text-sm ${
+                          darkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
+                          Start sharing your animal experiences!
+                        </p>
+                      </div>
+                    ) : (
+                      userPosts.map((post) => (
+                        <div
+                          key={post.id}
+                          className={`border rounded-lg p-6 transition-colors duration-300 ${
+                            darkMode ? 'border-gray-700 bg-gray-700/50' : 'border-gray-200 bg-gray-50/50'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center space-x-3">
+                              <img
+                                src={user.avatar}
+                                alt={user.name}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                              <div>
+                                <div className="flex items-center space-x-2">
+                                  <h3 className={`font-medium ${
+                                    darkMode ? 'text-white' : 'text-gray-900'
+                                  }`}>
+                                    {user.name}
+                                  </h3>
+                                  {user.isVerified && (
+                                    <ShieldCheck className="w-4 h-4 text-blue-500 fill-current" />
+                                  )}
+                                </div>
+                                <p className={`text-sm ${
+                                  darkMode ? 'text-gray-400' : 'text-gray-600'
+                                }`}>
+                                  {post.timestamp}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              post.animalInfo.availability === 'available'
-                                ? darkMode ? 'bg-green-900/50 text-green-400' : 'bg-green-100 text-green-700'
-                                : darkMode ? 'bg-red-900/50 text-red-400' : 'bg-red-100 text-red-700'
-                            }`}>
-                              {post.animalInfo.availability === 'available' ? 'Available' : 'Sold'}
-                            </div>
-                            <PostOptionsDropdown 
+                            <PostOptionsDropdown
                               postId={post.id}
                               onEdit={handleEditPost}
                               onDelete={handleDeletePost}
                               darkMode={darkMode}
                             />
                           </div>
-                        </div>
-                        
-                        {/* Post Content */}
-                        <div className="px-6 pb-4">
-                          <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {post.animalInfo.title}
-                          </h3>
-                          <div className="flex items-center space-x-3 mb-3">
-                            <span className={`text-lg font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                              {post.animalInfo.price}
-                            </span>
-                            <span className={`text-sm px-3 py-1 rounded-full ${
-                              darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
-                            }`}>
-                              {post.animalInfo.type}
-                            </span>
-                          </div>
-                          
-                          <p className={`text-sm leading-relaxed mb-4 ${
+
+                          {post.animalInfo && (
+                            <div className={`mb-4 p-4 rounded-lg ${
+                              darkMode ? 'bg-gray-600' : 'bg-white'
+                            } border ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                              <h4 className={`font-semibold text-lg mb-2 ${
+                                darkMode ? 'text-white' : 'text-gray-900'
+                              }`}>
+                                {post.animalInfo.title}
+                              </h4>
+                              <div className="flex items-center justify-between">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {post.animalInfo.type}
+                                </span>
+                                <span className={`text-lg font-bold ${
+                                  darkMode ? 'text-green-400' : 'text-green-600'
+                                }`}>
+                                  {post.animalInfo.price}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          <p className={`mb-4 text-base leading-relaxed ${
                             darkMode ? 'text-gray-300' : 'text-gray-700'
                           }`}>
                             {post.content}
                           </p>
-                        </div>
-                        
-                        {/* Post Images */}
-                        {post.images && post.images.length > 0 && (
-                          <div className="relative">
-                            {post.images.length === 1 ? (
-                              <img
-                                src={post.images[0]}
-                                alt={post.animalInfo.title}
-                                className="w-full h-80 object-cover"
-                              />
-                            ) : (
-                              <div className="grid grid-cols-2 gap-1">
-                                {post.images.slice(0, 2).map((image, index) => (
-                                  <img
-                                    key={index}
-                                    src={image}
-                                    alt={`${post.animalInfo.title} ${index + 1}`}
-                                    className="w-full h-60 object-cover"
-                                  />
-                                ))}
-                              </div>
-                            )}
+
+                          {post.images && post.images.length > 0 && (
+                            <div className={`grid gap-2 mb-4 ${
+                              post.images.length === 1 ? 'grid-cols-1' : 
+                              post.images.length === 2 ? 'grid-cols-2' : 
+                              'grid-cols-2 sm:grid-cols-3'
+                            }`}>
+                              {post.images.map((image, index) => (
+                                <img
+                                  key={index}
+                                  src={image}
+                                  alt={`Post image ${index + 1}`}
+                                  className="w-full h-48 object-cover rounded-lg"
+                                />
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
+                            <div className="flex items-center space-x-6">
+                              <button
+                                onClick={() => toggleLike(post.id)}
+                                className={`flex items-center space-x-2 transition-colors duration-200 ${
+                                  likedPosts.has(post.id)
+                                    ? 'text-red-500 hover:text-red-600'
+                                    : darkMode
+                                    ? 'text-gray-400 hover:text-red-500'
+                                    : 'text-gray-500 hover:text-red-500'
+                                }`}
+                              >
+                                <Heart className={`w-5 h-5 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
+                                <span className="font-medium">{post.likes}</span>
+                              </button>
+                              <button className={`flex items-center space-x-2 transition-colors duration-200 ${
+                                darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
+                              }`}>
+                                <MessageCircle className="w-5 h-5" />
+                                <span className="font-medium">{post.comments}</span>
+                              </button>
+                            </div>
+                            <button className={`flex items-center space-x-2 transition-colors duration-200 ${
+                              darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
+                            }`}>
+                              <Share className="w-5 h-5" />
+                              <span className="font-medium">Share</span>
+                            </button>
                           </div>
-                        )}
-                        
-                        {/* Post Actions */}
-                        <div className={`px-6 py-4 flex items-center justify-between border-t ${
-                          darkMode ? 'border-gray-700' : 'border-gray-100'
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'reviews' && (
+                  <div className="space-y-6">
+                    {reviews.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className={`text-gray-400 mb-4`}>
+                          <Star className="w-12 h-12 mx-auto" />
+                        </div>
+                        <h3 className={`text-lg font-medium mb-2 ${
+                          darkMode ? 'text-gray-300' : 'text-gray-700'
                         }`}>
-                          <div className="flex items-center space-x-6">
-                            <button 
-                              onClick={() => toggleLike(post.id)}
-                              className={`flex items-center space-x-2 group transition-colors ${
-                                likedPosts.has(post.id)
-                                  ? 'text-red-500'
-                                  : darkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-500 hover:text-red-500'
-                              }`}
-                            >
-                              {likedPosts.has(post.id) ? (
-                                <HeartIconSolid className="w-5 h-5" />
-                              ) : (
-                                <HeartIcon className="w-5 h-5 group-hover:fill-current" />
-                              )}
-                              <span className="text-sm font-medium">{post.likes}</span>
-                            </button>
-                            
-                            <button className={`flex items-center space-x-2 group transition-colors ${
-                              darkMode ? 'text-gray-400 hover:text-blue-400' : 'text-gray-500 hover:text-blue-500'
-                            }`}>
-                              <ChatBubbleOvalLeftIcon className="w-5 h-5" />
-                              <span className="text-sm font-medium">{post.comments}</span>
-                            </button>
-                            
-                            <button 
-                              onClick={() => {
-                                if (navigator.share) {
-                                  navigator.share({
-                                    title: post.animalInfo.title,
-                                    text: post.content,
-                                    url: window.location.href
-                                  }).catch(() => {
-                                    navigator.clipboard.writeText(window.location.href);
-                                    alert('Link copied to clipboard!');
-                                  });
-                                } else {
-                                  navigator.clipboard.writeText(window.location.href);
-                                  alert('Link copied to clipboard!');
-                                }
-                              }}
-                              className={`flex items-center space-x-2 group transition-colors ${
-                                darkMode ? 'text-gray-400 hover:text-green-400' : 'text-gray-500 hover:text-green-500'
-                              }`}
-                            >
-                              <ShareIcon className="w-5 h-5" />
-                              <span className="text-sm font-medium">Share</span>
-                            </button>
-                          </div>
-                        </div>
+                          No reviews yet
+                        </h3>
+                        <p className={`text-sm ${
+                          darkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
+                          Reviews from other users will appear here.
+                        </p>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              ) : activeTab === 'listings' ? (
-                <div className="p-6">
-                  <h3 className={`text-xl font-semibold mb-6 ${
-                    darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    My Listings ({userPosts.length})
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {userPosts.map((post) => (
-                      <div key={post.id} className={`rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ${
-                        darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'
-                      }`}>
-                        <div className="relative h-48">
-                          <img
-                            src={post.images[0]}
-                            alt={post.animalInfo.title}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${
-                            post.animalInfo.availability === 'available'
-                              ? 'bg-green-500 text-white'
-                              : 'bg-red-500 text-white'
-                          }`}>
-                            {post.animalInfo.availability === 'available' ? 'Available' : 'Sold'}
-                          </div>
-                          <div className="absolute top-3 left-3">
-                            <PostOptionsDropdown 
-                              postId={post.id}
-                              onEdit={handleEditPost}
-                              onDelete={handleDeletePost}
-                              darkMode={darkMode}
+                    ) : (
+                      reviews.map((review) => (
+                        <div
+                          key={review.id}
+                          className={`border rounded-lg p-6 transition-colors duration-300 ${
+                            darkMode ? 'border-gray-700 bg-gray-700/50' : 'border-gray-200 bg-gray-50/50'
+                          }`}
+                        >
+                          <div className="flex items-start space-x-4">
+                            <img
+                              src={review.reviewerAvatar}
+                              alt={review.reviewer}
+                              className="w-12 h-12 rounded-full object-cover"
                             />
-                          </div>
-                        </div>
-                        <div className="p-4">
-                          <h4 className={`font-semibold text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {post.animalInfo.title}
-                          </h4>
-                          <p className={`text-sm mb-3 line-clamp-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                            {post.content}
-                          </p>
-                          <div className="flex justify-between items-center">
-                            <span className={`font-bold text-lg ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                              {post.animalInfo.price}
-                            </span>
-                            <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                              {post.timestamp}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="p-6">
-                  <h3 className={`text-xl font-semibold mb-6 ${
-                    darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    Reviews & Feedback ({reviews.length})
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    {reviews.map((review) => (
-                      <div key={review.id} className={`rounded-xl border p-6 transition-colors duration-300 ${
-                        darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-                      }`}>
-                        <div className="flex items-start space-x-4">
-                          <img
-                            src={review.reviewerAvatar}
-                            alt={review.reviewer}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className={`font-semibold ${
-                                darkMode ? 'text-white' : 'text-gray-900'
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className={`font-medium ${
+                                  darkMode ? 'text-white' : 'text-gray-900'
+                                }`}>
+                                  {review.reviewer}
+                                </h4>
+                                <span className={`text-sm ${
+                                  darkMode ? 'text-gray-400' : 'text-gray-600'
+                                }`}>
+                                  {review.timestamp}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1 mb-3">
+                                {renderStars(review.rating)}
+                                <span className={`ml-2 text-sm font-medium ${
+                                  darkMode ? 'text-gray-300' : 'text-gray-700'
+                                }`}>
+                                  {review.rating.toFixed(1)}
+                                </span>
+                              </div>
+                              <p className={`text-base leading-relaxed ${
+                                darkMode ? 'text-gray-300' : 'text-gray-700'
                               }`}>
-                                {review.reviewer}
-                              </h4>
-                              <span className={`text-sm ${
-                                darkMode ? 'text-gray-400' : 'text-gray-500'
-                              }`}>
-                                {review.timestamp}
-                              </span>
+                                {review.comment}
+                              </p>
                             </div>
-                            
-                            <div className="flex items-center mb-3">
-                              {renderStars(review.rating)}
-                              <span className={`ml-2 text-sm font-medium ${
-                                darkMode ? 'text-green-400' : 'text-green-600'
-                              }`}>
-                                {review.rating.toFixed(1)}
-                              </span>
-                            </div>
-                            
-                            <p className={`text-sm leading-relaxed ${
-                              darkMode ? 'text-gray-300' : 'text-gray-700'
-                            }`}>
-                              {review.comment}
-                            </p>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </>
         )}
 
         {/* Modals */}
+        <LoginModal 
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          darkMode={darkMode}
+        />
+
+        <EditProfileModal
+          isOpen={showEditProfile}
+          onClose={() => setShowEditProfile(false)}
+          editForm={editForm}
+          setEditForm={setEditForm}
+          onSave={handleSaveProfile}
+          loading={loading}
+          darkMode={darkMode}
+        />
+
+        <QRCodeModal
+          isOpen={showQRCode}
+          onClose={() => setShowQRCode(false)}
+          user={user}
+          darkMode={darkMode}
+        />
+
+        <PhoneVerificationModal
+          isOpen={showPhoneVerification}
+          onClose={() => setShowPhoneVerification(false)}
+          onVerify={handlePhoneVerification}
+          verificationCode={verificationCode}
+          setVerificationCode={setVerificationCode}
+          darkMode={darkMode}
+        />
+
         <EditPostModal
           isOpen={showEditPost}
-          onClose={() => {
-            setShowEditPost(false);
-            setSelectedPost(null);
-          }}
+          onClose={() => setShowEditPost(false)}
           post={selectedPost}
           onSave={handleSaveEditPost}
           darkMode={darkMode}
@@ -1119,419 +1474,8 @@ const UserProfile = ({ darkMode = false }) => {
 
         <DeleteConfirmModal
           isOpen={showDeleteConfirm}
-          onClose={() => {
-            setShowDeleteConfirm(false);
-            setSelectedPost(null);
-          }}
+          onClose={() => setShowDeleteConfirm(false)}
           onConfirm={confirmDeletePost}
-          darkMode={darkMode}
-        />
-
-        {/* Edit Profile Modal */}
-        {showEditProfile && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className={`max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-xl ${
-              darkMode ? 'bg-gray-800' : 'bg-white'
-            }`}>
-              <div className="sticky top-0 bg-inherit border-b border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center justify-between">
-                  <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Edit Profile
-                  </h2>
-                  <button
-                    onClick={() => setShowEditProfile(false)}
-                    className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                      darkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}
-                  >
-                    <XMarkIcon className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-6 space-y-6">
-                {/* Profile Pictures Section */}
-                <div className="space-y-4">
-                  <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Profile Pictures
-                  </h3>
-                  
-                  {/* Avatar */}
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={editForm.avatar || user.avatar}
-                      alt="Avatar preview"
-                      className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-                    />
-                    <div>
-                      <label className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        Profile Picture
-                      </label>
-                      <div className="mt-1">
-                        <button
-                          onClick={() => handleImageUpload('avatar')}
-                          className="text-sm bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700"
-                        >
-                          Change Avatar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Cover Photo */}
-                  <div className="space-y-2">
-                    <label className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Cover Photo
-                    </label>
-                    <div className="relative h-32 rounded-lg overflow-hidden">
-                      <img
-                        src={editForm.coverPhoto || user.coverPhoto}
-                        alt="Cover preview"
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={() => handleImageUpload('coverPhoto')}
-                        className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white hover:bg-opacity-70 transition-opacity"
-                      >
-                        <CameraIcon className="w-6 h-6 mr-2" />
-                        Change Cover
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Basic Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={editForm.name}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        darkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={editForm.email}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        darkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                      placeholder="Enter your email"
-                    />
-                  </div>
-
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Phone Number
-                    </label>
-                    <div className="flex">
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={editForm.phone}
-                        onChange={handleInputChange}
-                        className={`flex-1 px-3 py-2 border rounded-l-md ${
-                          darkMode 
-                            ? 'bg-gray-700 border-gray-600 text-white' 
-                            : 'bg-white border-gray-300 text-gray-900'
-                        }`}
-                        placeholder="Enter phone number"
-                      />
-                      <button
-                        onClick={() => setShowPhoneVerification(true)}
-                        className={`px-3 py-2 border-l-0 border rounded-r-md ${
-                          phoneVerified 
-                            ? 'bg-green-600 text-white border-green-600' 
-                            : darkMode
-                              ? 'bg-gray-600 text-gray-300 border-gray-600 hover:bg-gray-500'
-                              : 'bg-gray-200 text-gray-700 border-gray-300 hover:bg-gray-300'
-                        }`}
-                        disabled={phoneVerified}
-                      >
-                        {phoneVerified ? <CheckIcon className="w-4 h-4" /> : 'Verify'}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Age
-                    </label>
-                    <input
-                      type="number"
-                      name="age"
-                      value={editForm.age}
-                      onChange={handleInputChange}
-                      min="16"
-                      max="100"
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        darkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                      placeholder="Enter your age"
-                    />
-                  </div>
-                </div>
-
-                {/* Location & Bio */}
-                <div className="space-y-4">
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      name="location"
-                      value={editForm.location}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        darkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                      placeholder="Enter your location"
-                    />
-                  </div>
-
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Bio
-                    </label>
-                    <textarea
-                      name="bio"
-                      value={editForm.bio}
-                      onChange={handleInputChange}
-                      rows="3"
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        darkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                      placeholder="Tell us about yourself and your interest in animals"
-                    />
-                  </div>
-                </div>
-
-                {/* User Type */}
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    I am interested in:
-                  </label>
-                  <div className="space-y-2">
-                    {[
-                      { value: 'buyer', label: 'Buying animals', icon: ShoppingCartIcon },
-                      { value: 'seller', label: 'Selling animals', icon: BuildingStorefrontIcon },
-                      { value: 'both', label: 'Both buying and selling', icon: UserIcon }
-                    ].map((option) => {
-                      const Icon = option.icon;
-                      return (
-                        <label key={option.value} className="flex items-center space-x-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="userType"
-                            value={option.value}
-                            checked={editForm.userType === option.value}
-                            onChange={handleInputChange}
-                            className="text-green-600"
-                          />
-                          <Icon className="w-5 h-5 text-gray-500" />
-                          <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
-                            {option.label}
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Animals Interested */}
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Animals I'm interested in:
-                  </label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {animalOptions.map((animal) => (
-                      <label key={animal} className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={editForm.animalsInterested.includes(animal)}
-                          onChange={() => handleAnimalInterestToggle(animal)}
-                          className="text-green-600"
-                        />
-                        <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          {animal}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={() => setShowEditProfile(false)}
-                    className={`px-4 py-2 border rounded-md ${
-                      darkMode
-                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveProfile}
-                    disabled={loading}
-                    className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-                  >
-                    {loading ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Phone Verification Modal */}
-        {showPhoneVerification && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className={`max-w-md w-full p-6 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              <div className="text-center">
-                <PhoneIcon className="w-12 h-12 mx-auto mb-4 text-green-600" />
-                <h2 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Verify Phone Number
-                </h2>
-                <p className={`text-sm mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  We've sent a verification code to {editForm.phone}
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Verification Code
-                  </label>
-                  <input
-                    type="text"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-md text-center ${
-                      darkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
-                    placeholder="Enter 6-digit code"
-                    maxLength="6"
-                  />
-                  <p className="text-xs text-gray-500 mt-1 text-center">
-                    Demo: Use code "123456"
-                  </p>
-                </div>
-
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => setShowPhoneVerification(false)}
-                    className={`flex-1 px-4 py-2 border rounded-md ${
-                      darkMode
-                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handlePhoneVerification}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                  >
-                    Verify
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* QR Code Modal */}
-        {showQRCode && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className={`max-w-sm w-full p-6 rounded-xl text-center ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              <div className="mb-4">
-                <QrCodeIcon className="w-8 h-8 mx-auto mb-2 text-green-600" />
-                <h2 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  My Profile QR Code
-                </h2>
-                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Share this QR code for others to view your profile
-                </p>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg inline-block mb-4">
-                <img
-                  src={generateQRCode()}
-                  alt="Profile QR Code"
-                  className="w-48 h-48"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.onload = function() {
-                      canvas.width = img.width;
-                      canvas.height = img.height;
-                      ctx.drawImage(img, 0, 0);
-                      const link = document.createElement('a');
-                      link.download = `${user.username}-qr-code.png`;
-                      link.href = canvas.toDataURL();
-                      link.click();
-                    };
-                    img.src = generateQRCode();
-                  }}
-                  className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                >
-                  Download QR Code
-                </button>
-                <button
-                  onClick={() => setShowQRCode(false)}
-                  className={`w-full px-4 py-2 border rounded-md ${
-                    darkMode
-                      ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
-                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Login Modal */}
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
           darkMode={darkMode}
         />
       </div>

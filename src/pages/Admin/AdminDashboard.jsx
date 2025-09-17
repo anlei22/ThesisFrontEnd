@@ -21,7 +21,7 @@ import {
 import Dashboard from "./AdminDashboardComponents/Dashboard";
 import Listing from "./AdminDashboardComponents/Listing"
 import Notifications from "./AdminDashboardComponents/Notifications"
-import UserAccountManagement from "./AdminDashboardComponents/UserAccountManagement"
+import UserAccountManagement from "./AdminDashboardComponents/AccountManagement"
 import AdminAccountManagement from "./AdminDashboardComponents/Register"
 
 // Logo Component
@@ -287,10 +287,11 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-72 pt-16 h-[calc(100vh-4rem)] overflow-y-auto">
+      <main className="lg:ml-72 pt-16 h-[calc(100vh)] overflow-y-auto">
         <div className="">
         
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[600px]">
+         <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[calc(94vh)]">
+
             <div className="p-4 sm:p-6">
               {SelectedComponent ? <SelectedComponent /> : (
                 <div className="flex items-center justify-center h-64 text-gray-500">

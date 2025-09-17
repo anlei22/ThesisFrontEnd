@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   LineChart,
@@ -33,43 +32,39 @@ const Dashboard = () => {
     { id: 7, createdAt: "2025-12-15" },
   ];
 
-  // Generate monthly users growth from user createdAt
-
-
   // -------------------------
   // Listings by Category
   // -------------------------
-const listingsData = [
-  { category: "Carabao", listings: 25 },
-  { category: "Cow", listings: 30 },
-  { category: "Goat", listings: 35 },
-  { category: "Chicken", listings: 30 },
-  { category: "Pig", listings: 45 },
-  { category: "Duck", listings: 20 },
-  { category: "Tilapia", listings: 18 },
-  { category: "Bangus", listings: 22 },
-  { category: "Rabbit", listings: 15 },
-];
+  const listingsData = [
+    { category: "Carabao", listings: 25 },
+    { category: "Cow", listings: 30 },
+    { category: "Goat", listings: 35 },
+    { category: "Chicken", listings: 30 },
+    { category: "Pig", listings: 45 },
+    { category: "Duck", listings: 20 },
+    { category: "Tilapia", listings: 18 },
+    { category: "Bangus", listings: 22 },
+    { category: "Rabbit", listings: 15 },
+  ];
 
   // -------------------------
   // User Roles Distribution
   // -------------------------
-const userRoleData = [
-  { name: "Admin", value: 15 },
-  { name: "Seller", value: 35 },
-  { name: "Buyer", value: 50 },
-  { name: "Pending Approve", value: 20 },
-  { name: "Disapprove", value: 10 },
-];
+  const userRoleData = [
+    { name: "Admin", value: 15 },
+    { name: "Seller", value: 35 },
+    { name: "Buyer", value: 50 },
+    { name: "Pending Approve", value: 20 },
+    { name: "Disapprove", value: 10 },
+  ];
 
-const COLORS = [
-  "#1D4ED8", // Admin - Dark Blue (authority, trust)
-  "#10B981", // Seller - Green (growth, money)
-  "#0ff50bff", // Buyer - Orange/Yellow (activity, purchase)
-  "#EAB308", // Pending Approve - Amber/Gold (waiting, caution)
-  "#DC2626", // Disapprove - Red (error, rejection)
-];
-
+  const COLORS = [
+    "#1D4ED8", // Admin - Dark Blue
+    "#10B981", // Seller - Green
+    "#F59E0B", // Buyer - Orange
+    "#EAB308", // Pending Approve - Amber
+    "#DC2626", // Disapprove - Red
+  ];
 
   // -------------------------
   // Icons
@@ -101,14 +96,14 @@ const COLORS = [
 
   return (
     <div className="space-y-8">
-     <div className="mb-4">
-  <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
-    Dashboard
-  </h2>
-  <p className="mt-1 text-gray-600 text-sm sm:text-base">
-    Overview of your animal marketplace
-  </p>
-</div>
+      <div className="mb-4">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          Dashboard
+        </h2>
+        <p className="mt-1 text-gray-600 text-sm sm:text-base">
+          Overview of your animal marketplace
+        </p>
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -152,32 +147,85 @@ const COLORS = [
         </div>
       </div>
 
- {/* Listings by Category Chart */}
-      <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
-        <h3 className="text-lg font-bold text-gray-800 mb-4">Listings by Category</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={listingsData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="category" angle={-30} textAnchor="end" interval={0} height={80} />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="listings" fill="#10B981" radius={[6, 6, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Listings by Category Chart */}
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">Listings by Category</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={listingsData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="category" angle={-30} textAnchor="end" interval={0} height={80} />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="listings" fill="#10B981" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* User Roles Donut Chart */}
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">User Roles Distribution</h3>
+          <div className="flex items-center">
+            {/* Left side - Statistics */}
+            <div className="w-1/2 pr-4">
+              <div className="space-y-3">
+                {userRoleData.map((item, index) => {
+                  const total = userRoleData.reduce((sum, data) => sum + data.value, 0);
+                  const percentage = ((item.value / total) * 100).toFixed(1);
+                  return (
+                    <div key={item.name} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center space-x-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: COLORS[index] }}
+                        ></div>
+                        <span className="text-gray-700">{item.name}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-semibold text-gray-900">{item.value}</span>
+                        <span className="text-gray-500">({percentage}%)</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Right side - Donut Chart */}
+            <div className="w-1/2">
+              <ResponsiveContainer width="100%" height={240}>
+                <PieChart>
+                  <Pie
+                    data={userRoleData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    innerRadius={45}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {userRoleData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value, name) => [value, name]}
+                    labelStyle={{ color: '#374151' }}
+                    contentStyle={{ 
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
       </div>
-
-
-
-
-
-    
-
-     
     </div>
   );
 };
 
 export default Dashboard;
-
-
-
