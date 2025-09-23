@@ -84,17 +84,7 @@ const Mainboard = () => {
   const [viewingUserProfile, setViewingUserProfile] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // Chat states
-  const [showChat, setShowChat] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    {
-      id: 1,
-      text: "Hello! I'm your AI assistant. How can I help you today?",
-      sender: "ai",
-      timestamp: new Date(),
-    },
-  ]);
-  const [chatInput, setChatInput] = useState("");
+
 
   // Top Participants states
   const [participantsTab, setParticipantsTab] = useState("sellers");
@@ -110,10 +100,7 @@ const Mainboard = () => {
     { id: "kalabaw", name: "Kalabaw", icon: Filter },
     { id: "kalapati", name: "Kalapati", icon: Bird },
     { id: "manok", name: "Manok", icon: Filter },
-    { id: "pato", name: "Pato / Itik", icon: Bird },
     { id: "rabbit", name: "Rabbit", icon: Rabbit },
-    { id: "sugpo", name: "Sugpo / Hipon", icon: Fish },
-    { id: "tambakol", name: "Tambakol", icon: Fish },
     { id: "tilapia", name: "Tilapia", icon: Fish },
     { id: "tulingan", name: "Tulingan", icon: Fish },
   ];
@@ -141,100 +128,541 @@ const Mainboard = () => {
     { id: "talang", name: "Talang" },
   ];
 
-  // All users data (sellers and buyers combined)
-  const allUsers = [
-    // Sellers
-    {
-      name: "Clark Oclarit",
-      avatar: "https://i.pravatar.cc/100?img=1",
-      rating: 4.8,
-      totalListings: 120,
-      specialties: ["baboy", "baka"],
-      location: "abelo",
-      type: "seller",
-    },
-    {
-      name: "Joshbee Mendoza Atienza",
-      avatar: "https://i.pravatar.cc/100?img=2",
-      rating: 4.9,
-      totalListings: 95,
-      specialties: ["bangus", "tilapia"],
-      location: "alas-as",
-      type: "seller",
-    },
-    {
-      name: "Justine Roco",
-      avatar: "https://i.pravatar.cc/100?img=3",
-      rating: 4.7,
-      totalListings: 200,
-      specialties: ["kambing", "kalabaw"],
-      location: "balete",
-      type: "seller",
-    },
-    {
-      name: "Angela Encarnacion",
-      avatar: "https://i.pravatar.cc/100?img=4",
-      rating: 5.0,
-      totalListings: 75,
-      specialties: ["kalapati", "manok"],
-      location: "baluk-baluk",
-      type: "seller",
-    },
-    {
-      name: "Venus De Ramos",
-      avatar: "https://i.pravatar.cc/100?img=5",
-      rating: 4.6,
-      totalListings: 60,
-      specialties: ["pato", "rabbit"],
-      location: "bancoro",
-      type: "seller",
-    },
-    {
-      name: "John Lei Sabangan",
-      avatar: "https://i.pravatar.cc/100?img=6",
-      rating: 4.6,
-      totalListings: 60,
-      specialties: ["pato", "rabbit"],
-      location: "bancoro",
-      type: "seller",
-    },
-    // Buyers
-    {
-      name: "Julie Zummer Carable",
-      avatar: "https://i.pravatar.cc/100?img=11",
-      rating: 4.9,
-      location: "munlawin",
-      type: "buyer",
-    },
-    {
-      name: "Benedict Alcayde",
-      avatar: "https://i.pravatar.cc/100?img=12",
-      rating: 4.8,
-      location: "pansipit",
-      type: "buyer",
-    },
-    {
-      name: "Kurth Jerby",
-      avatar: "https://i.pravatar.cc/100?img=13",
-      rating: 4.7,
-      location: "poblacion",
-      type: "buyer",
-    },
-    {
-      name: "Carmella Pineda",
-      avatar: "https://i.pravatar.cc/100?img=14",
-      rating: 4.6,
-      location: "pulang-bato",
-      type: "buyer",
-    },
-    {
-      name: "Zindel Arella",
-      avatar: "https://i.pravatar.cc/100?img=15",
-      rating: 4.5,
-      location: "santo-nino",
-      type: "buyer",
-    },
-  ];
+  // Updated allUsers array with complete profile data and posts
+const allUsers = [
+  // Sellers
+  {
+    name: "Clark Oclarit",
+    username: "@clarkoclarit",
+    bio: "Experienced livestock seller specializing in pigs and cattle. Providing quality animals to farmers across Central Luzon for over 10 years.",
+    location: "abelo",
+    avatar: "https://i.pravatar.cc/150?img=1",
+    coverPhoto: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&h=300&fit=crop",
+    phone: "+63 912 345 6789",
+    joinDate: "Joined June 2023",
+    followers: 156,
+    following: 89,
+    posts: 45,
+    rating: 4.8,
+    totalReviews: 32,
+    isVerified: true,
+    userType: "seller",
+    totalListings: 120,
+    specialties: ["baboy", "baka"],
+    type: "seller", // Keep for compatibility
+    userPosts: [
+      {
+        id: 1,
+        content: "Fresh batch of premium pigs ready for sale! These are healthy, well-fed animals perfect for breeding or meat production.",
+        timestamp: "2 hours ago",
+        images: [
+          "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=400&h=300&fit=crop",
+          "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=400&h=300&fit=crop"
+        ],
+        animalInfo: {
+          type: "Pig",
+          breed: "Yorkshire",
+          age: "8 months",
+          price: "₱15,000"
+        },
+        likes: 24,
+        comments: 8,
+        bookmarks: 12
+      },
+      {
+        id: 2,
+        content: "Just delivered healthy cattle to a farm in Tarlac. Quality guaranteed! Contact me for your livestock needs.",
+        timestamp: "1 day ago",
+        images: [
+          "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=400&h=300&fit=crop"
+        ],
+        animalInfo: {
+          type: "Cattle",
+          breed: "Brahman",
+          age: "2 years",
+          price: "₱45,000"
+        },
+        likes: 18,
+        comments: 5,
+        bookmarks: 7
+      },
+      {
+        id: 3,
+        content: "Thank you to all my customers for the trust! Here's our latest batch of premium livestock ready for new homes.",
+        timestamp: "3 days ago",
+        images: [
+          "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=400&h=300&fit=crop",
+          "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=400&h=300&fit=crop",
+          "https://images.unsplash.com/photo-1574293876203-be82c86f9c69?w=400&h=300&fit=crop"
+        ],
+        likes: 35,
+        comments: 12,
+        bookmarks: 20
+      }
+    ],
+    reviews: [
+      {
+        id: 1,
+        reviewer: "Maria Santos",
+        reviewerAvatar: "https://i.pravatar.cc/50?img=20",
+        rating: 5.0,
+        comment: "Excellent seller! The pigs I bought were healthy and exactly as described. Very professional service.",
+        timestamp: "1 week ago"
+      },
+      {
+        id: 2,
+        reviewer: "Juan dela Cruz",
+        reviewerAvatar: "https://i.pravatar.cc/50?img=21",
+        rating: 4.5,
+        comment: "Good quality cattle. Fair pricing and reliable seller. Will buy again!",
+        timestamp: "2 weeks ago"
+      }
+    ]
+  },
+  {
+    name: "Joshbee Mendoza Atienza",
+    username: "@joshbeemendozaatienza",
+    bio: "Fish farming specialist with premium bangus and tilapia. Fresh from our ponds in Alas-as.",
+    location: "alas-as",
+    avatar: "https://i.pravatar.cc/150?img=2",
+    coverPhoto: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=300&fit=crop",
+    phone: "+63 923 456 7890",
+    joinDate: "Joined June 2023",
+    followers: 203,
+    following: 67,
+    posts: 32,
+    rating: 4.9,
+    totalReviews: 28,
+    isVerified: true,
+    userType: "seller",
+    totalListings: 95,
+    specialties: ["bangus", "tilapia"],
+    type: "seller",
+    userPosts: [
+      {
+        id: 4,
+        content: "Fresh bangus harvest today! These fish are raised in clean pond water with natural feeds.",
+        timestamp: "4 hours ago",
+        images: [
+          "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop"
+        ],
+        animalInfo: {
+          type: "Bangus",
+          breed: "Premium",
+          age: "6 months",
+          price: "₱180/kg"
+        },
+        likes: 31,
+        comments: 14,
+        bookmarks: 9
+      },
+      {
+        id: 5,
+        content: "Tilapia ready for harvest! Perfect size for family meals or restaurant supply.",
+        timestamp: "2 days ago",
+        images: [
+          "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop",
+          "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop"
+        ],
+        animalInfo: {
+          type: "Tilapia",
+          breed: "GIFT",
+          age: "4 months",
+          price: "₱120/kg"
+        },
+        likes: 22,
+        comments: 7,
+        bookmarks: 15
+      }
+    ],
+    reviews: [
+      {
+        id: 3,
+        reviewer: "Rosa Martinez",
+        reviewerAvatar: "https://i.pravatar.cc/50?img=22",
+        rating: 5.0,
+        comment: "Best fish quality in the area! Always fresh and reasonably priced.",
+        timestamp: "5 days ago"
+      }
+    ]
+  },
+  {
+    name: "Justine Roco",
+    username: "@justineroco",
+    bio: "Large-scale livestock breeder specializing in goats and water buffalo. Quality breeding stock available.",
+    location: "balete",
+    avatar: "https://i.pravatar.cc/150?img=3",
+    coverPhoto: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&h=300&fit=crop",
+    phone: "+63 934 567 8901",
+    joinDate: "Joined June 2023",
+    followers: 342,
+    following: 124,
+    posts: 67,
+    rating: 4.7,
+    totalReviews: 41,
+    isVerified: true,
+    userType: "seller",
+    totalListings: 200,
+    specialties: ["kambing", "kalabaw"],
+    type: "seller",
+    userPosts: [
+      {
+        id: 6,
+        content: "Premium goat breeding stock available! These are healthy animals with excellent genetics.",
+        timestamp: "6 hours ago",
+        images: [
+          "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=400&h=300&fit=crop"
+        ],
+        animalInfo: {
+          type: "Goat",
+          breed: "Boer Cross",
+          age: "1.5 years",
+          price: "₱12,000"
+        },
+        likes: 28,
+        comments: 11,
+        bookmarks: 18
+      },
+      {
+        id: 7,
+        content: "Water buffalo available for farm work or breeding. Strong and healthy animals.",
+        timestamp: "1 day ago",
+        images: [
+          "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=400&h=300&fit=crop"
+        ],
+        animalInfo: {
+          type: "Water Buffalo",
+          breed: "Murrah",
+          age: "3 years",
+          price: "₱80,000"
+        },
+        likes: 19,
+        comments: 6,
+        bookmarks: 23
+      }
+    ],
+    reviews: [
+      {
+        id: 4,
+        reviewer: "Pedro Reyes",
+        reviewerAvatar: "https://i.pravatar.cc/50?img=23",
+        rating: 4.5,
+        comment: "Good quality animals. Fair pricing and honest seller.",
+        timestamp: "1 week ago"
+      }
+    ]
+  },
+  {
+    name: "Angela Encarnacion",
+    username: "@angelaencarnacion",
+    bio: "Premium poultry breeder specializing in pigeons and chickens. Award-winning bloodlines available.",
+    location: "baluk-baluk",
+    avatar: "https://i.pravatar.cc/150?img=4",
+    coverPhoto: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&h=300&fit=crop",
+    phone: "+63 945 678 9012",
+    joinDate: "Joined June 2023",
+    followers: 189,
+    following: 93,
+    posts: 28,
+    rating: 5.0,
+    totalReviews: 18,
+    isVerified: true,
+    userType: "seller",
+    totalListings: 75,
+    specialties: ["kalapati", "manok"],
+    type: "seller",
+    userPosts: [
+      {
+        id: 8,
+        content: "Beautiful racing pigeons available! These birds come from champion bloodlines.",
+        timestamp: "3 hours ago",
+        images: [
+          "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&h=300&fit=crop"
+        ],
+        animalInfo: {
+          type: "Pigeon",
+          breed: "Racing Homer",
+          age: "8 months",
+          price: "₱2,500"
+        },
+        likes: 45,
+        comments: 19,
+        bookmarks: 32
+      },
+      {
+        id: 9,
+        content: "Premium native chickens for breeding. Excellent egg layers and meat producers.",
+        timestamp: "2 days ago",
+        images: [
+          "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&h=300&fit=crop"
+        ],
+        animalInfo: {
+          type: "Chicken",
+          breed: "Native",
+          age: "6 months",
+          price: "₱800"
+        },
+        likes: 33,
+        comments: 12,
+        bookmarks: 21
+      }
+    ],
+    reviews: [
+      {
+        id: 5,
+        reviewer: "Carlos Villareal",
+        reviewerAvatar: "https://i.pravatar.cc/50?img=24",
+        rating: 5.0,
+        comment: "Amazing quality birds! Very professional and knowledgeable seller.",
+        timestamp: "3 days ago"
+      }
+    ]
+  },
+  {
+    name: "Venus De Ramos",
+    username: "@venusderamos",
+    bio: "Specialty birds and rabbit breeder. Focusing on ducks and domestic rabbits for meat and breeding.",
+    location: "bancoro",
+    avatar: "https://i.pravatar.cc/150?img=5",
+    coverPhoto: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&h=300&fit=crop",
+    phone: "+63 956 789 0123",
+    joinDate: "Joined June 2023",
+    followers: 127,
+    following: 76,
+    posts: 21,
+    rating: 4.6,
+    totalReviews: 15,
+    isVerified: false,
+    userType: "seller",
+    totalListings: 60,
+    specialties: ["pato", "rabbit"],
+    type: "seller",
+    userPosts: [
+      {
+        id: 10,
+        content: "Healthy ducks available for backyard farming. Great for eggs and meat production.",
+        timestamp: "5 hours ago",
+        images: [
+          "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&h=300&fit=crop"
+        ],
+        animalInfo: {
+          type: "Duck",
+          breed: "Pekin",
+          age: "4 months",
+          price: "₱350"
+        },
+        likes: 16,
+        comments: 4,
+        bookmarks: 8
+      }
+    ],
+    reviews: [
+      {
+        id: 6,
+        reviewer: "Lisa Garcia",
+        reviewerAvatar: "https://i.pravatar.cc/50?img=25",
+        rating: 4.5,
+        comment: "Good quality ducks. Will buy again!",
+        timestamp: "1 week ago"
+      }
+    ]
+  },
+  {
+    name: "John Lei Sabangan",
+    username: "@johnleisabangan",
+    bio: "Duck and rabbit farming specialist. Providing quality animals for sustainable farming in Bancoro.",
+    location: "bancoro",
+    avatar: "https://i.pravatar.cc/150?img=6",
+    coverPhoto: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&h=300&fit=crop",
+    phone: "+63 967 890 1234",
+    joinDate: "Joined June 2023",
+    followers: 143,
+    following: 82,
+    posts: 19,
+    rating: 4.6,
+    totalReviews: 12,
+    isVerified: true,
+    userType: "seller",
+    totalListings: 60,
+    specialties: ["pato", "rabbit"],
+    type: "seller",
+    userPosts: [
+      {
+        id: 11,
+        content: "White rabbits available for breeding or meat production. Very healthy and well-fed.",
+        timestamp: "1 day ago",
+        images: [
+          "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=400&h=300&fit=crop"
+        ],
+        animalInfo: {
+          type: "Rabbit",
+          breed: "New Zealand White",
+          age: "3 months",
+          price: "₱450"
+        },
+        likes: 21,
+        comments: 7,
+        bookmarks: 13
+      }
+    ],
+    reviews: [
+      {
+        id: 7,
+        reviewer: "Ana Torres",
+        reviewerAvatar: "https://i.pravatar.cc/50?img=26",
+        rating: 4.5,
+        comment: "Healthy rabbits! Good for beginners in rabbit farming.",
+        timestamp: "4 days ago"
+      }
+    ]
+  },
+  // Buyers
+  {
+    name: "Julie Zummer Carable",
+    username: "@juliezummercarable",
+    bio: "Local buyer looking for quality livestock for our family farm in Munlawin.",
+    location: "munlawin",
+    avatar: "https://i.pravatar.cc/150?img=11",
+    coverPhoto: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&h=300&fit=crop",
+    phone: "+63 912 234 5678",
+    joinDate: "Joined June 2023",
+    followers: 89,
+    following: 145,
+    posts: 8,
+    rating: 4.9,
+    totalReviews: 15,
+    isVerified: true,
+    userType: "buyer",
+    type: "buyer",
+    userPosts: [
+      {
+        id: 12,
+        content: "Looking for healthy pigs for our family farm. Please message me if you have quality breeding stock available.",
+        timestamp: "2 days ago",
+        likes: 12,
+        comments: 8,
+        bookmarks: 4
+      }
+    ],
+    reviews: []
+  },
+  {
+    name: "Benedict Alcayde",
+    username: "@benedictalcayde",
+    bio: "Restaurant owner sourcing fresh livestock and fish for our establishments in Pansipit area.",
+    location: "pansipit",
+    avatar: "https://i.pravatar.cc/150?img=12",
+    coverPhoto: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&h=300&fit=crop",
+    phone: "+63 923 345 6789",
+    joinDate: "Joined June 2023",
+    followers: 76,
+    following: 132,
+    posts: 5,
+    rating: 4.8,
+    totalReviews: 12,
+    isVerified: true,
+    userType: "buyer",
+    type: "buyer",
+    userPosts: [
+      {
+        id: 13,
+        content: "Regular buyer looking for fresh bangus and tilapia suppliers. Need consistent quality for our restaurant.",
+        timestamp: "3 days ago",
+        likes: 8,
+        comments: 5,
+        bookmarks: 2
+      }
+    ],
+    reviews: []
+  },
+  {
+    name: "Kurth Jerby",
+    username: "@kurthjerby",
+    bio: "Family business buyer sourcing animals for our local market in Poblacion.",
+    location: "poblacion",
+    avatar: "https://i.pravatar.cc/150?img=13",
+    coverPhoto: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&h=300&fit=crop",
+    phone: "+63 934 456 7890",
+    joinDate: "Joined June 2023",
+    followers: 62,
+    following: 98,
+    posts: 3,
+    rating: 4.7,
+    totalReviews: 9,
+    isVerified: false,
+    userType: "buyer",
+    type: "buyer",
+    userPosts: [
+      {
+        id: 14,
+        content: "Small-scale buyer interested in various livestock for local market. Looking for fair prices and good quality.",
+        timestamp: "5 days ago",
+        likes: 6,
+        comments: 3,
+        bookmarks: 1
+      }
+    ],
+    reviews: []
+  },
+  {
+    name: "Carmella Pineda",
+    username: "@carmellapineda",
+    bio: "Small-scale livestock buyer for personal use. Looking for healthy animals for backyard farming.",
+    location: "pulang-bato",
+    avatar: "https://i.pravatar.cc/150?img=14",
+    coverPhoto: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&h=300&fit=crop",
+    phone: "+63 945 567 8901",
+    joinDate: "Joined June 2023",
+    followers: 54,
+    following: 87,
+    posts: 2,
+    rating: 4.6,
+    totalReviews: 7,
+    isVerified: false,
+    userType: "buyer",
+    type: "buyer",
+    userPosts: [
+      {
+        id: 15,
+        content: "Looking for chickens and ducks for our backyard farm. New to farming, any advice is welcome!",
+        timestamp: "1 week ago",
+        likes: 4,
+        comments: 6,
+        bookmarks: 2
+      }
+    ],
+    reviews: []
+  },
+  {
+    name: "Zindel Arella",
+    username: "@zindelarella",
+    bio: "Agricultural cooperative buyer sourcing livestock for our members in Santo Niño community.",
+    location: "santo-nino",
+    avatar: "https://i.pravatar.cc/150?img=15",
+    coverPhoto: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&h=300&fit=crop",
+    phone: "+63 956 678 9012",
+    joinDate: "Joined June 2023",
+    followers: 41,
+    following: 73,
+    posts: 4,
+    rating: 4.5,
+    totalReviews: 5,
+    isVerified: true,
+    userType: "buyer",
+    type: "buyer",
+    userPosts: [
+      {
+        id: 16,
+        content: "Cooperative buyer looking for bulk livestock suppliers. We represent multiple farmers in Santo Niño.",
+        timestamp: "4 days ago",
+        likes: 9,
+        comments: 4,
+        bookmarks: 3
+      }
+    ],
+    reviews: []
+  }
+];
 
   // Filter users based on search
   const filteredUsers = React.useMemo(() => {

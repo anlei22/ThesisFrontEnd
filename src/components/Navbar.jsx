@@ -219,7 +219,7 @@ const CartDropdown = ({ isOpen, onClose, darkMode, cartRef }) => {
     <>
       <div 
         ref={cartRef}
-        className={`absolute right-0 mt-2 w-96 rounded-lg shadow-xl border z-40 max-h-96 overflow-hidden ${
+        className={`absolute right-0 mt-2 w-96 rounded-lg shadow-xl border z-40 max-h-104 overflow-hidden ${
           darkMode 
             ? 'bg-gray-800 border-gray-700' 
             : 'bg-white border-gray-200'
