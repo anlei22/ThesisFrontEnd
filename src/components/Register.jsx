@@ -13,6 +13,7 @@
     MapPin,
     Users,
   } from "lucide-react";
+  // connection
   import { useConnection } from '../context/Connection';
 
 
@@ -42,34 +43,34 @@
       }
     };
 
-    // const CreateRegistration = async () => {
-    //   try {
-    //     const data = await request('register', {
-    //       method: 'post',
-    //       data: formData
-    //     });
-    //     setStatusMessage("Registration successful");
-    //     console.log(data);
-    //   } catch (err) {
-    //     setStatusMessage("Failed to create registration");
-    //     console.error("Failed to create registration:", err);
-    //   }
-    // };
+      const CreateRegistration = async () => {
+        try {
+          const data = await request('register', {
+            method: 'post',
+            data: formData
+          });
+          setStatusMessage("Registration successful");
+          console.log(data);
+        } catch (err) {
+          setStatusMessage("Failed to create registration");
+          console.error("Failed to create registration:", err);
+        }
+      };
 
 
     const [formData, setFormData] = useState({
       // Step 1 - Personal Data
-      firstName: "",
-      middleName: "",
-      surname: "",
+      firstname: "",
+      middlename: "",
+      lastname: "",
       phone: "",
       address: "",
-      birthday: "",
+      birthdate: "",
       age: "",
       sex: "",
-      animals: [],
+     
       role: "",
-      animalInterests: [],
+
 
       // Step 2 - Phone Verification
       verificationCode: "",
@@ -80,8 +81,8 @@
       confirmPassword: "",
 
       // Step 4 - Documents
-      idPhoto: null,
-      selfiePhoto: null,
+      valid_id_picture: null,
+      selfie_with_id_picture: null,
     });
 
     const steps = [
@@ -112,11 +113,11 @@
     // Form validation functions
     const validateStep1 = async () => {
       return (
-        formData.firstName &&
-        formData.surname &&
+        formData.firstname &&
+        formData.lastname &&
         formData.phone &&
         formData.address &&
-        formData.birthday &&
+        formData.birthdate &&
         formData.age &&
         formData.sex &&
         formData.role
@@ -140,7 +141,7 @@
     };
 
     const validateStep4 = () => {
-      return formData.idPhoto && formData.selfiePhoto;
+      return formData.valid_id_picture && formData.selfie_with_id_picture;
     };
 
     const isPasswordStrong = () => {
@@ -226,150 +227,170 @@
     };
 
     const renderStepContent = () => {
+
       switch (currentStep) {
-        case 1:
-          return (
-            <div className="space-y-6">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-                  Personal Information
-                </h2>
-                <p className="text-gray-600">Please fill in your basic details</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    First Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) =>
-                      handleInputChange("firstName", e.target.value)
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter first name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Middle Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.middleName}
-                    onChange={(e) =>
-                      handleInputChange("middleName", e.target.value)
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter middle name"
-                  />
-                </div>
-                <div className="sm:col-span-2 lg:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Surname *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.surname}
-                    onChange={(e) => handleInputChange("surname", e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter surname"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number *
-                  </label>
-                  <div className="flex">
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="+63 9XX XXX XXXX"
-                    />
-                  </div>
-             
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Birthday *
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.birthday}
-                    onChange={(e) =>
-                      handleInputChange("birthday", e.target.value)
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Address *
-                </label>
-                <textarea
-                  value={formData.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-                  rows="3"
-                  placeholder="Enter complete address"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Age *
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.age}
-                    onChange={(e) => handleInputChange("age", e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter age"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sex *
-                  </label>
-                  <select
-                    value={formData.sex}
-                    onChange={(e) => handleInputChange("sex", e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  >
-                    <option value="">Select sex</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>  
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div className="sm:col-span-2 lg:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Role *
-                  </label>
-                  <select
-                    value={formData.role}
-                    onChange={(e) => handleInputChange("role", e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  >
-                    <option value="">Select preferred role</option>
-                    <option value="buyer">Buyer</option>
-                    <option value="seller">Seller</option>
-                    <option value="both">Both (Buyer & Seller)</option>
-                  </select>
-                </div>
-              </div>
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+          Personal Information
+        </h2>
+        <p className="text-gray-600">Please fill in your basic details</p>
             </div>
-          );
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            First Name *
+          </label>
+          <input
+            type="text"
+            value={formData.firstname}
+            onChange={(e) =>
+              handleInputChange("firstname", e.target.value)
+            }
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            placeholder="Enter first name"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Middle Name
+          </label>
+          <input
+            type="text"
+            value={formData.middlename}
+            onChange={(e) =>
+              handleInputChange("middlename", e.target.value)
+            }
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            placeholder="Enter middle name"
+          />
+        </div>
+        <div className="sm:col-span-2 lg:col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            lastname *
+          </label>
+          <input
+            type="text"
+            value={formData.lastname}
+            onChange={(e) => handleInputChange("lastname", e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            placeholder="Enter lastname"
+          />
+        </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Phone Number *
+          </label>
+          <div className="flex">
+            <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-100 text-gray-600 text-sm select-none">
+              +63
+            </span>
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => handleInputChange("phone", e.target.value.replace(/[^0-9]/g, ""))}
+              className="w-full px-4 py-3 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="9XX XXX XXXX"
+              maxLength={10}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            birthdate *
+          </label>
+          <input
+            type="date"
+            value={formData.birthdate}
+            max={new Date().toISOString().split("T")[0]}
+            onChange={(e) => {
+              const birthdate = e.target.value;
+              handleInputChange("birthdate", birthdate);
+              // Calculate age automatically
+              if (birthdate) {
+          const birthDate = new Date(birthdate);
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+          handleInputChange("age", age > 0 ? age : "");
+              } else {
+          handleInputChange("age", "");
+              }
+            }}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          />
+        </div>
+            </div>
+
+            <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Address *
+        </label>
+        <textarea
+          value={formData.address}
+          onChange={(e) => handleInputChange("address", e.target.value)}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+          rows="3"
+          placeholder="Enter complete address"
+        />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Age *
+          </label>
+          <input
+            type="number"
+            value={formData.age}
+            onChange={(e) => handleInputChange("age", e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            placeholder="Enter age"
+            readOnly // Age is now auto-calculated
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Sex *
+          </label>
+          <select
+            value={formData.sex}
+            onChange={(e) => handleInputChange("sex", e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          >
+            <option value="">Select sex</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>  
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div className="sm:col-span-2 lg:col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Role *
+          </label>
+          <select
+            value={formData.role}
+            onChange={(e) => handleInputChange("role", e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          >
+            <option value="">Select preferred role</option>
+            <option value="buyer">Buyer</option>
+            <option value="seller">Seller</option>
+            <option value="both">Both (Buyer & Seller)</option>
+          </select>
+        </div>
+            </div>
+          </div>
+        );
 
       case 2:
     return (
@@ -666,7 +687,7 @@
                         type="file"
                         accept="image/*"
                         onChange={(e) =>
-                          handleFileUpload("idPhoto", e.target.files[0])
+                          handleFileUpload("valid_id_picture", e.target.files[0])
                         }
                         className="hidden"
                         id="id-upload"
@@ -677,11 +698,11 @@
                       >
                         Choose File
                       </label>
-                      {formData.idPhoto && (
+                      {formData.valid_id_picture && (
                         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                           <p className="text-sm text-green-700 font-medium flex items-center justify-center space-x-2">
                             <CheckCircle className="w-4 h-4" />
-                            <span>{formData.idPhoto.name}</span>
+                            <span>{formData.valid_id_picture.name}</span>
                           </p>
                         </div>
                       )}
@@ -701,7 +722,7 @@
                         type="file"
                         accept="image/*"
                         onChange={(e) =>
-                          handleFileUpload("selfiePhoto", e.target.files[0])
+                          handleFileUpload("selfie_with_id_picture", e.target.files[0])
                         }
                         className="hidden"
                         id="selfie-upload"
@@ -712,11 +733,11 @@
                       >
                         Choose File
                       </label>
-                      {formData.selfiePhoto && (
+                      {formData.selfie_with_id_picture && (
                         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                           <p className="text-sm text-green-700 font-medium flex items-center justify-center space-x-2">
                             <CheckCircle className="w-4 h-4" />
-                            <span>{formData.selfiePhoto.name}</span>
+                            <span>{formData.selfie_with_id_picture.name}</span>
                           </p>
                         </div>
                       )}

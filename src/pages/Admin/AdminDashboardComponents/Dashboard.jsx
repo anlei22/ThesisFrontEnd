@@ -148,7 +148,7 @@ const Dashboard = () => {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="">
         {/* Listings by Category Chart */}
         <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
           <h3 className="text-lg font-bold text-gray-800 mb-4">Listings by Category</h3>
@@ -164,10 +164,10 @@ const Dashboard = () => {
         </div>
 
         {/* User Roles Donut Chart */}
-        <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
+        {/* <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
           <h3 className="text-lg font-bold text-gray-800 mb-4">User Roles Distribution</h3>
           <div className="flex items-center">
-            {/* Left side - Statistics */}
+            
             <div className="w-1/2 pr-4">
               <div className="space-y-3">
                 {userRoleData.map((item, index) => {
@@ -192,7 +192,7 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {/* Right side - Donut Chart */}
+           
             <div className="w-1/2">
               <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
@@ -222,8 +222,8 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </div>
           </div>
-        </div>
-      </div>
+        </div> */}
+      </div> 
     </div>
   );
 };

@@ -391,7 +391,7 @@ const Notifications = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <Bell className="w-6 sm:w-8 h-6 sm:h-8 text-blue-600" />
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Notifications</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Reports</h2>
               {unreadCount > 0 && (
                 <div className="bg-red-500 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 rounded-full min-w-[20px] sm:min-w-[24px] text-center">
                   {unreadCount}
@@ -415,33 +415,7 @@ const Notifications = () => {
           </div>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {notificationTypes.map((type) => (
-            <button
-              key={type}
-              onClick={() => setNotificationFilter(type)}
-              className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 flex items-center gap-2 ${
-                notificationFilter === type
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
-              }`}
-            >
-              {formatFilterName(type)}
-              {unreadCountByType[type] > 0 && (
-                <span
-                  className={`text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full min-w-[16px] sm:min-w-[20px] text-center ${
-                    notificationFilter === type
-                      ? "bg-white text-blue-600"
-                      : "bg-red-500 text-white"
-                  }`}
-                >
-                  {unreadCountByType[type]}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+       
       </div>
 
       {/* Notification List */}

@@ -133,9 +133,8 @@ const AdminDashboard = () => {
   const navItems = [
     { name: "Dashboard", icon: Home, component: Dashboard },
     { name: "Animal Listings", icon: Store, component: Listing },
-    { name: "Notifications", icon: Bell, component: Notifications },
+    { name: "Reports", icon: Bell, component: Notifications },
     { name: "Account's Management", icon: Users, component: UserAccountManagement },
-    { name: "Register Accounts", icon: User, component: AdminAccountManagement },
   ];
 
   const SelectedComponent = navItems.find(item => item.name === selected)?.component;
