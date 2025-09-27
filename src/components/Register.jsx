@@ -13,11 +13,49 @@ import {
   MapPin,
   Users,
 } from "lucide-react";
+import { useConnection } from '../context/Connection';
+
+
+
 
 const RegistrationStepper = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [CodeVerify, setCode] = useState(null);
+  const [statusMessage , setStatusMessage] = useState("");
+
+  const { request } = useConnection();
+  const sendCode = async () => {
+    try {
+      const data = await request('code', {
+        method: 'post',
+        data: { phone: formData.phone }
+      });
+      // console.log("Verification code sent successfully:", data);
+      setStatusMessage("Verification code sent successfully");
+      setCode(data.code);
+    } catch (err) {
+      setStatusMessage("Failed to send verification code");
+      console.error("Failed to send verification code:", err);
+    }
+  };
+
+  // const CreateRegistration = async () => {
+  //   try {
+  //     const data = await request('register', {
+  //       method: 'post',
+  //       data: formData
+  //     });
+  //     setStatusMessage("Registration successful");
+  //     console.log(data);
+  //   } catch (err) {
+  //     setStatusMessage("Failed to create registration");
+  //     console.error("Failed to create registration:", err);
+  //   }
+  // };
+
+
   const [formData, setFormData] = useState({
     // Step 1 - Personal Data
     firstName: "",
@@ -71,7 +109,7 @@ const RegistrationStepper = () => {
   };
 
   // Form validation functions
-  const validateStep1 = () => {
+  const validateStep1 = async () => {
     return (
       formData.firstName &&
       formData.surname &&
@@ -82,9 +120,11 @@ const RegistrationStepper = () => {
       formData.sex &&
       formData.role
     );
+    
   };
 
   const validateStep2 = () => {
+    
     return formData.verificationCode && formData.verificationCode.length === 6;
   };
 
@@ -150,6 +190,18 @@ const RegistrationStepper = () => {
 
   const nextStep = () => {
     if (currentStep < 5 && canProceed()) {
+      // If moving from step 1 to step 2, trigger sendCode
+      if (currentStep === 1) {
+        sendCode();
+      }
+      if(currentStep === 2){
+        if(formData.verificationCode === CodeVerify){
+          setCurrentStep(currentStep + 1);
+        } else {
+          setStatusMessage("Invalid verification code");
+          console.log('Invalid verification code');
+        }
+      }
       setCurrentStep(currentStep + 1);
     }
   };
