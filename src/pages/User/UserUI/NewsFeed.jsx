@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   HeartIcon, 
   ChatBubbleOvalLeftIcon, 
@@ -13,7 +13,7 @@ import LoginModal from '../../../components/LoginModal';
 import ShareModal from '../../../components/ShareModal';
 import useApiConnection from '../../../context/ApiConnection';
 const NewsFeed = ({ darkMode, onCreatePost }) => {
-  const [posts, setPosts] = useState([]);
+const [posts, setPosts] = useState([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -21,50 +21,54 @@ const NewsFeed = ({ darkMode, onCreatePost }) => {
 
   // Use API connection hook to fetch posts
   const { data: apiResponse, error, loading } = useApiConnection('news-feed/list');
+// Add this method to NewsFeed
 
-  // Handle API response
   useEffect(() => {
+  try {
     if (error) {
       console.error('Error fetching posts:', error);
-      // Fallback to sample data if API fails
       loadSampleData();
       return;
     }
-    
-    if (apiResponse && apiResponse.status === 'success') {
-      // Transform API data to match component structure
-      const transformedPosts = apiResponse.data.map(post => ({
-        id: post.id,
+
+    if (apiResponse && apiResponse.status === 'success' && Array.isArray(apiResponse.data)) {
+      // Transform API data to match your post structure
+      const transformedPosts = apiResponse.data.map(apiPost => ({
+        id: apiPost.id,
         user: {
-          name: `${post.creator.FirstName} ${post.creator.LastName}`,
-          avatar: post.creator.profile_picture || `https://ui-avatars.com/api/?name=${post.creator.FirstName}+${post.creator.LastName}&background=10b981&color=fff`,
-          isVerified: false, // You can add verification logic here
-          username: post.creator.username
+          name: apiPost.user_name || "Unknown User",
+          avatar: apiPost.user_avatar || "https://via.placeholder.com/40",
+          isVerified: apiPost.user_verified || false
         },
-        timestamp: formatTimestamp(post.created_at),
-        content: post.description,
-        animalInfo: {
-          type: post.animal_type.name,
-          title: post.title,
-          description: post.description,
-          breed: post.breed,
-          age: `${post.age} years old`,
-          sex: post.sex,
-          price: post.price === "0" ? "Free" : `₱${parseFloat(post.price).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-          availability: post.status
-        },
-        images: post.images.map(img => img.image_path),
-        likes: post.likes,
-        comments: 0, // Not provided in API response
-        bookmarks: post.bookmarks,
-        isLiked: false, // You can add user interaction logic here
-        isBookmarked: false,
-        slug: post.slug
+        timestamp: formatTimestamp(apiPost.created_at),
+        content: apiPost.description || "",
+        animalInfo: apiPost.animal_info ? {
+          type: apiPost.animal_info.type,
+          title: apiPost.animal_info.title,
+          description: apiPost.animal_info.description,
+          breed: apiPost.animal_info.breed,
+          age: apiPost.animal_info.age,
+          sex: apiPost.animal_info.sex,
+          price: apiPost.animal_info.price,
+          availability: apiPost.animal_info.availability || 'available'
+        } : null,
+        images: apiPost.images || [],
+        likes: apiPost.likes_count || 0,
+        comments: apiPost.comments_count || 0,
+        bookmarks: apiPost.bookmarks_count || 0,
+        isLiked: apiPost.is_liked || false,
+        isBookmarked: apiPost.is_bookmarked || false
       }));
       
       setPosts(transformedPosts);
+    } else {
+      loadSampleData();
     }
-  }, [apiResponse, error, loading]);
+  } catch (err) {
+    console.error('Unexpected error in NewsFeed useEffect:', err);
+    loadSampleData();
+  }
+}, [apiResponse, error, loading]);
 
   // Helper function to format timestamp
   const formatTimestamp = (timestamp) => {
@@ -191,9 +195,10 @@ const NewsFeed = ({ darkMode, onCreatePost }) => {
             <PostSkeleton key={i} />
           ))}
         </div>
-      </div>
-    );
-  }
+
+    </div>
+  );
+}
 
   return (
     <div className="w-full py-4 sm:py-6 flex justify-center">

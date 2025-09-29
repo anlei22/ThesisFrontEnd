@@ -43,20 +43,55 @@
       }
     };
 
-      const CreateRegistration = async () => {
-        try {
-          const data = await request('register', {
-            method: 'post',
-            data: formData
-          });
-          setStatusMessage("Registration successful");
-          console.log(data);
-        } catch (err) {
-          setStatusMessage("Failed to create registration");
-          console.error("Failed to create registration:", err);
-        }
-      };
+    const CreateRegistration = async () => {
+  try {
+    // Create FormData to handle file uploads properly
+    const formDataToSend = new FormData();
+    
+    // Map frontend field names to backend expected names
+    formDataToSend.append('FirstName', formData.firstname);
+    formDataToSend.append('LastName', formData.lastname);
+    formDataToSend.append('Username', formData.email); // Using email as username, or create a separate username field
+    formDataToSend.append('Email', formData.email);
+    formDataToSend.append('Password', formData.password);
+    formDataToSend.append('phone_number', formData.phone);
+    
+    // Add other fields
+    formDataToSend.append('middlename', formData.middlename);
+    formDataToSend.append('address', formData.address);
+    formDataToSend.append('birthdate', formData.birthdate);
+    formDataToSend.append('age', formData.age);
+    formDataToSend.append('sex', formData.sex);
+    formDataToSend.append('role', formData.role);
+    
+    // Add files properly
+    if (formData.valid_id_picture) {
+      formDataToSend.append('valid_id_picture', formData.valid_id_picture);
+    }
+    if (formData.selfie_with_id_picture) {
+      formDataToSend.append('selfie_with_id_picture', formData.selfie_with_id_picture);
+    }
 
+    const data = await request('register', {
+      method: 'post',
+      data: formDataToSend,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    setStatusMessage("Registration successful");
+    console.log(data);
+  } catch (err) {
+    setStatusMessage("Failed to create registration");
+    console.error("Failed to create registration:", err);
+    
+    // Log the error response for debugging
+    if (err.response && err.response.data) {
+      console.error("Validation errors:", err.response.data.error);
+    }
+  }
+};
 
     const [formData, setFormData] = useState({
       // Step 1 - Personal Data
@@ -207,6 +242,11 @@
       }
       return; // prevents the rest from running
     }
+
+    if(currentStep === 4){
+      CreateRegistration();
+    }
+      
 
     if (canProceed()) {
       // For step 1, trigger sendCode before moving to next step

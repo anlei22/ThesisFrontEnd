@@ -6,6 +6,8 @@ import UserProfile from "./UserUI/UserProfile";
 import CreatePostModal from "./UserUI/CreatePostModal";
 import UserProfileView from "./UserUI/UserProfileView"; // Import the separated component
 import { AuthProvider } from "../../context/AuthContext";
+
+
 import {
   Star,
   Search,
@@ -37,6 +39,10 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
+const handlePostCreated = () => {
+  // Call refresh on NewsFeed
+  // You'll need to expose this method via ref or callback
+};
 // Modal Component
 const Modal = ({ isOpen, onClose, children, darkMode = false }) => {
   if (!isOpen) return null;
@@ -87,7 +93,7 @@ const Mainboard = () => {
 
 
   // Top Participants states
-  const [participantsTab, setParticipantsTab] = useState("sellers");
+
 
   // Categories with icons
   const categories = [
@@ -715,10 +721,18 @@ const allUsers = [
     }
   }, [darkMode]);
 
-  // Show/hide user search results
+  
+  // Show/hide user search results - Fixed to persist when clicking results
   useEffect(() => {
     setShowUserResults(userSearchTerm.trim().length > 0);
   }, [userSearchTerm]);
+ // Keep search results visible when viewing profile on mobile
+  const handleMobileUserProfileView = (user) => {
+    setSelectedUser(user);
+    setViewingUserProfile(true);
+    setMobileTab("home");
+    // Don't clear search term to keep context
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -757,14 +771,23 @@ const allUsers = [
           );
         }
         // Pass post filters to NewsFeed
-        return (
-          <NewsFeed
-            darkMode={darkMode}
-            onCreatePost={handleCreatePost}
-            categoryFilter={postCategory}
-            locationFilter={postLocation}
-          />
-        );
+        try {
+          return (
+           <NewsFeed
+  darkMode={darkMode}
+  onCreatePost={handleCreatePost}
+  categoryFilter={postCategory}
+  locationFilter={postLocation}
+  />
+          );
+        } catch (error) {
+          return (
+            <div className={`p-6 rounded-lg ${darkMode ? "bg-red-900 text-white" : "bg-red-100 text-red-800"}`}>
+              <h2 className="font-bold mb-2">Error rendering NewsFeed</h2>
+              <pre className="whitespace-pre-wrap">{error.message}</pre>
+            </div>
+          );
+        }
       case "chat":
         return <ChatInterface darkMode={darkMode} />;
       case "profile":
@@ -800,8 +823,7 @@ const allUsers = [
   const sellers = allUsers
     .filter((user) => user.type === "seller")
     .slice(0, 10);
-  const buyers = allUsers.filter((user) => user.type === "buyer").slice(0, 10);
-  const currentParticipants = participantsTab === "sellers" ? sellers : buyers;
+
 
   // Mobile Search Interface - Updated with profile click handler
   const MobileSearchInterface = () => (
@@ -987,17 +1009,24 @@ const allUsers = [
                 darkMode ? "text-gray-400" : "text-gray-500"
               }`}
             />
-            <input
-              type="text"
-              placeholder="Search for users..."
-              value={userSearchTerm}
-              onChange={(e) => setUserSearchTerm(e.target.value)}
-              className={`w-full pl-12 pr-4 py-3 rounded-lg border-2 transition-colors text-base ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
-                  : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
-              } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-            />
+         <input
+  type="text"
+  placeholder="Search for users..."
+  value={userSearchTerm}
+  onChange={(e) => {
+    if (isAuthenticated) {
+      setUserSearchTerm(e.target.value);
+    } else {
+      setShowLoginModal(true); // Show login form if not logged in
+    }
+  }}
+  className={`w-full pl-12 pr-4 py-3 rounded-lg border-2 transition-colors text-base ${
+    darkMode
+      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
+      : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
+  } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
+/>
+
             {userSearchTerm && (
               <button
                 onClick={() => setUserSearchTerm("")}
@@ -1468,212 +1497,175 @@ const allUsers = [
                 </main>
 
                 {/* RIGHT ASIDE - Top Participants - Hide when viewing profile */}
-                {!viewingUserProfile && (
-                  <aside className="w-[24rem] mt-6">
-                    <div
-                      className={`${
-                        darkMode
-                          ? "bg-gray-800 border-gray-700"
-                          : "bg-white border-gray-100"
-                      } rounded-xl shadow-lg border sticky top-6 h-[600px] flex flex-col overflow-hidden`}
-                    >
-                      {/* Header */}
-                      <div
-                        className={`p-6 border-b ${
-                          darkMode ? "border-gray-700" : "border-gray-200"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`p-2 rounded-lg ${
-                                darkMode ? "bg-green-600" : "bg-green-100"
-                              }`}
-                            >
-                              <TrendingUp
-                                className={`w-5 h-5 ${
-                                  darkMode ? "text-white" : "text-green-600"
-                                }`}
-                              />
-                            </div>
-                            <h3
-                              className={`font-bold text-xl ${
-                                darkMode ? "text-white" : "text-gray-900"
-                              }`}
-                            >
-                              Top Participants
-                            </h3>
-                          </div>
-                          <div
-                            className={`text-sm ${
-                              darkMode ? "text-gray-400" : "text-gray-500"
-                            }`}
-                          >
-                            {currentParticipants.length} {participantsTab}
-                          </div>
-                        </div>
+            {/* RIGHT ASIDE - Top Participants - Hide when viewing profile */}
+{!viewingUserProfile && (
+  <aside className="w-[24rem] mt-6">
+    <div
+      className={`${
+        darkMode
+          ? "bg-gray-800 border-gray-700"
+          : "bg-white border-gray-100"
+      } rounded-xl shadow-lg border sticky top-6 h-[600px] flex flex-col overflow-hidden`}
+    >
+      {/* Header */}
+      <div
+        className={`p-6 border-b ${
+          darkMode ? "border-gray-700" : "border-gray-200"
+        }`}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div
+              className={`p-2 rounded-lg ${
+                darkMode ? "bg-green-600" : "bg-green-100"
+              }`}
+            >
+              <TrendingUp
+                className={`w-5 h-5 ${
+                  darkMode ? "text-white" : "text-green-600"
+                }`}
+              />
+            </div>
+            <h3
+              className={`font-bold text-xl ${
+                darkMode ? "text-white" : "text-gray-900"
+              }`}
+            >
+              Top Sellers
+            </h3>
+          </div>
+          <div
+            className={`text-sm ${
+              darkMode ? "text-gray-400" : "text-gray-500"
+            }`}
+          >
+            {sellers.length} sellers
+          </div>
+        </div>
+      </div>
 
-                        {/* Tab Navigation */}
-                        <div
-                          className={`flex p-1 rounded-lg ${
-                            darkMode ? "bg-gray-700" : "bg-gray-100"
+      {/* Sellers List */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 space-y-3">
+          {sellers.map((user, index) => {
+            const userLocation = locations?.find(
+              (loc) => loc.id === user.location
+            );
+            const rankBadge = getRankBadge(index);
+
+            return (
+              <div
+                key={`seller-${index}`}
+                onClick={() => handleViewUserProfile(user)}
+                className={`${
+                  darkMode
+                    ? "bg-gray-700 hover:bg-gray-650"
+                    : "bg-gray-50 hover:bg-gray-100"
+                } rounded-xl p-4 border-l-4 ${
+                  rankBadge.border
+                } transition-all duration-200 hover:shadow-md group cursor-pointer`}
+              >
+                <div className="flex items-center gap-4">
+                  {/* Clean Rank Number */}
+                  <div className="flex-shrink-0 w-8 flex justify-center">
+                    <span
+                      className={`font-bold text-lg ${
+                        index < 3
+                          ? index === 0
+                            ? darkMode
+                              ? "text-yellow-400"
+                              : "text-yellow-500"
+                            : index === 1
+                            ? darkMode
+                              ? "text-gray-300"
+                              : "text-gray-400"
+                            : darkMode
+                            ? "text-amber-600"
+                            : "text-amber-700"
+                          : darkMode
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      } transition-all`}
+                    >
+                      {index + 1}
+                    </span>
+                  </div>
+
+                  {/* Profile Card */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {/* Avatar */}
+                    <div className="flex-shrink-0">
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="w-12 h-12 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent group-hover:ring-green-400 transition-all"
+                      />
+                    </div>
+
+                    {/* User Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4
+                          className={`font-semibold text-sm truncate ${
+                            darkMode
+                              ? "text-white"
+                              : "text-gray-900"
                           }`}
                         >
-                          <button
-                            onClick={() => setParticipantsTab("sellers")}
-                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                              participantsTab === "sellers"
-                                ? darkMode
-                                  ? "bg-green-600 text-white shadow-sm"
-                                  : "bg-white text-green-600 shadow-sm"
-                                : darkMode
-                                ? "text-gray-400 hover:text-gray-200"
-                                : "text-gray-500 hover:text-gray-700"
-                            }`}
-                          >
-                            <DollarSign className="w-4 h-4" />
-                            Sellers
-                          </button>
-                          <button
-                            onClick={() => setParticipantsTab("buyers")}
-                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                              participantsTab === "buyers"
-                                ? darkMode
-                                  ? "bg-green-600 text-white shadow-sm"
-                                  : "bg-white text-green-600 shadow-sm"
-                                : darkMode
-                                ? "text-gray-400 hover:text-gray-200"
-                                : "text-gray-500 hover:text-gray-700"
-                            }`}
-                          >
-                            <ShoppingBag className="w-4 h-4" />
-                            Buyers
-                          </button>
-                        </div>
+                          {user.name}
+                        </h4>
                       </div>
 
-                      {/* Participants List */}
-                      <div className="flex-1 overflow-y-auto">
-                        <div className="p-4 space-y-3">
-                          {currentParticipants.map((user, index) => {
-                            const userLocation = locations?.find(
-                              (loc) => loc.id === user.location
-                            );
-                            const rankBadge = getRankBadge(index);
+                      {/* Location */}
+                      <div
+                        className={`flex items-center gap-1 text-xs mb-2 ${
+                          darkMode
+                            ? "text-gray-400"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        <MapPin className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">
+                          {userLocation?.name ||
+                            "Unknown Location"}
+                        </span>
+                      </div>
 
-                            return (
-                              <div
-                                key={`${participantsTab}-${index}`}
-                                onClick={() => handleViewUserProfile(user)}
-                                className={`${
-                                  darkMode
-                                    ? "bg-gray-700 hover:bg-gray-650"
-                                    : "bg-gray-50 hover:bg-gray-100"
-                                } rounded-xl p-4 border-l-4 ${
-                                  rankBadge.border
-                                } transition-all duration-200 hover:shadow-md group cursor-pointer`}
-                              >
-                                <div className="flex items-center gap-4">
-                                  {/* Clean Rank Number - Separate from profile */}
-                                  <div className="flex-shrink-0 w-8 flex justify-center">
-                                    <span
-                                      className={`font-bold text-lg ${
-                                        index < 3
-                                          ? index === 0
-                                            ? darkMode
-                                              ? "text-yellow-400"
-                                              : "text-yellow-500"
-                                            : index === 1
-                                            ? darkMode
-                                              ? "text-gray-300"
-                                              : "text-gray-400"
-                                            : darkMode
-                                            ? "text-amber-600"
-                                            : "text-amber-700"
-                                          : darkMode
-                                          ? "text-gray-400"
-                                          : "text-gray-500"
-                                      } transition-all`}
-                                    >
-                                      {index + 1}
-                                    </span>
-                                  </div>
-
-                                  {/* Profile Card */}
-                                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    {/* Avatar - Clean without badge */}
-                                    <div className="flex-shrink-0">
-                                      <img
-                                        src={user.avatar}
-                                        alt={user.name}
-                                        className="w-12 h-12 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent group-hover:ring-green-400 transition-all"
-                                      />
-                                    </div>
-
-                                    {/* User Info */}
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center justify-between mb-1">
-                                        <h4
-                                          className={`font-semibold text-sm truncate ${
-                                            darkMode
-                                              ? "text-white"
-                                              : "text-gray-900"
-                                          }`}
-                                        >
-                                          {user.name}
-                                        </h4>
-                                      </div>
-
-                                      {/* Location */}
-                                      <div
-                                        className={`flex items-center gap-1 text-xs mb-2 ${
-                                          darkMode
-                                            ? "text-gray-400"
-                                            : "text-gray-500"
-                                        }`}
-                                      >
-                                        <MapPin className="w-3 h-3 flex-shrink-0" />
-                                        <span className="truncate">
-                                          {userLocation?.name ||
-                                            "Unknown Location"}
-                                        </span>
-                                      </div>
-
-                                      {/* Rating */}
-                                      <div className="flex items-center gap-1">
-                                        {[...Array(5)].map((_, i) => (
-                                          <Star
-                                            key={i}
-                                            className={`w-3 h-3 ${
-                                              i < Math.floor(user.rating)
-                                                ? "text-yellow-400 fill-current"
-                                                : darkMode
-                                                ? "text-gray-600"
-                                                : "text-gray-300"
-                                            }`}
-                                          />
-                                        ))}
-                                        <span
-                                          className={`text-xs font-medium ml-1 ${
-                                            darkMode
-                                              ? "text-yellow-400"
-                                              : "text-yellow-600"
-                                          }`}
-                                        >
-                                          {user.rating}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                      {/* Rating */}
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-3 h-3 ${
+                              i < Math.floor(user.rating)
+                                ? "text-yellow-400 fill-current"
+                                : darkMode
+                                ? "text-gray-600"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                        <span
+                          className={`text-xs font-medium ml-1 ${
+                            darkMode
+                              ? "text-yellow-400"
+                              : "text-yellow-600"
+                          }`}
+                        >
+                          {user.rating}
+                        </span>
                       </div>
                     </div>
-                  </aside>
-                )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  </aside>
+)}
               </div>
             </>
           ) : (
