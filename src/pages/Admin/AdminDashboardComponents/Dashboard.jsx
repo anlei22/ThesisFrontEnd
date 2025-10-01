@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-  LineChart,
-  Line,
+
   XAxis,
   YAxis,
   CartesianGrid,
@@ -9,12 +8,11 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
 
+} from "recharts";
+  import { useConnection } from '../../../context/Connection';
+
+  
 const Dashboard = () => {
   // -------------------------
   // State for users (simulate backend)
@@ -35,17 +33,20 @@ const Dashboard = () => {
   // -------------------------
   // Listings by Category
   // -------------------------
-  const listingsData = [
-    { category: "Carabao", listings: 25 },
-    { category: "Cow", listings: 30 },
-    { category: "Goat", listings: 35 },
-    { category: "Chicken", listings: 30 },
-    { category: "Pig", listings: 45 },
-    { category: "Duck", listings: 20 },
-    { category: "Tilapia", listings: 18 },
-    { category: "Bangus", listings: 22 },
-    { category: "Rabbit", listings: 15 },
-  ];
+ const listingsData = [
+  { category: "Baboy", listings: 45 },
+  { category: "Baka", listings: 30 },
+  { category: "Bangus", listings: 22 },
+  { category: "Galunggong", listings: 17 },
+  { category: "Kambing", listings: 35 },
+  { category: "Kalabaw", listings: 25 },
+  { category: "Kalapati", listings: 10 },
+  { category: "Manok", listings: 30 },
+  { category: "Rabbit", listings: 15 },
+  { category: "Tilapia", listings: 18 },
+  { category: "Tulingan", listings: 12 },
+];
+
 
   // -------------------------
   // User Roles Distribution

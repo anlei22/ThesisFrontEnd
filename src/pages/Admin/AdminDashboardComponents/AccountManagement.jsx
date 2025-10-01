@@ -836,6 +836,7 @@ const User = () => {
                       <input
                         type="text"
                         value={editingUser.firstName}
+                        readOnly
                         onChange={(e) => setEditingUser({...editingUser, firstName: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={isLoading}
@@ -846,6 +847,7 @@ const User = () => {
                       <input
                         type="text"
                         value={editingUser.middleName}
+                        readOnly
                         onChange={(e) => setEditingUser({...editingUser, middleName: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={isLoading}
@@ -856,6 +858,7 @@ const User = () => {
                       <input
                         type="text"
                         value={editingUser.surname}
+                        readOnly
                         onChange={(e) => setEditingUser({...editingUser, surname: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={isLoading}
@@ -869,6 +872,7 @@ const User = () => {
                       <input
                         type="date"
                         value={editingUser.birthday}
+                        readOnly
                         onChange={(e) => setEditingUser({...editingUser, birthday: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={isLoading}
@@ -879,6 +883,7 @@ const User = () => {
                       <input
                         type="number"
                         value={editingUser.age}
+                        readOnly
                         onChange={(e) => setEditingUser({...editingUser, age: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={isLoading}
@@ -888,9 +893,11 @@ const User = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Sex</label>
                       <select
                         value={editingUser.sex}
+                        
                         onChange={(e) => setEditingUser({...editingUser, sex: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={isLoading}
+                        readOnly
                       >
                         <option value="">Select Sex</option>
                         <option value="Male">Male</option>
@@ -903,6 +910,7 @@ const User = () => {
 
                 {/* Contact Information */}
                 <div className="bg-gray-50 p-6 rounded-xl">
+                  
                   <h4 className="font-semibold text-gray-800 mb-4">Contact Information</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -910,6 +918,8 @@ const User = () => {
                       <input
                         type="tel"
                         value={editingUser.phone}
+                        
+                        readOnly
                         onChange={(e) => setEditingUser({...editingUser, phone: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={isLoading}
@@ -920,6 +930,7 @@ const User = () => {
                       <input
                         type="email"
                         value={editingUser.email}
+                        readOnly
                         onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={isLoading}
@@ -931,6 +942,7 @@ const User = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                     <textarea
                       value={editingUser.address}
+                      readOnly
                       onChange={(e) => setEditingUser({...editingUser, address: e.target.value})}
                       rows={2}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -947,6 +959,7 @@ const User = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                       <select
                         value={editingUser.role}
+                        
                         onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={isLoading}
@@ -988,6 +1001,7 @@ const User = () => {
                     value={editingUser.bio}
                     onChange={(e) => setEditingUser({...editingUser, bio: e.target.value})}
                     rows={3}
+                    readOnly
                     placeholder="Tell us about yourself..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     disabled={isLoading}
@@ -1000,7 +1014,8 @@ const User = () => {
                     <h4 className="font-semibold text-gray-800 mb-4">ID Photo</h4>
                     {editingUser.idPhoto && (
                       <img 
-                        src={editingUser.idPhoto} 
+                        src={editingUser.idPhoto}
+                   
                         alt="ID Photo" 
                         className="w-full max-w-xs mb-4 border rounded-lg shadow-sm"
                       />
@@ -1011,7 +1026,7 @@ const User = () => {
                     </div>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/*"readOnly
                       onChange={handleIdPhotoChange}
                       className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       disabled={isLoading}
@@ -1034,6 +1049,7 @@ const User = () => {
                     <input
                       type="file"
                       accept="image/*"
+                      
                       onChange={handleSelfiePhotoChange}
                       className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       disabled={isLoading}

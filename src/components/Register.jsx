@@ -271,6 +271,7 @@
       switch (currentStep) {
       case 1:
         return (
+          
           <div className="space-y-6">
             <div className="text-center mb-8">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
@@ -828,9 +829,12 @@
       }
     };
 
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 py-4 md:py-8 px-4">
-        <div className="max-w-6xl mx-auto">
+return (
+  <div  
+    className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 py-4 md:py-8 px-4 overflow-y-auto"
+    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+  >
+    <div className="max-w-6xl mx-auto">
           {/* Enhanced Progress Stepper */}
           <div className="mb-6 md:mb-12">
             <div className="relative px-2">

@@ -332,466 +332,280 @@ const EditProfileModal = ({
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
-          {/* Profile Pictures */}
-          <div className="space-y-4">
-            <div>
-              <label
-                className={`block text-sm font-medium mb-2 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Profile Picture
-              </label>
-              <div className="flex items-center space-x-4">
-                <img
-                  src={
-                    editForm.profilePic ||
-                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
-                  }
-                  alt="Profile"
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <label className="cursor-pointer px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                  <span
-                    className={`text-sm ${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    Change Photo
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const mockUrl = `https://images.unsplash.com/photo-${Date.now()}?w=150&h=150&fit=crop&crop=face`;
-                        setEditForm((prev) => ({
-                          ...prev,
-                          profilePic: mockUrl,
-                        }));
-                      }
-                    }}
-                  />
-                </label>
-              </div>
-            </div>
+     <div className="p-6 space-y-8">
+  {/* Cover + Profile */}
+  <div className="relative w-full">
+    {/* Cover Photo */}
+    <div className="relative">
+      <img
+        src={
+          editForm.coverPhoto ||
+          "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1000&h=300&fit=crop"
+        }
+        alt="Cover"
+        className="w-full h-40 md:h-56 rounded-lg object-cover"
+      />
+      <label className="absolute bottom-3 right-3 cursor-pointer px-3 py-1.5 bg-white/80 dark:bg-gray-800/80 text-xs rounded-lg shadow hover:bg-white dark:hover:bg-gray-700 transition-colors">
+        Change Cover
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            if (file) {
+              const mockUrl = `https://images.unsplash.com/photo-${Date.now()}?w=1000&h=300&fit=crop`;
+              setEditForm((prev) => ({ ...prev, coverPhoto: mockUrl }));
+            }
+          }}
+        />
+      </label>
+    </div>
 
-            <div>
-              <label
-                className={`block text-sm font-medium mb-2 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Cover Photo
-              </label>
-              <div className="space-y-2">
-                <img
-                  src={
-                    editForm.coverPhoto ||
-                    "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=300&fit=crop"
-                  }
-                  alt="Cover"
-                  className="w-full h-32 rounded-lg object-cover"
-                />
-                <label className="cursor-pointer inline-block px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                  <span
-                    className={`text-sm ${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    Change Cover
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const mockUrl = `https://images.unsplash.com/photo-${Date.now()}?w=800&h=300&fit=crop`;
-                        setEditForm((prev) => ({
-                          ...prev,
-                          coverPhoto: mockUrl,
-                        }));
-                      }
-                    }}
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
+    {/* Profile Picture */}
+    <div className="absolute -bottom-12 left-6 flex items-center space-x-4">
+      <img
+        src={
+          editForm.profilePic ||
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+        }
+        alt="Profile"
+        className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 object-cover"
+      />
+      <label className="cursor-pointer px-3 py-1.5 bg-white/80 dark:bg-gray-800/80 text-xs rounded-lg shadow hover:bg-white dark:hover:bg-gray-700 transition-colors">
+        Change Photo
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            if (file) {
+              const mockUrl = `https://images.unsplash.com/photo-${Date.now()}?w=150&h=150&fit=crop&crop=face`;
+              setEditForm((prev) => ({ ...prev, profilePic: mockUrl }));
+            }
+          }}
+        />
+      </label>
+    </div>
+  </div>
 
-          {/* Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label
-                className={`block text-sm font-medium mb-1 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                First Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="firstName"
-                value={editForm.firstName}
-                onChange={(e) =>
-                  setEditForm((prev) => ({
-                    ...prev,
-                    firstName: e.target.value,
-                  }))
-                }
-                className={`w-full px-3 py-2 border rounded-md ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-                placeholder="Enter first name"
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                className={`block text-sm font-medium mb-1 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Middle Name
-              </label>
-              <input
-                type="text"
-                name="middleName"
-                value={editForm.middleName}
-                onChange={(e) =>
-                  setEditForm((prev) => ({
-                    ...prev,
-                    middleName: e.target.value,
-                  }))
-                }
-                className={`w-full px-3 py-2 border rounded-md ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-                placeholder="Enter middle name"
-              />
-            </div>
-
-            <div>
-              <label
-                className={`block text-sm font-medium mb-1 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Last Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="surname"
-                value={editForm.surname}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, surname: e.target.value }))
-                }
-                className={`w-full px-3 py-2 border rounded-md ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-                placeholder="Enter last name"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Contact Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                className={`block text-sm font-medium mb-1 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={editForm.email}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, email: e.target.value }))
-                }
-                className={`w-full px-3 py-2 border rounded-md ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-                placeholder="Enter email address"
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                className={`block text-sm font-medium mb-1 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Phone Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={editForm.phone}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, phone: e.target.value }))
-                }
-                className={`w-full px-3 py-2 border rounded-md ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-                placeholder="Enter phone number"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              className={`block text-sm font-medium mb-1 ${
-                darkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Address <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="address"
-              value={editForm.address}
-              onChange={(e) =>
-                setEditForm((prev) => ({ ...prev, address: e.target.value }))
-              }
-              className={`w-full px-3 py-2 border rounded-md ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-              placeholder="Enter full address"
-              required
-            />
-          </div>
-
-          {/* Personal Details */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label
-                className={`block text-sm font-medium mb-1 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Birthday <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                name="birthday"
-                value={editForm.birthday}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, birthday: e.target.value }))
-                }
-                className={`w-full px-3 py-2 border rounded-md ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                className={`block text-sm font-medium mb-1 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Age <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                name="age"
-                value={editForm.age}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, age: e.target.value }))
-                }
-                className={`w-full px-3 py-2 border rounded-md ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-                placeholder="Enter age"
-                min="13"
-                max="120"
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                className={`block text-sm font-medium mb-1 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Sex <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="sex"
-                value={editForm.sex}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, sex: e.target.value }))
-                }
-                className={`w-full px-3 py-2 border rounded-md ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-                required
-              >
-                <option value="">Select sex</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label
-              className={`block text-sm font-medium mb-1 ${
-                darkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              User Role <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="role"
-              value={editForm.role}
-              onChange={(e) =>
-                setEditForm((prev) => ({ ...prev, role: e.target.value }))
-              }
-              className={`w-full px-3 py-2 border rounded-md ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-              required
-            >
-              <option value="">Select role</option>
-              <option value="buyer">Buyer</option>
-              <option value="seller">Seller</option>
-              <option value="both">Buyer & Seller</option>
-            </select>
-          </div>
-
-          {/* Password Section */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <h3
-              className={`text-lg font-medium mb-4 ${
-                darkMode ? "text-white" : "text-gray-900"
-              }`}
-            >
-              Change Password
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  className={`block text-sm font-medium mb-1 ${
-                    darkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={editForm.password}
-                  onChange={(e) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      password: e.target.value,
-                    }))
-                  }
-                  className={`w-full px-3 py-2 border rounded-md ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                  placeholder="Enter new password"
-                />
-              </div>
-
-              <div>
-                <label
-                  className={`block text-sm font-medium mb-1 ${
-                    darkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={editForm.confirmPassword}
-                  onChange={(e) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      confirmPassword: e.target.value,
-                    }))
-                  }
-                  className={`w-full px-3 py-2 border rounded-md ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                  placeholder="Confirm new password"
-                />
-              </div>
-            </div>
-            {editForm.password &&
-              editForm.confirmPassword &&
-              editForm.password !== editForm.confirmPassword && (
-                <p className="text-red-500 text-sm mt-2">
-                  Passwords do not match
-                </p>
-              )}
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              onClick={onClose}
-              disabled={loading}
-              className={`px-4 py-2 border rounded-md ${
-                darkMode
-                  ? "border-gray-600 text-gray-300 hover:bg-gray-700"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
-              } disabled:opacity-50`}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={onSave}
-              disabled={loading}
-              className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center"
-            >
-              {loading && (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              )}
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
+  {/* Form Sections */}
+  <div className="pt-14 space-y-6">
+    {/* Basic Info */}
+    <div>
+      <h2 className="text-lg font-semibold mb-4">Basic Information</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* First Name */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            First Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={editForm.firstName}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, firstName: e.target.value }))
+            }
+            placeholder="Enter first name"
+            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          />
         </div>
+
+        {/* Middle Name */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Middle Name</label>
+          <input
+            type="text"
+            value={editForm.middleName}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, middleName: e.target.value }))
+            }
+            placeholder="Enter middle name"
+            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          />
+        </div>
+
+        {/* Last Name */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Last Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={editForm.surname}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, surname: e.target.value }))
+            }
+            placeholder="Enter last name"
+            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Contact Info */}
+    <div>
+      <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Email *</label>
+          <input
+            type="email"
+            value={editForm.email}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, email: e.target.value }))
+            }
+            placeholder="Enter email address"
+            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Phone *</label>
+          <input
+            type="tel"
+            value={editForm.phone}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, phone: e.target.value }))
+            }
+            placeholder="Enter phone number"
+            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          />
+        </div>
+      </div>
+      <div className="mt-4">
+        <label className="block text-sm font-medium mb-1">Address *</label>
+        <input
+          type="text"
+          value={editForm.address}
+          onChange={(e) =>
+            setEditForm((prev) => ({ ...prev, address: e.target.value }))
+          }
+          placeholder="Enter full address"
+          className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+        />
+      </div>
+    </div>
+
+    {/* Personal Info */}
+    <div>
+      <h2 className="text-lg font-semibold mb-4">Personal Details</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Birthday *</label>
+          <input
+            type="date"
+            value={editForm.birthday}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, birthday: e.target.value }))
+            }
+            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Age *</label>
+          <input
+            type="number"
+            min="13"
+            max="120"
+            value={editForm.age}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, age: e.target.value }))
+            }
+            placeholder="Enter age"
+            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Sex *</label>
+          <select
+            value={editForm.sex}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, sex: e.target.value }))
+            }
+            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          >
+            <option value="">Select sex</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    {/* User Role */}
+    <div>
+      <label className="block text-sm font-medium mb-1">User Role *</label>
+      <select
+        value={editForm.role}
+        onChange={(e) =>
+          setEditForm((prev) => ({ ...prev, role: e.target.value }))
+        }
+        className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+      >
+        <option value="">Select role</option>
+        <option value="buyer">Buyer</option>
+        <option value="seller">Seller</option>
+        <option value="both">Buyer & Seller</option>
+      </select>
+    </div>
+
+    {/* Password */}
+    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+      <h3 className="text-lg font-semibold mb-4">Change Password</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input
+          type="password"
+          placeholder="New Password"
+          value={editForm.password}
+          onChange={(e) =>
+            setEditForm((prev) => ({ ...prev, password: e.target.value }))
+          }
+          className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+        />
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          value={editForm.confirmPassword}
+          onChange={(e) =>
+            setEditForm((prev) => ({
+              ...prev,
+              confirmPassword: e.target.value,
+            }))
+          }
+          className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+        />
+      </div>
+      {editForm.password &&
+        editForm.confirmPassword &&
+        editForm.password !== editForm.confirmPassword && (
+          <p className="text-red-500 text-sm mt-2">Passwords do not match</p>
+        )}
+    </div>
+
+    {/* Actions */}
+    <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <button
+        onClick={onClose}
+        disabled={loading}
+        className="px-4 py-2 border rounded-md text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={onSave}
+        disabled={loading}
+        className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center"
+      >
+        {loading && (
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+        )}
+        {loading ? "Saving..." : "Save Changes"}
+      </button>
+    </div>
+  </div>
+</div>
       </div>
     </div>
   );

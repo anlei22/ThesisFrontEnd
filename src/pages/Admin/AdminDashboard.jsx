@@ -286,7 +286,10 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-72 pt-16 h-[calc(100vh)] overflow-y-auto">
+<main
+  className="lg:ml-72 pt-16 h-[calc(100vh)] overflow-y-auto"
+  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+>
         <div className="">
         
          <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[calc(94vh)]">

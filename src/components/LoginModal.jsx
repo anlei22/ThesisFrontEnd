@@ -80,13 +80,14 @@ const LoginModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div
-        className={`relative w-full max-w-lg max-h-[80vh] rounded-2xl shadow-2xl overflow-y-auto transition-all duration-300 ${
-          darkMode
-            ? "bg-gray-900 border border-gray-700"
-            : "bg-white border border-gray-200"
-        }`}
-      >
+     <div
+  className={`relative w-full max-w-lg max-h-[80vh] rounded-2xl shadow-2xl overflow-y-auto transition-all duration-300 ${
+    darkMode
+      ? "bg-gray-900 border border-gray-700"
+      : "bg-white border border-gray-200"
+  }`}
+  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+>
         {/* Close Button */}
         <div className="flex justify-end pt-4 pr-4">
           <button
