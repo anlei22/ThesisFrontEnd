@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-
   XAxis,
   YAxis,
   CartesianGrid,
@@ -8,11 +7,9 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-
 } from "recharts";
-  import { useConnection } from '../../../context/Connection';
+import { useConnection } from "../../../context/Connection";
 
-  
 const Dashboard = () => {
   // -------------------------
   // State for users (simulate backend)
@@ -33,20 +30,19 @@ const Dashboard = () => {
   // -------------------------
   // Listings by Category
   // -------------------------
- const listingsData = [
-  { category: "Baboy", listings: 45 },
-  { category: "Baka", listings: 30 },
-  { category: "Bangus", listings: 22 },
-  { category: "Galunggong", listings: 17 },
-  { category: "Kambing", listings: 35 },
-  { category: "Kalabaw", listings: 25 },
-  { category: "Kalapati", listings: 10 },
-  { category: "Manok", listings: 30 },
-  { category: "Rabbit", listings: 15 },
-  { category: "Tilapia", listings: 18 },
-  { category: "Tulingan", listings: 12 },
-];
-
+  const listingsData = [
+    { category: "Baboy", listings: 45 },
+    { category: "Baka", listings: 30 },
+    { category: "Bangus", listings: 22 },
+    { category: "Galunggong", listings: 17 },
+    { category: "Kambing", listings: 35 },
+    { category: "Kalabaw", listings: 25 },
+    { category: "Kalapati", listings: 10 },
+    { category: "Manok", listings: 30 },
+    { category: "Rabbit", listings: 15 },
+    { category: "Tilapia", listings: 18 },
+    { category: "Tulingan", listings: 12 },
+  ];
 
   // -------------------------
   // User Roles Distribution
@@ -71,39 +67,67 @@ const Dashboard = () => {
   // Icons
   // -------------------------
   const UsersIcon = () => (
-    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    <svg
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   );
 
   const ListingsIcon = () => (
-    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-      <rect x="7" y="7" width="3" height="9"/>
-      <rect x="14" y="7" width="3" height="5"/>
+    <svg
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <rect x="7" y="7" width="3" height="9" />
+      <rect x="14" y="7" width="3" height="5" />
     </svg>
   );
 
   const ReportIcon = () => (
-    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-      <line x1="12" y1="9" x2="12" y2="13"/>
-      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    <svg
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
   );
 
   return (
     <div className="space-y-8">
-      <div className="mb-4">
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
-          Dashboard
-        </h2>
-        <p className="mt-1 text-gray-600 text-sm sm:text-base">
-          Overview of your animal marketplace
-        </p>
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              Dashboard
+            </h2>
+            <p className="text-slate-600 text-sm sm:text-base">
+              Overview of your animal marketplace
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -113,7 +137,9 @@ const Dashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-bold text-gray-800">Total Users</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{usersFromDB.length}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">
+                {usersFromDB.length}
+              </p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg text-blue-600">
               <UsersIcon />
@@ -125,8 +151,12 @@ const Dashboard = () => {
         <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-gray-800">Active Listings</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{listingsData.reduce((a,b)=>a+b.listings,0)}</p>
+              <h3 className="text-lg font-bold text-gray-800">
+                Active Listings
+              </h3>
+              <p className="text-3xl font-bold text-gray-900 mt-2">
+                {listingsData.reduce((a, b) => a + b.listings, 0)}
+              </p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg text-green-600">
               <ListingsIcon />
@@ -138,7 +168,9 @@ const Dashboard = () => {
         <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-gray-800">Reported Posts</h3>
+              <h3 className="text-lg font-bold text-gray-800">
+                Reported Posts
+              </h3>
               <p className="text-3xl font-bold text-gray-900 mt-2">4</p>
             </div>
             <div className="p-3 bg-red-100 rounded-lg text-red-600">
@@ -152,11 +184,19 @@ const Dashboard = () => {
       <div className="">
         {/* Listings by Category Chart */}
         <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">Listings by Category</h3>
+          <h3 className="text-lg font-bold text-gray-800 mb-4">
+            Listings by Category
+          </h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={listingsData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="category" angle={-30} textAnchor="end" interval={0} height={80} />
+              <XAxis
+                dataKey="category"
+                angle={-30}
+                textAnchor="end"
+                interval={0}
+                height={80}
+              />
               <YAxis />
               <Tooltip />
               <Bar dataKey="listings" fill="#10B981" radius={[6, 6, 0, 0]} />
@@ -224,7 +264,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div> */}
-      </div> 
+      </div>
     </div>
   );
 };

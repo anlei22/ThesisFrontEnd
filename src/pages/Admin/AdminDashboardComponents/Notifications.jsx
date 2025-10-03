@@ -1,18 +1,18 @@
 import React, { useState } from "react";
-import { 
-  User, 
-  Flag, 
-  X, 
-  Trash2, 
-  FileText, 
-  Activity, 
-  Bell, 
+import {
+  User,
+  Flag,
+  X,
+  Trash2,
+  FileText,
+  Activity,
+  Bell,
   MessageCircle,
   UserPlus,
   PlusSquare,
   AlertCircle,
   Check,
-  Loader2
+  Loader2,
 } from "lucide-react";
 
 const Notifications = () => {
@@ -25,12 +25,12 @@ const Notifications = () => {
       message: "Sarah Johnson has registered and needs approval",
       timestamp: "2 minutes ago",
       isRead: false,
-      data: { 
-        userId: 1, 
-        userName: "Sarah Johnson", 
-        email: "sarah@example.com", 
-        registrationDate: "2024-09-14" 
-      }
+      data: {
+        userId: 1,
+        userName: "Sarah Johnson",
+        email: "sarah@example.com",
+        registrationDate: "2024-09-14",
+      },
     },
     {
       id: 2,
@@ -39,12 +39,12 @@ const Notifications = () => {
       message: "Michael Rodriguez has registered and needs approval",
       timestamp: "5 minutes ago",
       isRead: false,
-      data: { 
-        userId: 15, 
-        userName: "Michael Rodriguez", 
-        email: "michael.r@example.com", 
-        registrationDate: "2024-09-14" 
-      }
+      data: {
+        userId: 15,
+        userName: "Michael Rodriguez",
+        email: "michael.r@example.com",
+        registrationDate: "2024-09-14",
+      },
     },
     {
       id: 3,
@@ -53,12 +53,12 @@ const Notifications = () => {
       message: "Emma Thompson has registered and needs approval",
       timestamp: "10 minutes ago",
       isRead: true,
-      data: { 
-        userId: 16, 
-        userName: "Emma Thompson", 
-        email: "emma.t@example.com", 
-        registrationDate: "2024-09-14" 
-      }
+      data: {
+        userId: 16,
+        userName: "Emma Thompson",
+        email: "emma.t@example.com",
+        registrationDate: "2024-09-14",
+      },
     },
     {
       id: 4,
@@ -67,12 +67,12 @@ const Notifications = () => {
       message: "David Kim has registered and needs approval",
       timestamp: "20 minutes ago",
       isRead: true,
-      data: { 
-        userId: 17, 
-        userName: "David Kim", 
-        email: "david.kim@example.com", 
-        registrationDate: "2024-09-14" 
-      }
+      data: {
+        userId: 17,
+        userName: "David Kim",
+        email: "david.kim@example.com",
+        registrationDate: "2024-09-14",
+      },
     },
     {
       id: 5,
@@ -81,12 +81,12 @@ const Notifications = () => {
       message: "Lisa Anderson has registered and needs approval",
       timestamp: "30 minutes ago",
       isRead: false,
-      data: { 
-        userId: 18, 
-        userName: "Lisa Anderson", 
-        email: "lisa.anderson@example.com", 
-        registrationDate: "2024-09-14" 
-      }
+      data: {
+        userId: 18,
+        userName: "Lisa Anderson",
+        email: "lisa.anderson@example.com",
+        registrationDate: "2024-09-14",
+      },
     },
 
     // Report Notifications
@@ -94,16 +94,17 @@ const Notifications = () => {
       id: 6,
       type: "report",
       title: "Content Reported",
-      message: "Post 'Golden Retriever Available' has been reported for inappropriate content",
+      message:
+        "Post 'Golden Retriever Available' has been reported for inappropriate content",
       timestamp: "15 minutes ago",
       isRead: false,
-      data: { 
-        postId: 123, 
-        postTitle: "Golden Retriever Available", 
-        reportedBy: "John Doe", 
-        reason: "Inappropriate content", 
-        reportDate: "2024-09-14" 
-      }
+      data: {
+        postId: 123,
+        postTitle: "Golden Retriever Available",
+        reportedBy: "John Doe",
+        reason: "Inappropriate content",
+        reportDate: "2024-09-14",
+      },
     },
     {
       id: 7,
@@ -112,58 +113,61 @@ const Notifications = () => {
       message: "Post 'Selling iPhone 15 Pro' has been reported for spam",
       timestamp: "25 minutes ago",
       isRead: false,
-      data: { 
-        postId: 124, 
-        postTitle: "Selling iPhone 15 Pro", 
-        reportedBy: "Jane Smith", 
-        reason: "Spam", 
-        reportDate: "2024-09-14" 
-      }
+      data: {
+        postId: 124,
+        postTitle: "Selling iPhone 15 Pro",
+        reportedBy: "Jane Smith",
+        reason: "Spam",
+        reportDate: "2024-09-14",
+      },
     },
     {
       id: 8,
       type: "report",
       title: "Content Reported",
-      message: "Post 'Free Kittens - Good Home Only' has been reported for suspicious activity",
+      message:
+        "Post 'Free Kittens - Good Home Only' has been reported for suspicious activity",
       timestamp: "35 minutes ago",
       isRead: true,
-      data: { 
-        postId: 125, 
-        postTitle: "Free Kittens - Good Home Only", 
-        reportedBy: "Alex Johnson", 
-        reason: "Suspicious activity", 
-        reportDate: "2024-09-14" 
-      }
+      data: {
+        postId: 125,
+        postTitle: "Free Kittens - Good Home Only",
+        reportedBy: "Alex Johnson",
+        reason: "Suspicious activity",
+        reportDate: "2024-09-14",
+      },
     },
     {
       id: 9,
       type: "report",
       title: "Content Reported",
-      message: "Post 'Room for Rent Downtown' has been reported for fake listing",
+      message:
+        "Post 'Room for Rent Downtown' has been reported for fake listing",
       timestamp: "45 minutes ago",
       isRead: false,
-      data: { 
-        postId: 126, 
-        postTitle: "Room for Rent Downtown", 
-        reportedBy: "Maria Garcia", 
-        reason: "Fake listing", 
-        reportDate: "2024-09-14" 
-      }
+      data: {
+        postId: 126,
+        postTitle: "Room for Rent Downtown",
+        reportedBy: "Maria Garcia",
+        reason: "Fake listing",
+        reportDate: "2024-09-14",
+      },
     },
     {
       id: 10,
       type: "report",
       title: "Content Reported",
-      message: "Post '2019 Toyota Camry for Sale' has been reported for price manipulation",
+      message:
+        "Post '2019 Toyota Camry for Sale' has been reported for price manipulation",
       timestamp: "50 minutes ago",
       isRead: true,
-      data: { 
-        postId: 127, 
-        postTitle: "2019 Toyota Camry for Sale", 
-        reportedBy: "Robert Wilson", 
-        reason: "Price manipulation", 
-        reportDate: "2024-09-14" 
-      }
+      data: {
+        postId: 127,
+        postTitle: "2019 Toyota Camry for Sale",
+        reportedBy: "Robert Wilson",
+        reason: "Price manipulation",
+        reportDate: "2024-09-14",
+      },
     },
 
     // User Activity Notifications
@@ -174,14 +178,14 @@ const Notifications = () => {
       message: "Mike Chen has posted 'Vintage Guitar Collection for Sale'",
       timestamp: "1 hour ago",
       isRead: true,
-      data: { 
-        userId: 2, 
-        userName: "Mike Chen", 
-        postId: 128, 
-        postTitle: "Vintage Guitar Collection for Sale", 
-        action: "post_created", 
-        location: "New York, USA" 
-      }
+      data: {
+        userId: 2,
+        userName: "Mike Chen",
+        postId: 128,
+        postTitle: "Vintage Guitar Collection for Sale",
+        action: "post_created",
+        location: "New York, USA",
+      },
     },
     {
       id: 12,
@@ -190,14 +194,14 @@ const Notifications = () => {
       message: "Jennifer Lopez has posted 'Handmade Jewelry - Custom Orders'",
       timestamp: "1.5 hours ago",
       isRead: false,
-      data: { 
-        userId: 19, 
-        userName: "Jennifer Lopez", 
-        postId: 129, 
-        postTitle: "Handmade Jewelry - Custom Orders", 
-        action: "post_created", 
-        location: "Los Angeles, CA" 
-      }
+      data: {
+        userId: 19,
+        userName: "Jennifer Lopez",
+        postId: 129,
+        postTitle: "Handmade Jewelry - Custom Orders",
+        action: "post_created",
+        location: "Los Angeles, CA",
+      },
     },
     {
       id: 13,
@@ -206,30 +210,31 @@ const Notifications = () => {
       message: "Thomas Brown has posted 'Professional Photography Services'",
       timestamp: "2 hours ago",
       isRead: true,
-      data: { 
-        userId: 20, 
-        userName: "Thomas Brown", 
-        postId: 130, 
-        postTitle: "Professional Photography Services", 
-        action: "post_created", 
-        location: "Chicago, IL" 
-      }
+      data: {
+        userId: 20,
+        userName: "Thomas Brown",
+        postId: 130,
+        postTitle: "Professional Photography Services",
+        action: "post_created",
+        location: "Chicago, IL",
+      },
     },
     {
       id: 14,
       type: "user_activity",
       title: "Suspicious Activity Detected",
-      message: "Multiple posts detected from user Amanda White in short timeframe",
+      message:
+        "Multiple posts detected from user Amanda White in short timeframe",
       timestamp: "2.5 hours ago",
       isRead: false,
-      data: { 
-        userId: 21, 
-        userName: "Amanda White", 
-        action: "multiple_posts", 
-        postCount: 5, 
-        timeframe: "10 minutes", 
-        location: "Miami, FL" 
-      }
+      data: {
+        userId: 21,
+        userName: "Amanda White",
+        action: "multiple_posts",
+        postCount: 5,
+        timeframe: "10 minutes",
+        location: "Miami, FL",
+      },
     },
     {
       id: 15,
@@ -238,56 +243,64 @@ const Notifications = () => {
       message: "Carlos Martinez has posted 'Landscaping Services Available'",
       timestamp: "3 hours ago",
       isRead: true,
-      data: { 
-        userId: 22, 
-        userName: "Carlos Martinez", 
-        postId: 131, 
-        postTitle: "Landscaping Services Available", 
-        action: "post_created", 
-        location: "Phoenix, AZ" 
-      }
-    }
+      data: {
+        userId: 22,
+        userName: "Carlos Martinez",
+        postId: 131,
+        postTitle: "Landscaping Services Available",
+        action: "post_created",
+        location: "Phoenix, AZ",
+      },
+    },
   ]);
-  
+
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [notificationFilter, setNotificationFilter] = useState("all");
-  
+
   // Delete confirmation states
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Success message state
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  const notificationTypes = ["all", "user_registration", "report", "user_activity"];
+  const notificationTypes = [
+    "all",
+    "user_registration",
+    "report",
+    "user_activity",
+  ];
 
   // Computed values
-  const filteredNotifications = notifications.filter(n =>
-    notificationFilter === "all" || n.type === notificationFilter
+  const filteredNotifications = notifications.filter(
+    (n) => notificationFilter === "all" || n.type === notificationFilter
   );
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-  
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
   const unreadCountByType = {
     all: unreadCount,
-    user_registration: notifications.filter(n => n.type === "user_registration" && !n.isRead).length,
-    report: notifications.filter(n => n.type === "report" && !n.isRead).length,
-    user_activity: notifications.filter(n => n.type === "user_activity" && !n.isRead).length
+    user_registration: notifications.filter(
+      (n) => n.type === "user_registration" && !n.isRead
+    ).length,
+    report: notifications.filter((n) => n.type === "report" && !n.isRead)
+      .length,
+    user_activity: notifications.filter(
+      (n) => n.type === "user_activity" && !n.isRead
+    ).length,
   };
 
   // Event handlers
   const markAsRead = (id) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     );
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(n => ({ ...n, isRead: true }))
-    );
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
   };
 
   const showDeleteConfirmation = (notification, e) => {
@@ -298,23 +311,25 @@ const Notifications = () => {
 
   const confirmDelete = async () => {
     if (!notificationToDelete) return;
-    
+
     setIsDeleting(true);
-    
+
     // Close the main modal first if it's the same notification
     if (selectedNotification?.id === notificationToDelete.id) {
       closeModal();
     }
-    
+
     // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setNotifications(prev => prev.filter(n => n.id !== notificationToDelete.id));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    setNotifications((prev) =>
+      prev.filter((n) => n.id !== notificationToDelete.id)
+    );
+
     setIsDeleting(false);
     setShowDeleteConfirm(false);
     setNotificationToDelete(null);
-    
+
     // Show success message
     setShowSuccessMessage(true);
     setTimeout(() => {
@@ -343,14 +358,14 @@ const Notifications = () => {
   // Helper functions
   const getNotificationIcon = (type, data) => {
     switch (type) {
-      case 'user_registration':
+      case "user_registration":
         return <UserPlus className="w-5 h-5 text-blue-600" />;
-      case 'report':
+      case "report":
         return <Flag className="w-5 h-5 text-red-600" />;
-      case 'user_activity':
-        if (data?.action === 'post_created') {
+      case "user_activity":
+        if (data?.action === "post_created") {
           return <PlusSquare className="w-5 h-5 text-green-600" />;
-        } else if (data?.action === 'multiple_posts') {
+        } else if (data?.action === "multiple_posts") {
           return <AlertCircle className="w-5 h-5 text-orange-600" />;
         }
         return <Activity className="w-5 h-5 text-green-600" />;
@@ -361,11 +376,11 @@ const Notifications = () => {
 
   const formatFilterName = (type) => {
     if (type === "all") return "All Notifications";
-    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   return (
-    <div className="max-w-7xl mx-auto min-h-screen m-2 sm:m-6 bg-gray-50">
+    <div className="max-w-7xl mx-auto min-h-screen bg-gray-50">
       {/* Success Message */}
       {showSuccessMessage && (
         <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
@@ -386,36 +401,44 @@ const Notifications = () => {
       )}
 
       {/* Header Section */}
-      <div className="sticky top-0 pt-4 sm:pt-6 z-10 bg-white pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <Bell className="w-6 sm:w-8 h-6 sm:h-8 text-blue-600" />
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Reports</h2>
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Left Section */}
+<div className="flex flex-col space-y-2">
+  <h2 className="flex items-center gap-2 text-2xl sm:text-3xl font-bold text-slate-900">
+    Reports
+    {unreadCount > 0 && (
+      <span className="bg-red-500 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-0.5 rounded-full">
+        {unreadCount}
+      </span>
+    )}
+  </h2>
+
+  <p className="text-slate-600 text-sm sm:text-base">
+    Insights and summaries of your animal marketplace
+  </p>
+</div>
+
+
+
+            {/* Right Section */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               {unreadCount > 0 && (
-                <div className="bg-red-500 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 rounded-full min-w-[20px] sm:min-w-[24px] text-center">
-                  {unreadCount}
-                </div>
+                <button
+                  onClick={markAllAsRead}
+                  className="px-3 sm:px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 w-full sm:w-auto"
+                >
+                  Mark All Read
+                </button>
               )}
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                className="px-3 sm:px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 w-full sm:w-auto"
-              >
-                Mark All Read
-              </button>
-            )}
-            <div className="text-xs sm:text-sm text-gray-500">
-              {filteredNotifications.length} notification
-              {filteredNotifications.length !== 1 ? "s" : ""}
+              <div className="text-xs sm:text-sm text-slate-500">
+                {filteredNotifications.length} notification
+                {filteredNotifications.length !== 1 ? "s" : ""}
+              </div>
             </div>
           </div>
         </div>
-
-       
       </div>
 
       {/* Notification List */}
@@ -428,12 +451,14 @@ const Notifications = () => {
             <p className="text-gray-500">No notifications found</p>
           </div>
         ) : (
-          filteredNotifications.map(notification => (
+          filteredNotifications.map((notification) => (
             <div
               key={notification.id}
               onClick={() => handleNotificationClick(notification)}
               className={`bg-white p-3 sm:p-4 rounded-xl shadow-sm cursor-pointer border-l-4 transition-all duration-200 hover:shadow-md group ${
-                !notification.isRead ? 'border-blue-500 bg-blue-50/20' : 'border-gray-200'
+                !notification.isRead
+                  ? "border-blue-500 bg-blue-50/20"
+                  : "border-gray-200"
               }`}
             >
               <div className="flex items-start justify-between">
@@ -453,7 +478,9 @@ const Notifications = () => {
                     <p className="text-gray-600 text-xs sm:text-sm mb-2 line-clamp-2">
                       {notification.message}
                     </p>
-                    <p className="text-xs text-gray-500">{notification.timestamp}</p>
+                    <p className="text-xs text-gray-500">
+                      {notification.timestamp}
+                    </p>
                   </div>
                 </div>
                 <button
@@ -475,18 +502,24 @@ const Notifications = () => {
             {/* Modal Header */}
             <header className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                {getNotificationIcon(selectedNotification.type, selectedNotification.data)}
+                {getNotificationIcon(
+                  selectedNotification.type,
+                  selectedNotification.data
+                )}
                 <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
                   {selectedNotification.title}
                 </h3>
               </div>
             </header>
-            
+
             {/* Modal Body */}
             <div className="p-4 sm:p-6 overflow-y-auto">
               <div className="flex items-start gap-3 mb-6">
                 <div className="mt-1 hidden sm:block">
-                  {getNotificationIcon(selectedNotification.type, selectedNotification.data)}
+                  {getNotificationIcon(
+                    selectedNotification.type,
+                    selectedNotification.data
+                  )}
                 </div>
                 <p className="text-gray-700 leading-relaxed flex-1 text-sm sm:text-base">
                   {selectedNotification.message}
@@ -501,7 +534,9 @@ const Notifications = () => {
               </span>
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto order-1 sm:order-2">
                 <button
-                  onClick={(e) => showDeleteConfirmation(selectedNotification, e)}
+                  onClick={(e) =>
+                    showDeleteConfirmation(selectedNotification, e)
+                  }
                   className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 text-sm flex-1 sm:flex-initial"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -522,8 +557,7 @@ const Notifications = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && notificationToDelete && (
-<div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl mx-4">
             {/* Confirmation Header */}
             <div className="p-6 border-b border-gray-200">
@@ -536,15 +570,19 @@ const Notifications = () => {
                 </h3>
               </div>
               <p className="text-gray-600 text-sm">
-                Are you sure you want to delete this notification? This action cannot be undone.
+                Are you sure you want to delete this notification? This action
+                cannot be undone.
               </p>
             </div>
-            
+
             {/* Confirmation Body */}
             <div className="p-6">
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <div className="flex items-start gap-3">
-                  {getNotificationIcon(notificationToDelete.type, notificationToDelete.data)}
+                  {getNotificationIcon(
+                    notificationToDelete.type,
+                    notificationToDelete.data
+                  )}
                   <div className="flex-1">
                     <h4 className="font-medium text-gray-900 text-sm mb-1">
                       {notificationToDelete.title}

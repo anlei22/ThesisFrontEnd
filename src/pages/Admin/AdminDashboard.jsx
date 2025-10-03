@@ -180,6 +180,7 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-center">
             <AnimalMarketHubLogo size={window.innerWidth < 640 ? 36 : 48} />
           </div>
+          
           <div className="hidden sm:block">
             <h1 className="text-lg sm:text-xl font-bold text-gray-800">Animal MarketHub</h1>
             <p className="text-xs sm:text-sm text-gray-500">Admin Dashboard</p>
@@ -292,9 +293,9 @@ const AdminDashboard = () => {
 >
         <div className="">
         
-         <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[calc(94vh)]">
+         <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[calc(90vh)]">
 
-            <div className="p-4 sm:p-6">
+            <div className="p-4 sm:px-6 pt-0">
               {SelectedComponent ? <SelectedComponent /> : (
                 <div className="flex items-center justify-center h-64 text-gray-500">
                   <div className="text-center">
