@@ -61,7 +61,7 @@ const Mainboard = () => {
   const [postLocation, setPostLocation] = useState("all");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-
+const [postSearchQuery, setPostSearchQuery] = useState(''); // 👈 ADD THIS LINE
   // USER Search states
   const [userSearchTerm, setUserSearchTerm] = useState("");
   const [userSearchType, setUserSearchType] = useState("both");
@@ -72,21 +72,23 @@ const Mainboard = () => {
   const [selectedUser, setSelectedUser] = useState(null);
 
   // Categories with icons
-  const categories = [
-    { id: "all", name: "All Animals", icon: Filter },
-    { id: "baboy", name: "Baboy", icon: Filter },
-    { id: "baka", name: "Baka", icon: Filter },
-    { id: "bangus", name: "Bangus", icon: Fish },
-    { id: "galunggong", name: "Galunggong", icon: Fish },
-    { id: "kambing", name: "Kambing", icon: Filter },
-    { id: "kalabaw", name: "Kalabaw", icon: Filter },
-    { id: "kalapati", name: "Kalapati", icon: Bird },
-    { id: "manok", name: "Manok", icon: Filter },
-    { id: "rabbit", name: "Rabbit", icon: Rabbit },
-    { id: "tilapia", name: "Tilapia", icon: Fish },
-    { id: "tulingan", name: "Tulingan", icon: Fish },
-  ];
-
+ const categories = [
+  { id: "all", name: "All Animals", icon: Filter, apiName: null },
+  { id: "baboy", name: "Baboy", icon: Filter, apiName: "Pig" },
+  { id: "baka", name: "Baka", icon: Filter, apiName: "Cow" },
+  { id: "bangus", name: "Bangus", icon: Fish, apiName: "Bangus" },
+  { id: "galunggong", name: "Galunggong", icon: Fish, apiName: "Galunggong" },
+  { id: "kambing", name: "Kambing", icon: Filter, apiName: "Goat" },
+  { id: "kalabaw", name: "Kalabaw", icon: Filter, apiName: "Carabao" },
+  { id: "kalapati", name: "Kalapati", icon: Bird, apiName: "Kalapati" },
+  { id: "manok", name: "Manok", icon: Filter, apiName: "Chiken" },
+  { id: "rabbit", name: "Rabbit", icon: Rabbit, apiName: "Rabbit" },
+  { id: "tilapia", name: "Tilapia", icon: Fish, apiName: "Tilapia" },
+  { id: "tulingan", name: "Tulingan", icon: Fish, apiName: "Tulingan" },
+];
+ const selectedCategory = categories.find(cat => cat.id === postCategory);
+      const apiCategoryName = selectedCategory?.apiName || postCategory;
+      
   // Barangay locations
   const locations = [
     { id: "all", name: "All Locations" },
@@ -430,11 +432,12 @@ const Mainboard = () => {
           );
         }
         return (
-           <NewsFeed
+            <NewsFeed
           darkMode={darkMode}
           onCreatePost={handleCreatePost}
-          postCategory={postCategory}      // ✅ CHANGE FROM categoryFilter
-          postLocation={postLocation}      // ✅ CHANGE FROM locationFilter
+          postCategory={apiCategoryName === postCategory ? postCategory : apiCategoryName}
+          postLocation={postLocation}
+          searchQuery={postSearchQuery}
         />
         );
       case "chat":
@@ -853,315 +856,340 @@ const Mainboard = () => {
                   !viewingUserProfile ? "h-[680px] overflow-hidden" : ""
                 }`}
               >
-                {/* LEFT ASIDE - Post Filters & User Search - Hide when viewing profile */}
-                {!viewingUserProfile && (
-                  <aside className="w-90 mt-6 space-y-4 sticky top-6 h-fit">
-                    {/* User Search Card */}
-                    <div
-                      className={`${
-                        darkMode ? "bg-gray-800" : "bg-white"
-                      } rounded-lg shadow-sm p-6`}
-                    >
-                      <h3
-                        className={`font-semibold ${
-                          darkMode ? "text-white" : "text-gray-900"
-                        } mb-4 flex items-center gap-2`}
-                      >
-                        <User className="w-5 h-5" />
-                        Search Users
-                      </h3>
+          {/* LEFT ASIDE - Post Filters & User Search - Hide when viewing profile */}
+{!viewingUserProfile && (
+  <aside className="w-90 mt-6 space-y-4 sticky top-6 h-fit">
+    {/* User Search Card */}
+    <div
+      className={`${
+        darkMode ? "bg-gray-800" : "bg-white"
+      } rounded-lg shadow-sm p-6`}
+    >
+      <h3
+        className={`font-semibold ${
+          darkMode ? "text-white" : "text-gray-900"
+        } mb-4 flex items-center gap-2`}
+      >
+        <User className="w-5 h-5" />
+        Search Users
+      </h3>
 
-                      {/* Search Input */}
-                      <div className="relative mb-4">
-                        <Search
-                          className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-                            darkMode ? "text-gray-400" : "text-gray-500"
-                          }`}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Search for users..."
-                          value={userSearchTerm}
-                          onChange={(e) => {
-                            if (!isAuthenticated) return; // Block typing if not logged in
-                            setUserSearchTerm(e.target.value);
-                          }}
-                          onFocus={(e) => {
-                            if (!isAuthenticated) {
-                              setShowLoginModal(true); // Show modal if not logged in
-                              e.target.blur(); // Prevent keyboard/input
-                            }
-                          }}
-                          readOnly={!isAuthenticated}
-                          className={`w-full pl-10 pr-10 py-2 rounded-lg border transition-colors ${
-                            darkMode
-                              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
-                              : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
-                          } focus:outline-none focus:ring-2 focus:ring-green-500/20 ${
-                            !isAuthenticated ? "cursor-pointer opacity-70" : ""
-                          }`}
-                        />
+      {/* Search Input */}
+      <div className="relative mb-4">
+        <Search
+          className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
+            darkMode ? "text-gray-400" : "text-gray-500"
+          }`}
+        />
+        <input
+          type="text"
+          placeholder="Search for users..."
+          value={userSearchTerm}
+          onChange={(e) => {
+            if (!isAuthenticated) return;
+            setUserSearchTerm(e.target.value);
+          }}
+          onFocus={(e) => {
+            if (!isAuthenticated) {
+              setShowLoginModal(true);
+              e.target.blur();
+            }
+          }}
+          readOnly={!isAuthenticated}
+          className={`w-full pl-10 pr-10 py-2 rounded-lg border transition-colors ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
+              : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
+          } focus:outline-none focus:ring-2 focus:ring-green-500/20 ${
+            !isAuthenticated ? "cursor-pointer opacity-70" : ""
+          }`}
+        />
 
-                        {userSearchTerm && (
-                          <button
-                            onClick={() => setUserSearchTerm("")}
-                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
-                              darkMode
-                                ? "text-gray-400 hover:text-gray-200"
-                                : "text-gray-500 hover:text-gray-700"
-                            }`}
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+        {userSearchTerm && (
+          <button
+            onClick={() => setUserSearchTerm("")}
+            className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
+              darkMode
+                ? "text-gray-400 hover:text-gray-200"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
 
-                      {/* Search Results */}
-                      {showUserResults && (
-                        <div className="space-y-2 max-h-64 overflow-y-auto">
-                          {filteredUsers.length > 0 ? (
-                            filteredUsers.map((user, index) => {
-                              const userLocation = locations.find(
-                                (loc) => loc.id === user.location
-                              );
-                              return (
-                                <div
-                                  key={index}
-                                  onClick={() => handleViewUserProfile(user)}
-                                  className={`p-3 rounded-lg border transition-colors cursor-pointer ${
-                                    darkMode
-                                      ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
-                                      : "border-gray-200 bg-gray-50 hover:bg-gray-100"
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <img
-                                      src={user.avatar}
-                                      alt={user.name}
-                                      className="w-10 h-10 rounded-full object-cover"
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <h4
-                                          className={`font-medium text-sm truncate ${
-                                            darkMode
-                                              ? "text-white"
-                                              : "text-gray-900"
-                                          }`}
-                                        >
-                                          {user.name}
-                                        </h4>
-                                        <span
-                                          className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
-                                            user.type === "seller"
-                                              ? darkMode
-                                                ? "bg-blue-600 text-blue-100"
-                                                : "bg-blue-100 text-blue-600"
-                                              : darkMode
-                                              ? "bg-purple-600 text-purple-100"
-                                              : "bg-purple-100 text-purple-600"
-                                          }`}
-                                        >
-                                          {user.type}
-                                        </span>
-                                      </div>
-                                      <div
-                                        className={`flex items-center gap-1 text-xs ${
-                                          darkMode
-                                            ? "text-gray-400"
-                                            : "text-gray-500"
-                                        }`}
-                                      >
-                                        <MapPin className="w-3 h-3" />
-                                        <span className="truncate">
-                                          {userLocation?.name}
-                                        </span>
-                                        <Star className="w-3 h-3 text-yellow-400 fill-current ml-2" />
-                                        <span>{user.rating}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })
-                          ) : (
-                            <div
-                              className={`text-center py-4 text-sm ${
-                                darkMode ? "text-gray-400" : "text-gray-500"
-                              }`}
-                            >
-                              No users found
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    <div
-                      className={`${
-                        darkMode ? "bg-gray-800" : "bg-white"
-                      } rounded-lg shadow-sm p-6`}
-                    >
-                      <h3
-                        className={`font-semibold ${
-                          darkMode ? "text-white" : "text-gray-900"
-                        } mb-4 flex items-center gap-2`}
-                      >
-                        <Filter className="w-5 h-5" />
-                        Filter Posts
-                      </h3>
-
-                      {/* Category Dropdown */}
-                      <div className="mb-4 relative">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            darkMode ? "text-gray-300" : "text-gray-700"
+      {/* Search Results */}
+      {showUserResults && (
+        <div className="space-y-2 max-h-64 overflow-y-auto">
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user, index) => {
+              const userLocation = locations.find(
+                (loc) => loc.id === user.location
+              );
+              return (
+                <div
+                  key={index}
+                  onClick={() => handleViewUserProfile(user)}
+                  className={`p-3 rounded-lg border transition-colors cursor-pointer ${
+                    darkMode
+                      ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
+                      : "border-gray-200 bg-gray-50 hover:bg-gray-100"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4
+                          className={`font-medium text-sm truncate ${
+                            darkMode ? "text-white" : "text-gray-900"
                           }`}
                         >
-                          Category
-                        </label>
-                        <div className="relative">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowCategoryDropdown(!showCategoryDropdown);
-                              setShowLocationDropdown(false);
-                            }}
-                            className={`w-full flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                              darkMode
-                                ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                                : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
-                            }`}
-                          >
-                            <div className="flex items-center space-x-2">
-                              <selectedCategoryData.icon className="w-4 h-4" />
-                              <span>{selectedCategoryData?.name}</span>
-                            </div>
-                            <ChevronDown
-                              className={`w-4 h-4 transition-transform ${
-                                showCategoryDropdown ? "rotate-180" : ""
-                              }`}
-                            />
-                          </button>
-
-                          {showCategoryDropdown && (
-                            <div
-                              className={`absolute top-full left-0 w-full mt-1 ${
-                                darkMode ? "bg-gray-700" : "bg-white"
-                              } border ${
-                                darkMode ? "border-gray-600" : "border-gray-300"
-                              } rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto`}
-                            >
-                              {categories.map((category) => (
-                                <button
-                                  key={category.id}
-                                  onClick={() => {
-                                    setPostCategory(category.id);
-                                    setShowCategoryDropdown(false);
-                                  }}
-                                  className={`w-full flex items-center space-x-3 p-3 text-left hover:${
-                                    darkMode ? "bg-gray-600" : "bg-gray-50"
-                                  } ${
-                                    postCategory === category.id
-                                      ? darkMode
-                                        ? "bg-green-600 text-white"
-                                        : "bg-green-100 text-green-700"
-                                      : darkMode
-                                      ? "text-gray-300"
-                                      : "text-gray-700"
-                                  }`}
-                                >
-                                  <category.icon className="w-4 h-4" />
-                                  <span>{category.name}</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Location Dropdown */}
-                      <div className="relative">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            darkMode ? "text-gray-300" : "text-gray-700"
+                          {user.name}
+                        </h4>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                            user.type === "seller"
+                              ? darkMode
+                                ? "bg-blue-600 text-blue-100"
+                                : "bg-blue-100 text-blue-600"
+                              : darkMode
+                              ? "bg-purple-600 text-purple-100"
+                              : "bg-purple-100 text-purple-600"
                           }`}
                         >
-                          Location
-                        </label>
-                        <div className="relative">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowLocationDropdown(!showLocationDropdown);
-                              setShowCategoryDropdown(false);
-                            }}
-                            className={`w-full flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                              darkMode
-                                ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                                : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
-                            }`}
-                          >
-                            <div className="flex items-center space-x-2">
-                              <MapPin className="w-4 h-4" />
-                              <span>{selectedLocationData?.name}</span>
-                            </div>
-                            <ChevronDown
-                              className={`w-4 h-4 transition-transform ${
-                                showLocationDropdown ? "rotate-180" : ""
-                              }`}
-                            />
-                          </button>
-
-                          {showLocationDropdown && (
-                            <div
-                              className={`absolute top-full left-0 w-full mt-1 ${
-                                darkMode ? "bg-gray-700" : "bg-white"
-                              } border ${
-                                darkMode ? "border-gray-600" : "border-gray-300"
-                              } rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto`}
-                            >
-                              {locations.map((location) => (
-                                <button
-                                  key={location.id}
-                                  onClick={() => {
-                                    setPostLocation(location.id);
-                                    setShowLocationDropdown(false);
-                                  }}
-                                  className={`w-full flex items-center space-x-3 p-3 text-left hover:${
-                                    darkMode ? "bg-gray-600" : "bg-gray-50"
-                                  } ${
-                                    postLocation === location.id
-                                      ? darkMode
-                                        ? "bg-green-600 text-white"
-                                        : "bg-green-100 text-green-700"
-                                      : darkMode
-                                      ? "text-gray-300"
-                                      : "text-gray-700"
-                                  }`}
-                                >
-                                  <MapPin className="w-4 h-4" />
-                                  <span>{location.name}</span>
-                                </button>
-                              ))}
-                         
-
-                        <FilterSidebar
-                          postCategory={postCategory}
-                          setPostCategory={setPostCategory}
-                          postLocation={postLocation}
-                          setPostLocation={setPostLocation}
-                          searchQuery={searchQuery}
-                          setSearchQuery={setSearchQuery}
-                          darkMode={darkMode}
-                        />
-                           </div>
-                          )}
-                        </div>
+                          {user.type}
+                        </span>
+                      </div>
+                      <div
+                        className={`flex items-center gap-1 text-xs ${
+                          darkMode ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        <MapPin className="w-3 h-3" />
+                        <span className="truncate">{userLocation?.name}</span>
+                        <Star className="w-3 h-3 text-yellow-400 fill-current ml-2" />
+                        <span>{user.rating}</span>
                       </div>
                     </div>
-                  </aside>
-                )}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div
+              className={`text-center py-4 text-sm ${
+                darkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
+              No users found
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+
+    {/* Filter Posts Card */}
+    <div
+      className={`${
+        darkMode ? "bg-gray-800" : "bg-white"
+      } rounded-lg shadow-sm p-6`}
+    >
+      <h3
+        className={`font-semibold ${
+          darkMode ? "text-white" : "text-gray-900"
+        } mb-4 flex items-center gap-2`}
+      >
+        <Filter className="w-5 h-5" />
+        Filter Posts
+      </h3>
+
+      {/* 🎯 POST SEARCH INPUT - NEW ADDITION 🎯 */}
+      <div className="mb-4">
+        <label
+          className={`block text-sm font-medium mb-2 ${
+            darkMode ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          Search Posts
+        </label>
+        <div className="relative">
+          <Search
+            className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
+              darkMode ? "text-gray-400" : "text-gray-500"
+            }`}
+          />
+          <input
+            type="text"
+            placeholder="Search animals, breeds, titles..."
+            value={postSearchQuery}
+            onChange={(e) => setPostSearchQuery(e.target.value)}
+            className={`w-full pl-10 pr-10 py-2 rounded-lg border transition-colors ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
+                : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
+            } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
+          />
+          {postSearchQuery && (
+            <button
+              onClick={() => setPostSearchQuery("")}
+              className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
+                darkMode
+                  ? "text-gray-400 hover:text-gray-200"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Category Dropdown */}
+      <div className="mb-4 relative">
+        <label
+          className={`block text-sm font-medium mb-2 ${
+            darkMode ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          Category
+        </label>
+        <div className="relative">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowCategoryDropdown(!showCategoryDropdown);
+              setShowLocationDropdown(false);
+            }}
+            className={`w-full flex items-center justify-between p-3 rounded-lg border transition-colors ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <selectedCategoryData.icon className="w-4 h-4" />
+              <span>{selectedCategoryData?.name}</span>
+            </div>
+            <ChevronDown
+              className={`w-4 h-4 transition-transform ${
+                showCategoryDropdown ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {showCategoryDropdown && (
+            <div
+              className={`absolute top-full left-0 w-full mt-1 ${
+                darkMode ? "bg-gray-700" : "bg-white"
+              } border ${
+                darkMode ? "border-gray-600" : "border-gray-300"
+              } rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto`}
+            >
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => {
+                    setPostCategory(category.id);
+                    setShowCategoryDropdown(false);
+                  }}
+                  className={`w-full flex items-center space-x-3 p-3 text-left hover:${
+                    darkMode ? "bg-gray-600" : "bg-gray-50"
+                  } ${
+                    postCategory === category.id
+                      ? darkMode
+                        ? "bg-green-600 text-white"
+                        : "bg-green-100 text-green-700"
+                      : darkMode
+                      ? "text-gray-300"
+                      : "text-gray-700"
+                  }`}
+                >
+                  <category.icon className="w-4 h-4" />
+                  <span>{category.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Location Dropdown */}
+      <div className="relative">
+        <label
+          className={`block text-sm font-medium mb-2 ${
+            darkMode ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          Location
+        </label>
+        <div className="relative">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowLocationDropdown(!showLocationDropdown);
+              setShowCategoryDropdown(false);
+            }}
+            className={`w-full flex items-center justify-between p-3 rounded-lg border transition-colors ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <MapPin className="w-4 h-4" />
+              <span>{selectedLocationData?.name}</span>
+            </div>
+            <ChevronDown
+              className={`w-4 h-4 transition-transform ${
+                showLocationDropdown ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {showLocationDropdown && (
+            <div
+              className={`absolute top-full left-0 w-full mt-1 ${
+                darkMode ? "bg-gray-700" : "bg-white"
+              } border ${
+                darkMode ? "border-gray-600" : "border-gray-300"
+              } rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto`}
+            >
+              {locations.map((location) => (
+                <button
+                  key={location.id}
+                  onClick={() => {
+                    setPostLocation(location.id);
+                    setShowLocationDropdown(false);
+                  }}
+                  className={`w-full flex items-center space-x-3 p-3 text-left hover:${
+                    darkMode ? "bg-gray-600" : "bg-gray-50"
+                  } ${
+                    postLocation === location.id
+                      ? darkMode
+                        ? "bg-green-600 text-white"
+                        : "bg-green-100 text-green-700"
+                      : darkMode
+                      ? "text-gray-300"
+                      : "text-gray-700"
+                  }`}
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span>{location.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </aside>
+)}
 
                 {/* MAIN CONTENT - Full width when viewing profile */}
                 <main className={viewingUserProfile ? "flex-1" : "flex-1"}>
