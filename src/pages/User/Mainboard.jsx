@@ -23,7 +23,6 @@ import {
   User,
 } from "lucide-react";
 
-// Modal Component
 const Modal = ({ isOpen, onClose, children, darkMode = false }) => {
   if (!isOpen) return null;
 
@@ -33,6 +32,7 @@ const Modal = ({ isOpen, onClose, children, darkMode = false }) => {
     }
   };
 
+  // ✅ Clean, no extra state
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -430,12 +430,12 @@ const Mainboard = () => {
           );
         }
         return (
-          <NewsFeed
-            darkMode={darkMode}
-            onCreatePost={handleCreatePost}
-            categoryFilter={postCategory}
-            locationFilter={postLocation}
-          />
+           <NewsFeed
+          darkMode={darkMode}
+          onCreatePost={handleCreatePost}
+          postCategory={postCategory}      // ✅ CHANGE FROM categoryFilter
+          postLocation={postLocation}      // ✅ CHANGE FROM locationFilter
+        />
         );
       case "chat":
         return <ChatInterface darkMode={darkMode} />;
@@ -848,9 +848,11 @@ const Mainboard = () => {
               </div>
 
               {/* Desktop Layout - Hidden on mobile */}
-             <div className={`hidden lg:flex gap-5 px-6 lg:px-12 ${
-  !viewingUserProfile ? 'h-[680px] overflow-hidden' : ''
-}`}>
+              <div
+                className={`hidden lg:flex gap-5 px-6 lg:px-12 ${
+                  !viewingUserProfile ? "h-[680px] overflow-hidden" : ""
+                }`}
+              >
                 {/* LEFT ASIDE - Post Filters & User Search - Hide when viewing profile */}
                 {!viewingUserProfile && (
                   <aside className="w-90 mt-6 space-y-4 sticky top-6 h-fit">
@@ -876,28 +878,29 @@ const Mainboard = () => {
                             darkMode ? "text-gray-400" : "text-gray-500"
                           }`}
                         />
-<input
-  type="text"
-  placeholder="Search for users..."
-  value={userSearchTerm}
-  onChange={(e) => {
-    if (!isAuthenticated) return; // Block typing if not logged in
-    setUserSearchTerm(e.target.value);
-  }}
-  onFocus={(e) => {
-    if (!isAuthenticated) {
-      setShowLoginModal(true); // Show modal if not logged in
-      e.target.blur(); // Prevent keyboard/input
-    }
-  }}
-  readOnly={!isAuthenticated}
-  className={`w-full pl-10 pr-10 py-2 rounded-lg border transition-colors ${
-    darkMode
-      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
-      : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
-  } focus:outline-none focus:ring-2 focus:ring-green-500/20 ${!isAuthenticated ? "cursor-pointer opacity-70" : ""}`}
-/>
-
+                        <input
+                          type="text"
+                          placeholder="Search for users..."
+                          value={userSearchTerm}
+                          onChange={(e) => {
+                            if (!isAuthenticated) return; // Block typing if not logged in
+                            setUserSearchTerm(e.target.value);
+                          }}
+                          onFocus={(e) => {
+                            if (!isAuthenticated) {
+                              setShowLoginModal(true); // Show modal if not logged in
+                              e.target.blur(); // Prevent keyboard/input
+                            }
+                          }}
+                          readOnly={!isAuthenticated}
+                          className={`w-full pl-10 pr-10 py-2 rounded-lg border transition-colors ${
+                            darkMode
+                              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
+                              : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
+                          } focus:outline-none focus:ring-2 focus:ring-green-500/20 ${
+                            !isAuthenticated ? "cursor-pointer opacity-70" : ""
+                          }`}
+                        />
 
                         {userSearchTerm && (
                           <button
@@ -1141,7 +1144,18 @@ const Mainboard = () => {
                                   <span>{location.name}</span>
                                 </button>
                               ))}
-                            </div>
+                         
+
+                        <FilterSidebar
+                          postCategory={postCategory}
+                          setPostCategory={setPostCategory}
+                          postLocation={postLocation}
+                          setPostLocation={setPostLocation}
+                          searchQuery={searchQuery}
+                          setSearchQuery={setSearchQuery}
+                          darkMode={darkMode}
+                        />
+                           </div>
                           )}
                         </div>
                       </div>
@@ -1155,178 +1169,186 @@ const Mainboard = () => {
                 </main>
 
                 {/* RIGHT ASIDE - Top Participants - Hide when viewing profile */}
-            {!viewingUserProfile && (
-  <aside className="w-[24rem] mt-6">
-    <div
-      className={`${
-        darkMode
-          ? "bg-gray-800 border-gray-700"
-          : "bg-white border-gray-100"
-      } rounded-xl shadow-lg border sticky top-6 h-[600px] flex flex-col overflow-hidden`}
-    >
-      {/* Header */}
-      <div
-        className={`p-6 border-b ${
-          darkMode ? "border-gray-700" : "border-gray-200"
-        }`}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div
-              className={`p-2 rounded-lg ${
-                darkMode ? "bg-green-600" : "bg-green-100"
-              }`}
-            >
-              <TrendingUp
-                className={`w-5 h-5 ${
-                  darkMode ? "text-white" : "text-green-600"
-                }`}
-              />
-            </div>
-            <h3
-              className={`font-bold text-xl ${
-                darkMode ? "text-white" : "text-gray-900"
-              }`}
-            >
-              Top Sellers
-            </h3>
-          </div>
-          <div
-            className={`text-sm ${
-              darkMode ? "text-gray-400" : "text-gray-500"
-            }`}
-          >
-            {sellers.length} sellers
-          </div>
-        </div>
-      </div>
-
-      {/* Sellers List */}
-      <div
-  className="flex-1 overflow-y-auto"
-  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
->
-        <div className="p-4 space-y-3">
-          {sellers.map((user, index) => {
-            const userLocation = locations?.find(
-              (loc) => loc.id === user.location
-            );
-            const rankBadge = getRankBadge(index);
-
-            return (
-              <div
-                key={`seller-${index}`}
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    setShowLoginModal(true); // Show login modal if not logged in
-                    return;
-                  }
-                  handleViewUserProfile(user); // Only view profile if logged in
-                }}
-                className={`${
-                  darkMode
-                    ? "bg-gray-700 hover:bg-gray-650"
-                    : "bg-gray-50 hover:bg-gray-100"
-                } rounded-xl p-4 border-l-4 ${
-                  rankBadge.border
-                } transition-all duration-200 hover:shadow-md group cursor-pointer`}
-              >
-                <div className="flex items-center gap-4">
-                  {/* Clean Rank Number */}
-                  <div className="flex-shrink-0 w-8 flex justify-center">
-                    <span
-                      className={`font-bold text-lg ${
-                        index < 3
-                          ? index === 0
-                            ? darkMode
-                              ? "text-yellow-400"
-                              : "text-yellow-500"
-                            : index === 1
-                            ? darkMode
-                              ? "text-gray-300"
-                              : "text-gray-400"
-                            : darkMode
-                            ? "text-amber-600"
-                            : "text-amber-700"
-                          : darkMode
-                          ? "text-gray-400"
-                          : "text-gray-500"
-                      } transition-all`}
+                {!viewingUserProfile && (
+                  <aside className="w-[24rem] mt-6">
+                    <div
+                      className={`${
+                        darkMode
+                          ? "bg-gray-800 border-gray-700"
+                          : "bg-white border-gray-100"
+                      } rounded-xl shadow-lg border sticky top-6 h-[600px] flex flex-col overflow-hidden`}
                     >
-                      {index + 1}
-                    </span>
-                  </div>
-
-                  {/* Profile Card */}
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    {/* Avatar */}
-                    <div className="flex-shrink-0">
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="w-12 h-12 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent group-hover:ring-green-400 transition-all"
-                      />
-                    </div>
-
-                    {/* User Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4
-                          className={`font-semibold text-sm truncate ${
-                            darkMode ? "text-white" : "text-gray-900"
-                          }`}
-                        >
-                          {user.name}
-                        </h4>
-                      </div>
-
-                      {/* Location */}
+                      {/* Header */}
                       <div
-                        className={`flex items-center gap-1 text-xs mb-2 ${
-                          darkMode ? "text-gray-400" : "text-gray-500"
+                        className={`p-6 border-b ${
+                          darkMode ? "border-gray-700" : "border-gray-200"
                         }`}
                       >
-                        <MapPin className="w-3 h-3 flex-shrink-0" />
-                        <span className="truncate">
-                          {userLocation?.name || "Unknown Location"}
-                        </span>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`p-2 rounded-lg ${
+                                darkMode ? "bg-green-600" : "bg-green-100"
+                              }`}
+                            >
+                              <TrendingUp
+                                className={`w-5 h-5 ${
+                                  darkMode ? "text-white" : "text-green-600"
+                                }`}
+                              />
+                            </div>
+                            <h3
+                              className={`font-bold text-xl ${
+                                darkMode ? "text-white" : "text-gray-900"
+                              }`}
+                            >
+                              Top Sellers
+                            </h3>
+                          </div>
+                          <div
+                            className={`text-sm ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
+                            {sellers.length} sellers
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Rating */}
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-3 h-3 ${
-                              i < Math.floor(user.rating)
-                                ? "text-yellow-400 fill-current"
-                                : darkMode
-                                ? "text-gray-600"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                        <span
-                          className={`text-xs font-medium ml-1 ${
-                            darkMode
-                              ? "text-yellow-400"
-                              : "text-yellow-600"
-                          }`}
-                        >
-                          {user.rating}
-                        </span>
+                      {/* Sellers List */}
+                      <div
+                        className="flex-1 overflow-y-auto"
+                        style={{
+                          scrollbarWidth: "none",
+                          msOverflowStyle: "none",
+                        }}
+                      >
+                        <div className="p-4 space-y-3">
+                          {sellers.map((user, index) => {
+                            const userLocation = locations?.find(
+                              (loc) => loc.id === user.location
+                            );
+                            const rankBadge = getRankBadge(index);
+
+                            return (
+                              <div
+                                key={`seller-${index}`}
+                                onClick={() => {
+                                  if (!isAuthenticated) {
+                                    setShowLoginModal(true); // Show login modal if not logged in
+                                    return;
+                                  }
+                                  handleViewUserProfile(user); // Only view profile if logged in
+                                }}
+                                className={`${
+                                  darkMode
+                                    ? "bg-gray-700 hover:bg-gray-650"
+                                    : "bg-gray-50 hover:bg-gray-100"
+                                } rounded-xl p-4 border-l-4 ${
+                                  rankBadge.border
+                                } transition-all duration-200 hover:shadow-md group cursor-pointer`}
+                              >
+                                <div className="flex items-center gap-4">
+                                  {/* Clean Rank Number */}
+                                  <div className="flex-shrink-0 w-8 flex justify-center">
+                                    <span
+                                      className={`font-bold text-lg ${
+                                        index < 3
+                                          ? index === 0
+                                            ? darkMode
+                                              ? "text-yellow-400"
+                                              : "text-yellow-500"
+                                            : index === 1
+                                            ? darkMode
+                                              ? "text-gray-300"
+                                              : "text-gray-400"
+                                            : darkMode
+                                            ? "text-amber-600"
+                                            : "text-amber-700"
+                                          : darkMode
+                                          ? "text-gray-400"
+                                          : "text-gray-500"
+                                      } transition-all`}
+                                    >
+                                      {index + 1}
+                                    </span>
+                                  </div>
+
+                                  {/* Profile Card */}
+                                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    {/* Avatar */}
+                                    <div className="flex-shrink-0">
+                                      <img
+                                        src={user.avatar}
+                                        alt={user.name}
+                                        className="w-12 h-12 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent group-hover:ring-green-400 transition-all"
+                                      />
+                                    </div>
+
+                                    {/* User Info */}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <h4
+                                          className={`font-semibold text-sm truncate ${
+                                            darkMode
+                                              ? "text-white"
+                                              : "text-gray-900"
+                                          }`}
+                                        >
+                                          {user.name}
+                                        </h4>
+                                      </div>
+
+                                      {/* Location */}
+                                      <div
+                                        className={`flex items-center gap-1 text-xs mb-2 ${
+                                          darkMode
+                                            ? "text-gray-400"
+                                            : "text-gray-500"
+                                        }`}
+                                      >
+                                        <MapPin className="w-3 h-3 flex-shrink-0" />
+                                        <span className="truncate">
+                                          {userLocation?.name ||
+                                            "Unknown Location"}
+                                        </span>
+                                      </div>
+
+                                      {/* Rating */}
+                                      <div className="flex items-center gap-1">
+                                        {[...Array(5)].map((_, i) => (
+                                          <Star
+                                            key={i}
+                                            className={`w-3 h-3 ${
+                                              i < Math.floor(user.rating)
+                                                ? "text-yellow-400 fill-current"
+                                                : darkMode
+                                                ? "text-gray-600"
+                                                : "text-gray-300"
+                                            }`}
+                                          />
+                                        ))}
+                                        <span
+                                          className={`text-xs font-medium ml-1 ${
+                                            darkMode
+                                              ? "text-yellow-400"
+                                              : "text-yellow-600"
+                                          }`}
+                                        >
+                                          {user.rating}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  </aside>
-)}
+                  </aside>
+                )}
               </div>
             </>
           ) : (
@@ -1350,16 +1372,13 @@ const Mainboard = () => {
             onClose={() => setShowCreatePost(false)}
           />
         )}
-           {/* Login Modal */}
+        {/* Login Modal */}
         <LoginModal
           isOpen={showLoginModal}
           onClose={() => setShowLoginModal(false)}
           darkMode={darkMode}
         />
       </div>
-
-
-     
     </AuthProvider>
   );
 };

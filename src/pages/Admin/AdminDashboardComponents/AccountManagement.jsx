@@ -34,6 +34,24 @@ const User = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [apiError, setApiError] = useState(null);
+
+  // API Configuration - Update these values with your actual backend details
+  const API_BASE_URL = 'http://localhost:8000/api';
+  const API_KEY = 'gY7uVz2QeTXB1oLkwA@mJ5fPR9dNshv03tKMiC!bznqESGUlxyWcHmZ86OFD4rja';
+  
+  // Helper function to get auth token
+  const getAuthToken = () => {
+    const token = localStorage.getItem('login-token');
+    console.log('🔑 Token Debug:', {
+      tokenExists: !!token,
+      tokenLength: token?.length,
+      tokenPreview: token ? `${token.substring(0, 20)}...${token.substring(token.length - 5)}` : 'NULL'
+    });
+    return token;
+  };
 
   const [confirmModal, setConfirmModal] = useState({
     show: false,
@@ -42,113 +60,75 @@ const User = () => {
     user: null,
   });
 
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      firstName: "John",
-      middleName: "Michael",
-      surname: "Doe",
-      email: "john@example.com",
-      role: "User",
-      joinDate: "2024-01-15",
-      phone: "+1 234-567-8900",
-      address: "123 Main St, City, State 12345",
-      birthday: "1990-05-15",
-      age: "34",
-      sex: "Male",
-      password: "password123",
-      confirmPassword: "password123",
-      bio: "Animal lover and enthusiast looking to connect with other pet owners.",
-      profileImage: "https://i.pravatar.cc/100?img=1",
-      idPhoto: "https://via.placeholder.com/400x250?text=John+ID+Photo",
-      selfiePhoto: "https://via.placeholder.com/400x250?text=John+Selfie",
-      status: "approved",
-    },
-    {
-      id: 2,
-      firstName: "Jane",
-      middleName: "Elizabeth",
-      surname: "Smith",
-      email: "jane@example.com",
-      role: "Admin",
-      joinDate: "2024-01-16",
-      phone: "+1 234-567-8901",
-      address: "456 Oak Ave, City, State 12346",
-      birthday: "1985-08-22",
-      age: "39",
-      sex: "Female",
-      password: "admin456",
-      confirmPassword: "admin456",
-      bio: "Veterinarian with 10 years of experience in animal care and breeding.",
-      profileImage: "https://i.pravatar.cc/100?img=2",
-      idPhoto: "https://via.placeholder.com/400x250?text=Jane+ID+Photo",
-      selfiePhoto: "https://via.placeholder.com/400x250?text=Jane+Selfie",
-      status: "for verification",
-    },
-    {
-      id: 3,
-      firstName: "Bob",
-      middleName: "William",
-      surname: "Johnson",
-      email: "bob@example.com",
-      role: "User",
-      joinDate: "2024-01-17",
-      phone: "+1 234-567-8902",
-      address: "789 Pine St, City, State 12347",
-      birthday: "1978-12-03",
-      age: "45",
-      sex: "Male",
-      password: "bob789",
-      confirmPassword: "bob789",
-      bio: "Dog breeder specializing in Golden Retrievers and Labradors.",
-      profileImage: "https://i.pravatar.cc/100?img=3",
-      idPhoto: "https://via.placeholder.com/400x250?text=Bob+ID+Photo",
-      selfiePhoto: "https://via.placeholder.com/400x250?text=Bob+Selfie",
-      status: "disapproved",
-    },
-    {
-      id: 4,
-      firstName: "Alice",
-      middleName: "Marie",
-      surname: "Brown",
-      email: "alice@example.com",
-      role: "User",
-      joinDate: "2024-01-18",
-      phone: "+1 234-567-8903",
-      address: "321 Elm St, City, State 12348",
-      birthday: "1992-03-18",
-      age: "32",
-      sex: "Female",
-      password: "alice321",
-      confirmPassword: "alice321",
-      bio: "Cat enthusiast and rescue volunteer with experience in feline care.",
-      profileImage: "https://i.pravatar.cc/100?img=4",
-      idPhoto: "https://via.placeholder.com/400x250?text=Alice+ID+Photo",
-      selfiePhoto: "https://via.placeholder.com/400x250?text=Alice+Selfie",
-      status: "approved",
-    },
-    {
-      id: 5,
-      firstName: "Charlie",
-      middleName: "James",
-      surname: "Wilson",
-      email: "charlie@example.com",
-      role: "User",
-      joinDate: "2024-01-19",
-      phone: "+1 234-567-8904",
-      address: "654 Maple Ave, City, State 12349",
-      birthday: "1995-07-09",
-      age: "29",
-      sex: "Male",
-      password: "charlie654",
-      confirmPassword: "charlie654",
-      bio: "New to the platform, looking to adopt a pet for my family.",
-      profileImage: "https://i.pravatar.cc/100?img=5",
-      idPhoto: "https://via.placeholder.com/400x250?text=Charlie+ID+Photo",
-      selfiePhoto: "https://via.placeholder.com/400x250?text=Charlie+Selfie",
-      status: "for verification",
+  // Fetch users from backend on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setIsLoadingUsers(true);
+      setApiError(null);
+      
+      const token = getAuthToken();
+      
+      console.log('🔄 Fetching users from backend...');
+      console.log('📡 API Request:', {
+        url: `${API_BASE_URL}/admin/user-listings`,
+        method: 'GET',
+        hasToken: !!token,
+        hasApiKey: !!API_KEY
+      });
+      
+      const response = await fetch(`${API_BASE_URL}/admin/user-listings`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': API_KEY,
+          'login-token': token,
+        }
+      });
+
+      console.log('📥 Response Status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch users: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Transform backend data to match frontend structure
+      const transformedUsers = data.map(user => ({
+        id: user.id,
+        firstName: user.first_name || user.name?.split(' ')[0] || '',
+        middleName: user.middle_name || '',
+        surname: user.last_name || user.surname || user.name?.split(' ').slice(1).join(' ') || '',
+        email: user.email,
+        role: user.role || 'User',
+        joinDate: user.created_at || user.join_date,
+        phone: user.phone || user.contact_number || '',
+        address: user.address || '',
+        birthday: user.birthday || user.date_of_birth || '',
+        age: user.age || '',
+        sex: user.sex || user.gender || '',
+        password: '********',
+        confirmPassword: '********',
+        bio: user.bio || user.description || '',
+        profileImage: user.profile_image || user.profile_picture || `https://i.pravatar.cc/100?img=${user.id}`,
+        idPhoto: user.id_photo || user.government_id || 'https://via.placeholder.com/400x250?text=ID+Photo',
+        selfiePhoto: user.selfie_photo || user.selfie || 'https://via.placeholder.com/400x250?text=Selfie',
+        status: user.status === 'banned' ? 'disapproved' : user.status || 'approved',
+      }));
+
+      setUsers(transformedUsers);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setApiError('Failed to load users. Please check your connection and try again.');
+      setUsers([]);
+    } finally {
+      setIsLoadingUsers(false);
     }
-  ]);
+  };
 
   // Tab configuration
   const tabs = [
@@ -281,26 +261,81 @@ const User = () => {
   
   const closeConfirm = () => setConfirmModal({ ...confirmModal, show: false });
   
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!confirmModal.user) return;
     const { user, action } = confirmModal;
     
-    switch (action) {
-      case "approve":
-        setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "approved" } : u)));
-        closeAllModals();
-        break;
-      case "disapprove":
-        setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "disapproved" } : u)));
-        closeAllModals();
-        break;
-      case "mark-review":
-        setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "for verification" } : u)));
-        closeAllModals();
-        break;
-      default:
-        closeConfirm();
-        break;
+    try {
+      setIsLoading(true);
+      setApiError(null);
+
+      switch (action) {
+        case "approve":
+          const approveResponse = await fetch(`${API_BASE_URL}/admin/user-listings/update/${user.id}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-KEY': API_KEY,
+              'login-token': getAuthToken(),
+            },
+            body: JSON.stringify({ status: 'approved' })
+          });
+
+          if (!approveResponse.ok) {
+            throw new Error('Failed to approve user');
+          }
+
+          setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "approved" } : u)));
+          break;
+          
+        case "disapprove":
+          const banResponse = await fetch(`${API_BASE_URL}/admin/user-listings/ban/${user.id}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-KEY': API_KEY,
+              'login-token': getAuthToken(),
+            }
+          });
+
+          if (!banResponse.ok) {
+            throw new Error('Failed to ban user');
+          }
+
+          const banResult = await banResponse.json();
+          if (banResult.status === 'success') {
+            setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "disapproved" } : u)));
+          }
+          break;
+          
+        case "mark-review":
+          const reviewResponse = await fetch(`${API_BASE_URL}/admin/user-listings/update/${user.id}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-KEY': API_KEY,
+              'login-token': getAuthToken(),
+            },
+            body: JSON.stringify({ status: 'for verification' })
+          });
+
+          if (!reviewResponse.ok) {
+            throw new Error('Failed to update user status');
+          }
+
+          setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "for verification" } : u)));
+          break;
+          
+        default:
+          break;
+      }
+      
+      closeAllModals();
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      setApiError('Failed to update user status. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -308,26 +343,64 @@ const User = () => {
     if (editingUser) {
       setIsLoading(true);
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setUsers(users.map(user => 
-        user.id === editingUser.id ? editingUser : user
-      ));
-      
-      // Update selected user if it's currently being viewed
-      if (selectedUser && selectedUser.id === editingUser.id) {
-        setSelectedUser(editingUser);
+      try {
+        const userData = {
+          first_name: editingUser.firstName,
+          middle_name: editingUser.middleName,
+          last_name: editingUser.surname,
+          email: editingUser.email,
+          phone: editingUser.phone,
+          address: editingUser.address,
+          birthday: editingUser.birthday,
+          age: editingUser.age,
+          sex: editingUser.sex,
+          role: editingUser.role,
+          bio: editingUser.bio,
+          profile_image: editingUser.profileImage,
+          id_photo: editingUser.idPhoto,
+          selfie_photo: editingUser.selfiePhoto,
+          ...(editingUser.password && editingUser.password !== '********' && {
+            password: editingUser.password,
+            password_confirmation: editingUser.confirmPassword
+          })
+        };
+
+        const response = await fetch(`${API_BASE_URL}/admin/user-listings/update/${editingUser.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-KEY': API_KEY,
+            'login-token': getAuthToken(),
+          },
+          body: JSON.stringify(userData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update user');
+        }
+
+        const result = await response.json();
+        
+        setUsers(users.map(user => 
+          user.id === editingUser.id ? editingUser : user
+        ));
+        
+        if (selectedUser && selectedUser.id === editingUser.id) {
+          setSelectedUser(editingUser);
+        }
+        
+        setShowSuccessMessage(true);
+        
+        setTimeout(() => {
+          setShowSuccessMessage(false);
+          closeEditModal();
+        }, 3000);
+      } catch (error) {
+        console.error('Error updating user:', error);
+        setApiError('Failed to save changes. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-      setShowSuccessMessage(true);
-      
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setShowSuccessMessage(false);
-        closeEditModal();
-      }, 3000);
     }
   };
 
@@ -378,6 +451,57 @@ const User = () => {
     return count;
   };
 
+  // Token Status Checker - for debugging
+  const TokenDebugger = () => {
+    const token = getAuthToken();
+    const [showDebug, setShowDebug] = useState(false);
+
+    if (!showDebug) {
+      return (
+        <button
+          onClick={() => setShowDebug(true)}
+          className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-700 text-sm"
+        >
+          Debug Token
+        </button>
+      );
+    }
+
+    return (
+      <div className="fixed bottom-4 right-4 bg-white border border-gray-300 rounded-lg shadow-xl p-4 max-w-md">
+        <div className="flex justify-between items-start mb-3">
+          <h3 className="font-semibold text-gray-900">Token Debug Info</h3>
+          <button onClick={() => setShowDebug(false)} className="text-gray-400 hover:text-gray-600">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="space-y-2 text-sm">
+          <div>
+            <span className="font-medium text-gray-700">Status: </span>
+            <span className={token ? 'text-green-600' : 'text-red-600'}>
+              {token ? '✓ Token Found' : '✗ No Token'}
+            </span>
+          </div>
+          <div>
+            <span className="font-medium text-gray-700">Length: </span>
+            <span className="text-gray-900">{token?.length || 0} characters</span>
+          </div>
+          <div>
+            <span className="font-medium text-gray-700">Preview: </span>
+            <code className="text-xs bg-gray-100 px-2 py-1 rounded block mt-1 break-all">
+              {token ? `${token.substring(0, 30)}...` : 'N/A'}
+            </code>
+          </div>
+          <div className="pt-2 border-t border-gray-200">
+            <span className="font-medium text-gray-700">API URL: </span>
+            <code className="text-xs bg-gray-100 px-2 py-1 rounded block mt-1 break-all">
+              {API_BASE_URL}
+            </code>
+          </div>
+        </div>
+      </div>
+    );
+  };
   return (
     <>
       <div className="max-w-7xl mx-auto bg-gray-50 min-h-screen">
