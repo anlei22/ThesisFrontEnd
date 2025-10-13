@@ -260,7 +260,7 @@ const PostCommentItem = ({ comment, postId, darkMode, onLike, onReplyLike, onAdd
   );
 };
 
-const NewsFeed = ({ darkMode = false, onCreatePost = () => {}, postCategory = 'all', postLocation = 'all', searchQuery = '' }) => {
+const ViewPfor = ({ darkMode = false, onCreatePost = () => {}, postCategory = 'all', postLocation = 'all', searchQuery = '' }) => {
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -792,4 +792,4 @@ const NewsFeed = ({ darkMode = false, onCreatePost = () => {}, postCategory = 'a
   );
 };
 
-export default NewsFeed;
+export default ViewPfor;

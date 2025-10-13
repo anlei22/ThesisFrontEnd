@@ -1,44 +1,170 @@
+
 import React, { useState, useRef } from 'react';
 import { 
   XMarkIcon, 
-  PhotoIcon, 
-  PencilIcon,
+  PhotoIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CheckIcon
 } from '@heroicons/react/24/outline';
 
-const CreatePostModal = ({ darkMode, onClose }) => {
+const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [description, setDescription] = useState('');
   const [selectedImages, setSelectedImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [postType, setPostType] = useState('text-only'); // 'text-only' or 'with-photos'
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [selectedAnimal, setSelectedAnimal] = useState('');
+  const [selectedBreed, setSelectedBreed] = useState('');
+  const [age, setAge] = useState('');
+  const [sex, setSex] = useState('');
+  const [price, setPrice] = useState('');
+  const [location, setLocation] = useState('');
   const fileInputRef = useRef(null);
 
   const steps = [
-    { id: 1, name: 'Type', description: 'Choose post type' },
-    { id: 2, name: 'Content', description: 'Add your content' },
+    { id: 1, name: 'Animal', description: 'Select animal & breed' },
+    { id: 2, name: 'Details', description: 'Add information' },
     { id: 3, name: 'Review', description: 'Review & publish' }
   ];
 
+  const categories = [
+    { 
+      id: "baboy", 
+      name: "Baboy", 
+      displayName: "Baboy (Pig)",
+      breeds: ["Duroc", "Yorkshire", "Landrace", "Berkshire", "Hampshire", "Native", "Pietrain", "Large White"]
+    },
+    { 
+      id: "baka", 
+      name: "Baka",
+      displayName: "Baka (Cow)", 
+      breeds: ["Brahman", "Holstein", "Angus", "Native", "Simmental", "Jersey", "Hereford"]
+    },
+    { 
+      id: "bangus", 
+      name: "Bangus",
+      displayName: "Bangus (Milkfish)", 
+      breeds: ["Standard Bangus", "Boneless Bangus"]
+    },
+    { 
+      id: "galunggong", 
+      name: "Galunggong",
+      displayName: "Galunggong (Round Scad)", 
+      breeds: ["Fresh Galunggong", "Dried Galunggong"]
+    },
+    { 
+      id: "kambing", 
+      name: "Kambing",
+      displayName: "Kambing (Goat)", 
+      breeds: ["Boer", "Native", "Anglo-Nubian", "Saanen", "Alpine"]
+    },
+    { 
+      id: "kalabaw", 
+      name: "Kalabaw",
+      displayName: "Kalabaw (Carabao)", 
+      breeds: ["Philippine Carabao", "Swamp Buffalo", "River Buffalo", "Murrah"]
+    },
+    { 
+      id: "kalapati", 
+      name: "Kalapati",
+      displayName: "Kalapati (Pigeon)", 
+      breeds: ["Racing Homer", "Fantail", "Native", "King Pigeon"]
+    },
+    { 
+      id: "manok", 
+      name: "Manok",
+      displayName: "Manok (Chicken)", 
+      breeds: ["Broiler", "Layer", "Native", "Rhode Island Red", "Leghorn", "Plymouth Rock"]
+    },
+    { 
+      id: "rabbit", 
+      name: "Rabbit",
+      displayName: "Rabbit", 
+      breeds: ["New Zealand White", "Californian", "Flemish Giant", "Dutch", "Rex"]
+    },
+    { 
+      id: "tilapia", 
+      name: "Tilapia",
+      displayName: "Tilapia", 
+      breeds: ["Nile Tilapia", "Red Tilapia", "Mozambique Tilapia", "Blue Tilapia"]
+    },
+    { 
+      id: "tulingan", 
+      name: "Tulingan",
+      displayName: "Tulingan (Skipjack Tuna)", 
+      breeds: ["Fresh Tulingan", "Frozen Tulingan"]
+    }
+  ];
+
+  const locations = [
+    { id: "abelo", name: "Abelo" },
+    { id: "alas-as", name: "Alas-as" },
+    { id: "balete", name: "Balete" },
+    { id: "baluk-baluk", name: "Baluk-baluk" },
+    { id: "bancoro", name: "Bancoro" },
+    { id: "bangin", name: "Bangin" },
+    { id: "calangay", name: "Calangay" },
+    { id: "hipit", name: "Hipit" },
+    { id: "maabud-north", name: "Maabud North" },
+    { id: "maabud-south", name: "Maabud South" },
+    { id: "munlawin", name: "Munlawin" },
+    { id: "pansipit", name: "Pansipit" },
+    { id: "poblacion", name: "Poblacion" },
+    { id: "pulang-bato", name: "Pulang-Bato" },
+    { id: "santo-nino", name: "Santo Niño" },
+    { id: "sinturisan", name: "Sinturisan" },
+    { id: "tagudtod", name: "Tagudtod" },
+    { id: "talang", name: "Talang" }
+  ];
+
   const handleSubmit = () => {
+    if (!selectedAnimal) {
+      alert('Please select an animal type');
+      return;
+    }
+    
+    if (!selectedBreed) {
+      alert('Please select a breed');
+      return;
+    }
+
     if (!description.trim()) {
       alert('Please add a description');
       return;
     }
-    
-    if (postType === 'with-photos' && selectedImages.length === 0) {
-      alert('Please upload at least one photo for posts with photos');
+
+    if (!age) {
+      alert('Please enter the age');
+      return;
+    }
+
+    if (!sex) {
+      alert('Please select the sex');
+      return;
+    }
+
+    if (!price) {
+      alert('Please enter the price');
+      return;
+    }
+
+    if (!location) {
+      alert('Please select a location');
       return;
     }
     
     setIsSubmitting(true);
     
     const postData = {
+      animal: selectedAnimal,
+      breed: selectedBreed,
       description,
+      age,
+      sex,
+      price,
+      location,
       images: selectedImages,
-      postType,
       timestamp: new Date().toISOString()
     };
     
@@ -46,11 +172,19 @@ const CreatePostModal = ({ darkMode, onClose }) => {
     
     setTimeout(() => {
       setIsSubmitting(false);
-      onClose();
+      setShowSuccessModal(true);
     }, 1000);
   };
 
   const handleNext = () => {
+    if (currentStep === 1 && !selectedAnimal) {
+      alert('Please select an animal type');
+      return;
+    }
+    if (currentStep === 1 && !selectedBreed) {
+      alert('Please select a breed');
+      return;
+    }
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
@@ -63,11 +197,13 @@ const CreatePostModal = ({ darkMode, onClose }) => {
   };
 
   const canPublish = () => {
-    const hasDescription = description.trim();
-    if (postType === 'text-only') {
-      return hasDescription;
-    }
-    return hasDescription && selectedImages.length > 0;
+    return selectedAnimal && 
+           selectedBreed && 
+           description.trim() && 
+           age &&
+           sex &&
+           price &&
+           location;
   };
 
   const handleImageSelect = (e) => {
@@ -95,12 +231,13 @@ const CreatePostModal = ({ darkMode, onClose }) => {
     setSelectedImages(prev => prev.filter(img => img.id !== imageId));
   };
 
-  const handlePostTypeChange = (type) => {
-    setPostType(type);
-    // Clear images if switching to text-only
-    if (type === 'text-only') {
-      setSelectedImages([]);
-    }
+  const handleAnimalChange = (animalId) => {
+    setSelectedAnimal(animalId);
+    setSelectedBreed('');
+  };
+
+  const getSelectedCategory = () => {
+    return categories.find(cat => cat.id === selectedAnimal);
   };
 
   const renderStepper = () => (
@@ -158,263 +295,326 @@ const CreatePostModal = ({ darkMode, onClose }) => {
     </div>
   );
 
-  const renderPostTypeStep = () => (
+  const renderAnimalSelectionStep = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h3 className={`text-lg font-medium mb-2 ${
+        <h3 className={`text-lg font-semibold mb-2 ${
           darkMode ? 'text-white' : 'text-gray-900'
         }`}>
-          What type of post would you like to create?
+          Select Animal Type
         </h3>
         <p className={`text-sm mb-6 ${
           darkMode ? 'text-gray-400' : 'text-gray-600'
         }`}>
-          Choose how you want to share your content
+          Choose the animal you want to list for sale
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <button
-          type="button"
-          onClick={() => handlePostTypeChange('text-only')}
-          className={`p-6 rounded-xl border-2 transition-all duration-300 ${
-            postType === 'text-only'
-              ? darkMode
-                ? 'border-green-500 bg-green-500/20 text-green-400'
-                : 'border-green-500 bg-green-50 text-green-700'
-              : darkMode
-                ? 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500'
-                : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
-          }`}
-        >
-          <div className="flex flex-col items-center space-y-3">
-            <PencilIcon className="w-12 h-12" />
-            <div>
-              <div className="text-lg font-semibold">Text Only</div>
-              <div className="text-sm opacity-80 mt-1">Share your thoughts with just text</div>
-            </div>
-          </div>
-        </button>
-        
-        <button
-          type="button"
-          onClick={() => handlePostTypeChange('with-photos')}
-          className={`p-6 rounded-xl border-2 transition-all duration-300 ${
-            postType === 'with-photos'
-              ? darkMode
-                ? 'border-green-500 bg-green-500/20 text-green-400'
-                : 'border-green-500 bg-green-50 text-green-700'
-              : darkMode
-                ? 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500'
-                : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
-          }`}
-        >
-          <div className="flex flex-col items-center space-y-3">
-            <PhotoIcon className="w-12 h-12" />
-            <div>
-              <div className="text-lg font-semibold">With Photos</div>
-              <div className="text-sm opacity-80 mt-1">Share photos with description</div>
-            </div>
-          </div>
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderContentStep = () => (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h3 className={`text-lg font-medium mb-2 ${
-          darkMode ? 'text-white' : 'text-gray-900'
-        }`}>
-          {postType === 'text-only' ? 'Write your post' : 'Add photos and description'}
-        </h3>
-        <p className={`text-sm mb-6 ${
-          darkMode ? 'text-gray-400' : 'text-gray-600'
-        }`}>
-          {postType === 'text-only' 
-            ? 'Share what\'s on your mind' 
-            : 'Upload your photos and add a description'
-          }
-        </p>
-      </div>
-
-      {/* Photos Upload (only for with-photos type) */}
-      {postType === 'with-photos' && (
-        <div className="mb-6">
-          <label className={`block text-sm font-medium mb-3 ${
-            darkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            Photos *
-          </label>
-          
-          {/* Upload Area */}
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors duration-300 ${
-              selectedImages.length >= 10
-                ? darkMode
-                  ? 'border-gray-600 bg-gray-700 cursor-not-allowed'
-                  : 'border-gray-300 bg-gray-100 cursor-not-allowed'
-                : darkMode
-                  ? 'border-gray-600 hover:border-green-500 hover:bg-gray-700'
-                  : 'border-gray-300 hover:border-green-500 hover:bg-green-50'
-            }`}
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageSelect}
-              accept="image/*"
-              multiple
-              className="hidden"
-              disabled={selectedImages.length >= 10}
-            />
-            
-            <PhotoIcon className={`w-12 h-12 mx-auto mb-4 ${
-              selectedImages.length >= 10
-                ? darkMode ? 'text-gray-500' : 'text-gray-400'
-                : darkMode ? 'text-gray-400' : 'text-gray-500'
-            }`} />
-            
-            <div className={`text-lg font-medium mb-2 ${
-              selectedImages.length >= 10
-                ? darkMode ? 'text-gray-500' : 'text-gray-400'
-                : darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              {selectedImages.length >= 10 ? 'Maximum photos reached' : 'Click to upload photos'}
-            </div>
-            
-            <div className={`text-sm ${
-              selectedImages.length >= 10
-                ? darkMode ? 'text-gray-600' : 'text-gray-400'
-                : darkMode ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              {selectedImages.length >= 10 
-                ? 'You can upload up to 10 photos maximum'
-                : 'Supports multiple images (up to 10)'
-              }
-            </div>
-          </div>
-
-          {/* Selected Images */}
-          {selectedImages.length > 0 && (
-            <div className="mt-4">
-              <div className={`grid gap-3 p-4 rounded-lg border ${
-                selectedImages.length === 1 ? 'grid-cols-1' :
-                selectedImages.length === 2 ? 'grid-cols-2' :
-                selectedImages.length <= 4 ? 'grid-cols-2' :
-                'grid-cols-3'
-              } ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50'}`}>
-                {selectedImages.map((image) => (
-                  <div key={image.id} className="relative group">
-                    <img
-                      src={image.url}
-                      alt="Selected"
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                    <button
-                      onClick={() => removeImage(image.id)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
-                    >
-                      <XMarkIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <p className={`text-xs mt-2 ${
-                darkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                {selectedImages.length}/10 images selected
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Description */}
       <div>
         <label className={`block text-sm font-medium mb-3 ${
           darkMode ? 'text-white' : 'text-gray-900'
         }`}>
-          {postType === 'text-only' ? 'Your Post *' : 'Description *'}
+          Animal Type *
+        </label>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              onClick={() => handleAnimalChange(category.id)}
+              className={`p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                selectedAnimal === category.id
+                  ? darkMode
+                    ? 'border-green-500 bg-green-500/20 text-green-400'
+                    : 'border-green-500 bg-green-50 text-green-700'
+                  : darkMode
+                    ? 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="font-medium text-sm">{category.displayName}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {selectedAnimal && (
+        <div className="animate-fadeIn">
+          <label className={`block text-sm font-medium mb-3 ${
+            darkMode ? 'text-white' : 'text-gray-900'
+          }`}>
+            Select Breed *
+          </label>
+          <select
+            value={selectedBreed}
+            onChange={(e) => setSelectedBreed(e.target.value)}
+            className={`w-full p-3 rounded-lg border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              darkMode 
+                ? 'bg-gray-700 border-gray-600 text-white' 
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
+          >
+            <option value="">Choose a breed</option>
+            {getSelectedCategory()?.breeds.map((breed) => (
+              <option key={breed} value={breed}>
+                {breed}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderDetailsStep = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h3 className={`text-lg font-semibold mb-2 ${
+          darkMode ? 'text-white' : 'text-gray-900'
+        }`}>
+          Add Details & Photos
+        </h3>
+        <p className={`text-sm mb-6 ${
+          darkMode ? 'text-gray-400' : 'text-gray-600'
+        }`}>
+          Provide information about your animal
+        </p>
+      </div>
+
+      <div>
+        <label className={`block text-sm font-medium mb-3 ${
+          darkMode ? 'text-white' : 'text-gray-900'
+        }`}>
+          Photos (Up to 10) - Optional
+        </label>
+        
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors duration-200 ${
+            selectedImages.length >= 10
+              ? darkMode
+                ? 'border-gray-600 bg-gray-700/50 cursor-not-allowed'
+                : 'border-gray-300 bg-gray-100 cursor-not-allowed'
+              : darkMode
+                ? 'border-gray-600 hover:border-green-500 hover:bg-gray-700/50'
+                : 'border-gray-300 hover:border-green-500 hover:bg-green-50'
+          }`}
+        >
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageSelect}
+            accept="image/*"
+            multiple
+            className="hidden"
+            disabled={selectedImages.length >= 10}
+          />
+          
+          <PhotoIcon className={`w-10 h-10 mx-auto mb-3 ${
+            selectedImages.length >= 10
+              ? darkMode ? 'text-gray-500' : 'text-gray-400'
+              : darkMode ? 'text-gray-400' : 'text-gray-500'
+          }`} />
+          
+          <div className={`text-sm font-medium mb-1 ${
+            selectedImages.length >= 10
+              ? darkMode ? 'text-gray-500' : 'text-gray-400'
+              : darkMode ? 'text-white' : 'text-gray-900'
+          }`}>
+            {selectedImages.length >= 10 ? 'Maximum photos reached' : 'Click to upload photos'}
+          </div>
+          
+          <div className={`text-xs ${
+            selectedImages.length >= 10
+              ? darkMode ? 'text-gray-600' : 'text-gray-400'
+              : darkMode ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+            {selectedImages.length}/10 images
+          </div>
+        </div>
+
+        {selectedImages.length > 0 && (
+          <div className="mt-4">
+            <div className={`grid gap-2 p-3 rounded-lg ${
+              selectedImages.length === 1 ? 'grid-cols-1' :
+              selectedImages.length === 2 ? 'grid-cols-2' :
+              'grid-cols-3'
+            } ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+              {selectedImages.map((image) => (
+                <div key={image.id} className="relative group">
+                  <img
+                    src={image.url}
+                    alt="Selected"
+                    className="w-full h-24 object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeImage(image.id);
+                    }}
+                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
+                  >
+                    <XMarkIcon className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <label className={`block text-sm font-medium mb-3 ${
+          darkMode ? 'text-white' : 'text-gray-900'
+        }`}>
+          Description *
         </label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder={postType === 'text-only' 
-            ? "What's on your mind? Share your thoughts, experiences, or anything you'd like to tell the community..."
-            : "Describe your photos, tell a story, or share what makes this special..."
-          }
-          rows={postType === 'text-only' ? "8" : "5"}
-          className={`w-full p-4 text-sm rounded-lg border resize-none transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 ${
+          placeholder="Describe the animal, health condition, behavior, etc..."
+          rows="4"
+          maxLength="1000"
+          className={`w-full p-3 text-sm rounded-lg border resize-none transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 ${
             darkMode 
               ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
               : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
           }`}
         />
-        <div className={`text-xs mt-2 ${
+        <div className={`text-xs mt-1 text-right ${
           darkMode ? 'text-gray-400' : 'text-gray-500'
         }`}>
-          {description.length}/1000 characters
+          {description.length}/1000
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className={`block text-sm font-medium mb-2 ${
+            darkMode ? 'text-white' : 'text-gray-900'
+          }`}>
+            Age *
+          </label>
+          <input
+            type="text"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            placeholder="e.g., 6 months"
+            className={`w-full p-3 text-sm rounded-lg border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              darkMode 
+                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+            }`}
+          />
+        </div>
+
+        <div>
+          <label className={`block text-sm font-medium mb-2 ${
+            darkMode ? 'text-white' : 'text-gray-900'
+          }`}>
+            Sex *
+          </label>
+          <select
+            value={sex}
+            onChange={(e) => setSex(e.target.value)}
+            className={`w-full p-3 text-sm rounded-lg border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              darkMode 
+                ? 'bg-gray-700 border-gray-600 text-white' 
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
+          >
+            <option value="">Select</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+
+        <div>
+          <label className={`block text-sm font-medium mb-2 ${
+            darkMode ? 'text-white' : 'text-gray-900'
+          }`}>
+            Price (₱) *
+          </label>
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="0.00"
+            min="0"
+            step="0.01"
+            className={`w-full p-3 text-sm rounded-lg border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              darkMode 
+                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+            }`}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className={`block text-sm font-medium mb-2 ${
+          darkMode ? 'text-white' : 'text-gray-900'
+        }`}>
+          Location *
+        </label>
+        <select
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          className={`w-full p-3 text-sm rounded-lg border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 ${
+            darkMode 
+              ? 'bg-gray-700 border-gray-600 text-white' 
+              : 'bg-white border-gray-300 text-gray-900'
+          }`}
+        >
+          <option value="">Select barangay</option>
+          {locations.map((loc) => (
+            <option key={loc.id} value={loc.name}>
+              {loc.name}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
 
-  const renderReviewStep = () => (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className={`text-lg font-medium mb-2 ${
-          darkMode ? 'text-white' : 'text-gray-900'
-        }`}>
-          Review Your Post
-        </h3>
-        <p className={`text-sm ${
-          darkMode ? 'text-gray-400' : 'text-gray-600'
-        }`}>
-          Here's how your post will look
-        </p>
-      </div>
+  const renderReviewStep = () => {
+    const selectedCategory = getSelectedCategory();
+    
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h3 className={`text-lg font-semibold mb-2 ${
+            darkMode ? 'text-white' : 'text-gray-900'
+          }`}>
+            Review Your Post
+          </h3>
+          <p className={`text-sm mb-6 ${
+            darkMode ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+            Make sure everything looks good before publishing
+          </p>
+        </div>
 
-      {/* Post Type Badge */}
-      <div className="flex justify-center mb-6">
-        <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-          postType === 'text-only'
-            ? darkMode 
-              ? 'bg-blue-900 text-blue-300 border border-blue-700'
-              : 'bg-blue-100 text-blue-800 border border-blue-200'
-            : darkMode
-              ? 'bg-green-900 text-green-300 border border-green-700'
-              : 'bg-green-100 text-green-800 border border-green-200'
+        <div className={`rounded-xl border overflow-hidden ${
+          darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-white'
         }`}>
-          {postType === 'text-only' ? '📝 Text Post' : '📷 Photo Post'}
-        </span>
-      </div>
-
-      {/* Post Preview */}
-      <div className={`rounded-xl border p-6 ${
-        darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-white'
-      }`}>
-        {/* Photos (if photo post) */}
-        {postType === 'with-photos' && selectedImages.length > 0 && (
-          <div className="mb-4">
-            <div className={`grid gap-3 ${
+          {selectedImages.length > 0 && (
+            <div className={`grid gap-1 ${
               selectedImages.length === 1 ? 'grid-cols-1' :
               selectedImages.length === 2 ? 'grid-cols-2' :
               selectedImages.length <= 4 ? 'grid-cols-2' :
               'grid-cols-3'
             }`}>
               {selectedImages.slice(0, 6).map((image, index) => (
-                <div key={image.id} className="relative">
+                <div key={image.id} className="relative aspect-square">
                   <img
                     src={image.url}
                     alt={`Preview ${index + 1}`}
-                    className="w-full h-40 object-cover rounded-lg"
+                    className="w-full h-full object-cover"
                   />
                   {index === 5 && selectedImages.length > 6 && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                      <span className="text-white text-lg font-medium">
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <span className="text-white text-xl font-semibold">
                         +{selectedImages.length - 6}
                       </span>
                     </div>
@@ -422,53 +622,160 @@ const CreatePostModal = ({ darkMode, onClose }) => {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Description */}
-        <div>
-          <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
-            darkMode ? 'text-gray-300' : 'text-gray-700'
-          }`}>
-            {description || 'No description provided'}
-          </p>
-        </div>
+          <div className="p-5 space-y-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  darkMode 
+                    ? 'bg-green-900 text-green-300 border border-green-700'
+                    : 'bg-green-100 text-green-800 border border-green-200'
+                }`}>
+                  {selectedCategory?.displayName}
+                </span>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  darkMode 
+                    ? 'bg-blue-900 text-blue-300 border border-blue-700'
+                    : 'bg-blue-100 text-blue-800 border border-blue-200'
+                }`}>
+                  {selectedBreed}
+                </span>
+              </div>
+            </div>
 
-        {/* Meta info */}
-        <div className={`mt-4 pt-4 border-t text-xs ${
-          darkMode ? 'border-gray-600 text-gray-400' : 'border-gray-200 text-gray-500'
-        }`}>
-          <div className="flex items-center justify-between">
-            <span>Just now</span>
-            <span>
-             {postType === 'text-only' 
-  ? 'Text post' 
-  : `${selectedImages.length} photo${selectedImages.length !== 1 ? 's' : ''}`
-}
-            </span>
+            <div>
+              <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
+                darkMode ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                {description}
+              </p>
+            </div>
+
+            <div className={`grid grid-cols-2 gap-3 pt-3 border-t ${
+              darkMode ? 'border-gray-600' : 'border-gray-200'
+            }`}>
+              <div>
+                <div className={`text-xs font-medium mb-1 ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>
+                  Age
+                </div>
+                <div className={`text-sm font-semibold ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
+                  {age}
+                </div>
+              </div>
+
+              <div>
+                <div className={`text-xs font-medium mb-1 ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>
+                  Sex
+                </div>
+                <div className={`text-sm font-semibold capitalize ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
+                  {sex}
+                </div>
+              </div>
+
+              <div>
+                <div className={`text-xs font-medium mb-1 ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>
+                  Price
+                </div>
+                <div className={`text-sm font-semibold ${
+                  darkMode ? 'text-green-400' : 'text-green-600'
+                }`}>
+                  ₱{parseFloat(price).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              </div>
+
+              <div>
+                <div className={`text-xs font-medium mb-1 ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>
+                  Location
+                </div>
+                <div className={`text-sm font-semibold ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
+                  {location}
+                </div>
+              </div>
+            </div>
+
+            <div className={`pt-3 border-t text-xs ${
+              darkMode ? 'border-gray-600 text-gray-400' : 'border-gray-200 text-gray-500'
+            }`}>
+              Will be posted just now
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className={`w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-xl shadow-2xl transition-colors duration-300 ${
-        darkMode ? 'bg-gray-800' : 'bg-white'
-      }`}>
+    <React.Fragment>
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+          <div className={`w-full max-w-sm rounded-xl shadow-2xl p-8 text-center ${
+            darkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${
+              darkMode ? 'bg-green-900' : 'bg-green-100'
+            }`}>
+              <CheckIcon className={`w-10 h-10 ${
+                darkMode ? 'text-green-400' : 'text-green-600'
+              }`} />
+            </div>
+            <h3 className={`text-xl font-semibold mb-2 ${
+              darkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              Post Published Successfully!
+            </h3>
+            <p className={`text-sm mb-6 ${
+              darkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Your listing has been posted and is now visible to buyers.
+            </p>
+            <button
+              onClick={() => {
+                setShowSuccessModal(false);
+                onClose();
+              }}
+              className={`w-full px-6 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                darkMode
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                  : 'bg-green-500 hover:bg-green-600 text-white'
+              }`}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className={`w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-xl shadow-2xl transition-colors duration-300 ${
+          darkMode ? 'bg-gray-800' : 'bg-white'
+        }`}>
         {/* Header */}
-        <div className={`p-4 border-b flex items-center justify-between transition-colors duration-300 ${
+        <div className={`p-4 border-b flex items-center justify-between ${
           darkMode ? 'border-gray-700' : 'border-gray-200'
         }`}>
           <h2 className={`text-xl font-semibold ${
             darkMode ? 'text-white' : 'text-gray-900'
           }`}>
-            Create Post
+            Create Animal Listing
           </h2>
           <button
             onClick={onClose}
-            className={`p-2 rounded-full transition-colors duration-300 ${
+            className={`p-2 rounded-full transition-colors duration-200 ${
               darkMode
                 ? 'text-gray-400 hover:bg-gray-700 hover:text-white'
                 : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
@@ -479,19 +786,21 @@ const CreatePostModal = ({ darkMode, onClose }) => {
         </div>
 
         {/* Stepper */}
-        <div className="p-4 border-b">
+        <div className={`p-4 border-b ${
+          darkMode ? 'border-gray-700' : 'border-gray-200'
+        }`}>
           {renderStepper()}
         </div>
 
         {/* Content */}
-        <div className="p-6 max-h-[60vh] overflow-y-auto">
-          {currentStep === 1 && renderPostTypeStep()}
-          {currentStep === 2 && renderContentStep()}
+        <div className="p-6 max-h-[55vh] overflow-y-auto">
+          {currentStep === 1 && renderAnimalSelectionStep()}
+          {currentStep === 2 && renderDetailsStep()}
           {currentStep === 3 && renderReviewStep()}
         </div>
 
         {/* Footer */}
-        <div className={`p-4 border-t transition-colors duration-300 ${
+        <div className={`p-4 border-t ${
           darkMode ? 'border-gray-700' : 'border-gray-200'
         }`}>
           <div className="flex items-center justify-between">
@@ -499,7 +808,7 @@ const CreatePostModal = ({ darkMode, onClose }) => {
             <button
               onClick={handlePrevious}
               disabled={currentStep === 1}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300 ${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                 currentStep === 1
                   ? 'invisible'
                   : darkMode
@@ -515,14 +824,14 @@ const CreatePostModal = ({ darkMode, onClose }) => {
             <div className={`text-sm font-medium ${
               darkMode ? 'text-gray-400' : 'text-gray-500'
             }`}>
-              {currentStep} of 3
+              Step {currentStep} of 3
             </div>
 
             {/* Next/Submit Button */}
             {currentStep < 3 ? (
               <button
                 onClick={handleNext}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300 ${
+                className={`flex items-center space-x-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                   darkMode
                     ? 'bg-green-600 hover:bg-green-700 text-white'
                     : 'bg-green-500 hover:bg-green-600 text-white'
@@ -535,7 +844,7 @@ const CreatePostModal = ({ darkMode, onClose }) => {
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting || !canPublish()}
-                className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-300 ${
+                className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                   isSubmitting || !canPublish()
                     ? darkMode
                       ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
@@ -545,15 +854,15 @@ const CreatePostModal = ({ darkMode, onClose }) => {
                       : 'bg-green-500 hover:bg-green-600 text-white'
                 }`}
               >
-                {isSubmitting ? 'Publishing...' : 'Publish Post'}
+                {isSubmitting ? 'Publishing...' : 'Publish Listing'}
               </button>
             )}
           </div>
         </div>
       </div>
     </div>
+    </React.Fragment>
   );
 };
-export default CreatePostModal;
 
-// animals dropdon
+export default CreatePostModal;

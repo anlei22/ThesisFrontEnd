@@ -4,9 +4,6 @@ import { useState, useEffect } from 'react';
 const API_URL = import.meta.env.VITE_BACKEND_URI;
 const API_KEY = import.meta.env.VITE_API_KEY;
 
-
-
-
 const useApiConnection = (endpoint) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
