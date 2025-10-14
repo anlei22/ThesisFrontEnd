@@ -100,7 +100,7 @@ const User = () => {
       // Transform backend data to match frontend structure
       const transformedUsers = data.map(user => ({
         id: user.id,
-        firstName: user.first_name || user.name?.split(' ')[0] || '',
+        firstName: user.FirstName || user.name?.split(' ')[0] || '',
         middleName: user.middle_name || '',
         surname: user.last_name || user.surname || user.name?.split(' ').slice(1).join(' ') || '',
         email: user.email,

@@ -187,6 +187,7 @@ const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
     }
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
+      // 
     }
   };
 
