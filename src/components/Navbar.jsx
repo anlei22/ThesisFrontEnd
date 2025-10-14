@@ -3,14 +3,10 @@ import {
   HomeIcon, 
   ChatBubbleLeftRightIcon, 
   UserCircleIcon,
-  MagnifyingGlassIcon,
   SunIcon,
   MoonIcon,
   PlusIcon,
   BookmarkIcon,
-  TrashIcon,
-  MapPinIcon,
-  XMarkIcon,
   BellIcon,
   Bars3Icon
 } from '@heroicons/react/24/outline';
@@ -26,397 +22,18 @@ import LoginModal from './LoginModal';
 import RegisterModal from './Register';
 import LogoutConfirmModal from './LogoutConfirmModal';
 
-// Bookmarks Dropdown Component
-const BookmarksDropdown = ({ isOpen, onClose, darkMode, bookmarksRef }) => {
-  const [bookmarkedItems, setBookmarkedItems] = useState([
-    { 
-      id: 1, 
-      name: 'Golden Retriever Puppy', 
-      price: 800, 
-      image: '/api/placeholder/100/100',
-      animalType: 'Dog',
-      address: '123 Pet Street, San Fernando, Central Luzon'
-    },
-    { 
-      id: 2, 
-      name: 'Persian Cat', 
-      price: 500, 
-      image: '/api/placeholder/100/100',
-      animalType: 'Cat',
-      address: '456 Meow Avenue, San Fernando, Central Luzon'
-    }
-  ]);
-
-  const removeBookmark = (id) => {
-    setBookmarkedItems(items => items.filter(item => item.id !== id));
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div 
-      ref={bookmarksRef}
-      className={`absolute right-0 mt-2 w-96 rounded-lg shadow-xl border z-40 max-h-104 overflow-hidden ${
-        darkMode 
-          ? 'bg-gray-800 border-gray-700' 
-          : 'bg-white border-gray-200'
-      }`}
-    >
-      {/* Header */}
-      <div className={`px-4 py-3 border-b ${
-        darkMode ? 'border-gray-700' : 'border-gray-200'
-      }`}>
-        <div className="flex items-center justify-between">
-          <h3 className={`font-semibold ${
-            darkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            Bookmarks ({bookmarkedItems.length})
-          </h3>
-          <button
-            onClick={onClose}
-            className={`p-1 rounded-full transition-colors ${
-              darkMode
-                ? 'text-gray-400 hover:text-white hover:bg-gray-700'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Bookmarks Items */}
-      <div className="max-h-64 overflow-y-auto">
-        {bookmarkedItems.length === 0 ? (
-          <div className="text-center py-8 px-4">
-            <BookmarkIcon className={`w-12 h-12 mx-auto mb-3 ${
-              darkMode ? 'text-gray-600' : 'text-gray-400'
-            }`} />
-            <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              No bookmarks yet
-            </p>
-          </div>
-        ) : (
-          <div className="p-2">
-            {bookmarkedItems.map((item) => (
-              <div key={item.id} className={`p-3 rounded-lg mb-2 border cursor-pointer transition-all hover:shadow-md ${
-                darkMode ? 'bg-gray-700 border-gray-600 hover:bg-gray-650' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-              }`}>
-                <div className="flex items-start space-x-3">
-                  {/* Image */}
-                  <img 
-                    src={item.image} 
-                    alt={item.name}
-                    className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                  />
-                  
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <h4 
-                      className={`font-medium text-sm mb-1 cursor-pointer hover:underline ${
-                        darkMode ? 'text-white' : 'text-gray-900'
-                      }`}
-                    >
-                      {item.name}
-                    </h4>
-                    
-                    <div className={`text-xs mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      <div className="flex items-center space-x-1 mb-1">
-                        <span className="font-medium">Type:</span>
-                        <span>{item.animalType}</span>
-                      </div>
-                      <div className="flex items-center space-x-1 truncate">
-                        <MapPinIcon className="w-3 h-3 text-red-500 flex-shrink-0" />
-                        <span className="truncate">{item.address}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className={`font-semibold text-green-500`}>
-                        ${item.price}
-                      </span>
-                    </div>
-                    
-                    {/* Action buttons */}
-                    <div className="flex items-center space-x-2 mt-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                        className={`flex-1 px-2 py-1 rounded text-xs transition-colors ${
-                          darkMode
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                            : 'bg-blue-500 hover:bg-blue-600 text-white'
-                        }`}
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeBookmark(item.id);
-                        }}
-                        className={`flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors ${
-                          darkMode
-                            ? 'bg-red-600 hover:bg-red-700 text-white'
-                            : 'bg-red-500 hover:bg-red-600 text-white'
-                        }`}
-                      >
-                        <TrashIcon className="w-3 h-3" />
-                        <span>Remove</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Notifications Dropdown Component
-const NotificationsDropdown = ({ isOpen, onClose, darkMode, notificationsRef }) => {
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: 'comment',
-      user: 'Maria Santos',
-      action: 'commented on your post',
-      postTitle: 'Golden Retriever Puppy',
-      timestamp: '2h ago',
-      read: false,
-      avatar: 'https://ui-avatars.com/api/?name=Maria+Santos&background=10b981&color=fff'
-    },
-    {
-      id: 2,
-      type: 'like',
-      user: 'Juan Dela Cruz',
-      action: 'liked your post',
-      postTitle: 'Persian Cat',
-      timestamp: '4h ago',
-      read: false,
-      avatar: 'https://ui-avatars.com/api/?name=Juan+Dela+Cruz&background=3b82f6&color=fff'
-    },
-    {
-      id: 3,
-      type: 'bookmark',
-      user: 'Anna Reyes',
-      action: 'bookmarked your post',
-      postTitle: 'Premium Dog Food',
-      timestamp: '1d ago',
-      read: true,
-      avatar: 'https://ui-avatars.com/api/?name=Anna+Reyes&background=ec4899&color=fff'
-    },
-    {
-      id: 4,
-      type: 'comment',
-      user: 'Pedro Garcia',
-      action: 'replied to your comment',
-      postTitle: 'Cat Adoption Event',
-      timestamp: '2d ago',
-      read: true,
-      avatar: 'https://ui-avatars.com/api/?name=Pedro+Garcia&background=f59e0b&color=fff'
-    }
-  ]);
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  const markAsRead = (id) => {
-    setNotifications(notifications.map(notif =>
-      notif.id === id ? { ...notif, read: true } : notif
-    ));
-  };
-
-  const deleteNotification = (id) => {
-    setNotifications(notifications.filter(notif => notif.id !== id));
-  };
-
-  const getNotificationIcon = (type) => {
-    switch(type) {
-      case 'comment':
-        return '💬';
-      case 'like':
-        return '❤️';
-      case 'bookmark':
-        return '🔖';
-      default:
-        return '📢';
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div 
-      ref={notificationsRef}
-      className={`absolute right-0 mt-2 w-96 rounded-lg shadow-xl border z-40 max-h-104 overflow-hidden ${
-        darkMode 
-          ? 'bg-gray-800 border-gray-700' 
-          : 'bg-white border-gray-200'
-      }`}
-    >
-      {/* Header */}
-      <div className={`px-4 py-3 border-b ${
-        darkMode ? 'border-gray-700' : 'border-gray-200'
-      }`}>
-        <div className="flex items-center justify-between">
-          <h3 className={`font-semibold ${
-            darkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            Notifications {unreadCount > 0 && `(${unreadCount})`}
-          </h3>
-          <button
-            onClick={onClose}
-            className={`p-1 rounded-full transition-colors ${
-              darkMode
-                ? 'text-gray-400 hover:text-white hover:bg-gray-700'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Notifications Items */}
-      <div className="max-h-96 overflow-y-auto">
-        {notifications.length === 0 ? (
-          <div className="text-center py-8 px-4">
-            <BellIcon className={`w-12 h-12 mx-auto mb-3 ${
-              darkMode ? 'text-gray-600' : 'text-gray-400'
-            }`} />
-            <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              No notifications yet
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            {notifications.map((notif) => (
-              <div 
-                key={notif.id}
-                className={`p-4 transition-colors hover:bg-opacity-50 ${
-                  notif.read
-                    ? darkMode ? 'bg-gray-800' : 'bg-white'
-                    : darkMode ? 'bg-gray-700 bg-opacity-50' : 'bg-blue-50'
-                }`}
-              >
-                <div className="flex items-start space-x-3">
-                  {/* Avatar */}
-                  <img 
-                    src={notif.avatar}
-                    alt={notif.user}
-                    className="w-10 h-10 rounded-full flex-shrink-0"
-                  />
-                  
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className={`text-sm font-medium ${
-                          darkMode ? 'text-white' : 'text-gray-900'
-                        }`}>
-                          {notif.user}
-                        </p>
-                        <p className={`text-sm ${
-                          darkMode ? 'text-gray-300' : 'text-gray-600'
-                        }`}>
-                          {notif.action}
-                        </p>
-                        <p className={`text-xs mt-1 ${
-                          darkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>
-                          {notif.postTitle}
-                        </p>
-                        <p className={`text-xs mt-2 ${
-                          darkMode ? 'text-gray-500' : 'text-gray-400'
-                        }`}>
-                          {notif.timestamp}
-                        </p>
-                      </div>
-                      
-                      {/* Icon */}
-                      <span className="text-lg ml-2">
-                        {getNotificationIcon(notif.type)}
-                      </span>
-                    </div>
-                    
-                    {/* Actions */}
-                    <div className="flex items-center space-x-2 mt-3">
-                      {!notif.read && (
-                        <button
-                          onClick={() => markAsRead(notif.id)}
-                          className={`text-xs px-2 py-1 rounded transition-colors ${
-                            darkMode
-                              ? 'bg-green-600 hover:bg-green-700 text-white'
-                              : 'bg-green-500 hover:bg-green-600 text-white'
-                          }`}
-                        >
-                          Mark as Read
-                        </button>
-                      )}
-                      <button
-                        onClick={() => deleteNotification(notif.id)}
-                        className={`text-xs px-2 py-1 rounded transition-colors ${
-                          darkMode
-                            ? 'bg-red-600 hover:bg-red-700 text-white'
-                            : 'bg-red-500 hover:bg-red-600 text-white'
-                        }`}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      {notifications.length > 0 && (
-        <div className={`px-4 py-3 border-t ${
-          darkMode ? 'border-gray-700' : 'border-gray-200'
-        }`}>
-          <button
-            className={`w-full text-sm font-medium py-2 rounded-lg transition-colors ${
-              darkMode
-                ? 'text-blue-400 hover:text-blue-300'
-                : 'text-blue-600 hover:text-blue-700'
-            }`}
-          >
-            View All Notifications
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePost }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalType, setAuthModalType] = useState('login');
-  
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [showBookmarksDropdown, setShowBookmarksDropdown] = useState(false);
-  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-  
-  const [bookmarkCount, setBookmarkCount] = useState(2);
-  const [notificationCount, setNotificationCount] = useState(2);
   
   const { user, logout, isAuthenticated } = useAuth();
   
   const role = user?.role || '';
   const profileDropdownRef = useRef(null);
-  const bookmarksDropdownRef = useRef(null);
-  const notificationsDropdownRef = useRef(null);
   const sidebarRef = useRef(null);
 
   useEffect(() => {
@@ -424,30 +41,26 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
       }
-      if (bookmarksDropdownRef.current && !bookmarksDropdownRef.current.contains(event.target)) {
-        setShowBookmarksDropdown(false);
-      }
-      if (notificationsDropdownRef.current && !notificationsDropdownRef.current.contains(event.target)) {
-        setShowNotificationsDropdown(false);
-      }
       if (sidebarRef.current && !sidebarRef.current.contains(event.target) && showMobileSidebar) {
         setShowMobileSidebar(false);
       }
     };
 
-    if (showProfileDropdown || showBookmarksDropdown || showNotificationsDropdown || showMobileSidebar) {
+    if (showProfileDropdown || showMobileSidebar) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showProfileDropdown, showBookmarksDropdown, showNotificationsDropdown, showMobileSidebar]);
+  }, [showProfileDropdown, showMobileSidebar]);
 
   const navItems = [
     { id: 'home', icon: HomeIcon, iconSolid: HomeIconSolid, label: 'Home' },
     ...(isAuthenticated ? [
-      { id: 'chat', icon: ChatBubbleLeftRightIcon, iconSolid: ChatIconSolid, label: 'Chat' }
+      { id: 'chat', icon: ChatBubbleLeftRightIcon, iconSolid: ChatIconSolid, label: 'Chat' },
+      { id: 'bookmarks', icon: BookmarkIcon, iconSolid: BookmarkIconSolid, label: 'Bookmarks' },
+      { id: 'notifications', icon: BellIcon, iconSolid: BellIconSolid, label: 'Notifications' }
     ] : []),
     { id: 'profile', icon: UserCircleIcon, iconSolid: UserIconSolid, label: 'Profile' },
   ];
@@ -538,7 +151,8 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
       {/* Mobile Sidebar Overlay */}
       {showMobileSidebar && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+
           onClick={() => setShowMobileSidebar(false)}
         />
       )}
@@ -646,66 +260,6 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
                   );
                 })}
 
-                {/* Bookmarks Button - Show when logged in */}
-                {isAuthenticated && (
-                  <div className="relative" ref={bookmarksDropdownRef}>
-                    <button
-                      onClick={() => setShowBookmarksDropdown(!showBookmarksDropdown)}
-                      className={`p-2 sm:p-3 rounded-full transition-all duration-300 relative ${
-                        darkMode
-                          ? 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                          : 'text-gray-600 hover:bg-green-100 hover:text-green-700'
-                      }`}
-                      title="Bookmarks"
-                    >
-                      <BookmarkIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-                      {bookmarkCount > 0 && (
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium animate-pulse">
-                          {bookmarkCount > 9 ? '9+' : bookmarkCount}
-                        </div>
-                      )}
-                    </button>
-
-                    {/* Bookmarks Dropdown */}
-                    <BookmarksDropdown
-                      isOpen={showBookmarksDropdown}
-                      onClose={() => setShowBookmarksDropdown(false)}
-                      darkMode={darkMode}
-                      bookmarksRef={bookmarksDropdownRef}
-                    />
-                  </div>
-                )}
-
-                {/* Notifications Button - Show when logged in */}
-                {isAuthenticated && (
-                  <div className="relative" ref={notificationsDropdownRef}>
-                    <button
-                      onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
-                      className={`p-2 sm:p-3 rounded-full transition-all duration-300 relative ${
-                        darkMode
-                          ? 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                          : 'text-gray-600 hover:bg-green-100 hover:text-green-700'
-                      }`}
-                      title="Notifications"
-                    >
-                      <BellIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-                      {notificationCount > 0 && (
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium animate-pulse">
-                          {notificationCount > 9 ? '9+' : notificationCount}
-                        </div>
-                      )}
-                    </button>
-
-                    {/* Notifications Dropdown */}
-                    <NotificationsDropdown
-                      isOpen={showNotificationsDropdown}
-                      onClose={() => setShowNotificationsDropdown(false)}
-                      darkMode={darkMode}
-                      notificationsRef={notificationsDropdownRef}
-                    />
-                  </div>
-                )}
-
                 {/* Create Post Button - Only show when authenticated */}
                 {isAuthenticated && (
                   <button
@@ -720,6 +274,7 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
                     <PlusIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                   </button>
                 )}
+
                 {/* Login Button - Only show when not authenticated */}
                 {!isAuthenticated && (
                   <button
@@ -771,12 +326,12 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
       {/* Mobile Sidebar */}
       <aside 
         ref={sidebarRef}
-        className={`lg:hidden fixed top-16 right-0 w-80 max-w-[80vw] h-[calc(100vh-4rem)] bg-white shadow-xl border-l border-gray-200 flex flex-col z-50 transform transition-transform duration-300 ${
+        className={`lg:hidden fixed top-16 right-0 w-80 max-w-[80vw] h-[calc(100vh-4rem)] shadow-xl border-l flex flex-col z-50 transform transition-transform duration-300 ${
           showMobileSidebar ? 'translate-x-0' : 'translate-x-full'
         } ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}
       >
         <div className="flex-1 overflow-y-auto p-4 space-y-1">
-          <div className="mb-6 pb-4 border-b border-gray-200">
+          <div className={`mb-6 pb-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Navigation</h2>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Animal MarketHub</p>
           </div>
@@ -816,50 +371,6 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
           {isAuthenticated && (
             <>
               <div className={`border-t my-3 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}></div>
-              
-              {/* Bookmarks */}
-              <div
-                onClick={() => {
-                  setShowBookmarksDropdown(!showBookmarksDropdown);
-                }}
-                className={`flex items-center justify-between gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                  darkMode
-                    ? "text-gray-300 hover:bg-gray-800 hover:text-white"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-green-600"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <BookmarkIcon className="w-5 h-5" />
-                  <span className="font-medium text-sm">Bookmarks</span>
-                </div>
-                {bookmarkCount > 0 && (
-                  <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                    {bookmarkCount > 9 ? '9+' : bookmarkCount}
-                  </div>
-                )}
-              </div>
-
-              {/* Notifications */}
-              <div
-                onClick={() => {
-                  setShowNotificationsDropdown(!showNotificationsDropdown);
-                }}
-                className={`flex items-center justify-between gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                  darkMode
-                    ? "text-gray-300 hover:bg-gray-800 hover:text-white"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-green-600"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <BellIcon className="w-5 h-5" />
-                  <span className="font-medium text-sm">Notifications</span>
-                </div>
-                {notificationCount > 0 && (
-                  <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                    {notificationCount > 9 ? '9+' : notificationCount}
-                  </div>
-                )}
-              </div>
 
               {/* Create Post */}
               <div
@@ -960,7 +471,7 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
         </div>
       </aside>
 
-      {/* Unified Auth Modal - This replaces your separate modals */}
+      {/* Auth Modals */}
       {showAuthModal && (
         <>
           {authModalType === 'login' ? (
@@ -995,7 +506,7 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
   );
 };
 
-// Add missing LogOut icon import at the top
+// Helper Icons
 const LogOut = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

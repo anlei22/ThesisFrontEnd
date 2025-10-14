@@ -7,6 +7,8 @@ import CreatePostModal from "./UserUI/CreatePostModal";
 import UserProfileView from "./UserUI/UserProfileView";
 import { AuthProvider, useAuth } from "../../context/AuthContext";
 import LoginModal from "../../components/LoginModal";
+import Bookmark from './UserUI/Bookmark';
+import Notifications from './UserUI/Notifications';
 
 import {
   Star,
@@ -419,36 +421,39 @@ const [postSearchQuery, setPostSearchQuery] = useState(''); // 👈 ADD THIS LIN
     setShowCreatePost(true);
   };
 
-  const renderMainContent = () => {
-    switch (activeTab) {
-      case "home":
-        if (viewingUserProfile && selectedUser) {
-          return (
-            <UserProfileView
-              user={selectedUser}
-              onBack={handleBackFromUserProfile}
-              darkMode={darkMode}
-            />
-          );
-        }
+const renderMainContent = () => {
+  switch (activeTab) {
+    case "home":
+      if (viewingUserProfile && selectedUser) {
         return (
-            <NewsFeed
+          <UserProfileView
+            user={selectedUser}
+            onBack={handleBackFromUserProfile}
+            darkMode={darkMode}
+          />
+        );
+      }
+      return (
+        <NewsFeed
           darkMode={darkMode}
           onCreatePost={handleCreatePost}
           postCategory={apiCategoryName === postCategory ? postCategory : apiCategoryName}
           postLocation={postLocation}
           searchQuery={postSearchQuery}
         />
-        );
-      case "chat":
-        return <ChatInterface darkMode={darkMode} />;
-      case "profile":
-        return <UserProfile darkMode={darkMode} />;
-      default:
-        return <NewsFeed darkMode={darkMode} onCreatePost={handleCreatePost} />;
-    }
-  };
-
+      );
+    case "chat":
+      return <ChatInterface darkMode={darkMode} />;
+    case "profile":
+      return <UserProfile darkMode={darkMode} />;
+    case "bookmarks":
+      return <Bookmark darkMode={darkMode} />;
+    case "notifications":
+      return <Notifications darkMode={darkMode} />;
+    default:
+      return <NewsFeed darkMode={darkMode} onCreatePost={handleCreatePost} />;
+  }
+};
   const selectedCategoryData = categories.find(
     (cat) => cat.id === postCategory
   );
