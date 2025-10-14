@@ -167,8 +167,21 @@ const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
       images: selectedImages,
       timestamp: new Date().toISOString()
     };
+
+    const formData = new FormData();
+    formData.append('title', `${getSelectedCategory()?.displayName} - ${selectedBreed}`);
+    formData.append('type_id', selectedAnimal);
+    formData.append('description', description);
+    formData.append('breed', selectedBreed);
+    formData.append('age', age);
+    formData.append('sex', sex);
+    formData.append('price', price);
+    formData.append('location', location);
+    selectedImages.forEach(image => {
+      formData.append('images', image.file);
+    });
+
     
-    console.log('Submitting post:', postData);
     
     setTimeout(() => {
       setIsSubmitting(false);
