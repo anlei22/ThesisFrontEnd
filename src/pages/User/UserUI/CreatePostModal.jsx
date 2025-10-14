@@ -118,7 +118,7 @@ const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
     { id: "talang", name: "Talang" }
   ];
 
-  const handleSubmit = () => {
+const handleSubmit = async () => {
     if (!selectedAnimal) {
       alert('Please select an animal type');
       return;
@@ -153,40 +153,108 @@ const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
       alert('Please select a location');
       return;
     }
+
+    if (selectedImages.length === 0) {
+      alert('Please upload at least one image');
+      return;
+    }
     
     setIsSubmitting(true);
     
-    const postData = {
+    console.log('📤 Submitting new animal listing...');
+    console.log('📋 Listing details:', {
       animal: selectedAnimal,
       breed: selectedBreed,
-      description,
       age,
       sex,
       price,
       location,
-      images: selectedImages,
-      timestamp: new Date().toISOString()
-    };
-
-    const formData = new FormData();
-    formData.append('title', `${getSelectedCategory()?.displayName} - ${selectedBreed}`);
-    formData.append('type_id', selectedAnimal);
-    formData.append('description', description);
-    formData.append('breed', selectedBreed);
-    formData.append('age', age);
-    formData.append('sex', sex);
-    formData.append('price', price);
-    formData.append('location', location);
-    selectedImages.forEach(image => {
-      formData.append('images', image.file);
+      imagesCount: selectedImages.length
     });
+    
+    try {
+      // Get auth token
+      const token = localStorage.getItem('login-token');
+      
+      // Get animal type ID from categories
+      const selectedCategory = getSelectedCategory();
+      const typeId = categories.findIndex(cat => cat.id === selectedAnimal) + 1; // Assuming IDs start from 1
+      
+      const formData = new FormData();
+      formData.append('title', `${selectedCategory?.displayName} - ${selectedBreed}`);
+      formData.append('type_id', typeId.toString());
+      formData.append('description', description);
+      formData.append('breed', selectedBreed);
+      formData.append('age', age);
+      formData.append('sex', sex);
+      formData.append('location', location);
+      formData.append('price', price);
+      formData.append('status', 'available');
+      
+      // Append images
+      selectedImages.forEach((image, index) => {
+        formData.append(`images[${index}]`, image.file);
+      });
 
-    
-    
-    setTimeout(() => {
+      // API Configuration (match your backend)
+      const API_BASE_URL = 'http://localhost:8000/api';
+      const API_KEY = 'gY7uVz2QeTXB1oLkwA@mJ5fPR9dNshv03tKMiC!bznqESGUlxyWcHmZ86OFD4rja';
+      
+      const endpoint = 'news-feed/add';
+      
+      console.log('📡 API Request:', {
+        url: `${API_BASE_URL}/${endpoint}`,
+        method: 'POST',
+        hasToken: !!token,
+        hasApiKey: !!API_KEY
+      });
+      
+      const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'X-API-KEY': API_KEY,
+          'login-token': token,
+        },
+        body: formData,
+      });
+
+      console.log('📥 Response Status:', response.status, response.statusText);
+
+      const data = await response.json();
+      
+      console.log('📊 Response data:', data);
+
+      if (response.ok && data.status === 'success') {
+        console.log('✅ SUCCESS: Listing created successfully!');
+        setIsSubmitting(false);
+        setShowSuccessModal(true);
+        
+        // Reset form after 2 seconds
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          // Reset all states
+          setSelectedAnimal('');
+          setSelectedBreed('');
+          setDescription('');
+          setAge('');
+          setSex('');
+          setPrice('');
+          setLocation('');
+          setSelectedImages([]);
+          setCurrentStep(1);
+          onClose();
+        }, 2000);
+      } else {
+        console.error('❌ FAILED: Server returned error');
+        setIsSubmitting(false);
+        alert(data.message || 'Failed to create post. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ FAILED: Error submitting post');
+      console.error('Error details:', error);
       setIsSubmitting(false);
-      setShowSuccessModal(true);
-    }, 1000);
+      alert('An error occurred while creating the post. Please try again.');
+    }
   };
 
   const handleNext = () => {

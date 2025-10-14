@@ -36,7 +36,7 @@
         // console.log("Verification code sent successfully:", data);
         setStatusMessage("Verification code sent successfully");
         setCode(data.code);
-        // console.log("Verification code:", data.code);
+        console.log("Verification code:", data.code);
       } catch (err) {
         setStatusMessage("Failed to send verification code");
         console.error("Failed to send verification code:", err);

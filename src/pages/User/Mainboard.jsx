@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import useUserSearch from '../../hooks/useUserSearch';
 import Navbar from "../../components/Navbar";
 import NewsFeed from "./UserUI/NewsFeed";
 import ChatInterface from "./UserUI/ChatInterface";
@@ -50,6 +51,7 @@ const Modal = ({ isOpen, onClose, children, darkMode = false }) => {
   );
 };
 
+
 const Mainboard = () => {
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("home");
@@ -72,6 +74,8 @@ const [postSearchQuery, setPostSearchQuery] = useState(''); // 👈 ADD THIS LIN
   // User Profile states
   const [viewingUserProfile, setViewingUserProfile] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  
+const { users: apiUsers, loading: usersLoading } = useUserSearch(userSearchTerm, userSearchType);
 
   // Categories with icons
  const categories = [
@@ -90,6 +94,9 @@ const [postSearchQuery, setPostSearchQuery] = useState(''); // 👈 ADD THIS LIN
 ];
  const selectedCategory = categories.find(cat => cat.id === postCategory);
       const apiCategoryName = selectedCategory?.apiName || postCategory;
+      
+
+
       
   // Barangay locations
   const locations = [
@@ -694,78 +701,85 @@ const renderMainContent = () => {
             )}
           </div>
 
-          {showUserResults && (
-            <div className="mt-4 space-y-2">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user, index) => {
-                  const userLocation = locations.find(
-                    (loc) => loc.id === user.location
-                  );
-                  return (
-                    <div
-                      key={index}
-                      onClick={() => handleViewUserProfile(user)}
-                      className={`p-3 rounded-lg border transition-colors cursor-pointer ${
-                        darkMode
-                          ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
-                          : "border-gray-200 bg-gray-50 hover:bg-gray-100"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={user.avatar}
-                          alt={user.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h4
-                              className={`font-medium text-sm ${
-                                darkMode ? "text-white" : "text-gray-900"
-                              }`}
-                            >
-                              {user.name}
-                            </h4>
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full ${
-                                user.type === "seller"
-                                  ? darkMode
-                                    ? "bg-blue-600 text-blue-100"
-                                    : "bg-blue-100 text-blue-600"
-                                  : darkMode
-                                  ? "bg-purple-600 text-purple-100"
-                                  : "bg-purple-100 text-purple-600"
-                              }`}
-                            >
-                              {user.type}
-                            </span>
-                          </div>
-                          <div
-                            className={`flex items-center gap-1 text-xs ${
-                              darkMode ? "text-gray-400" : "text-gray-500"
-                            }`}
-                          >
-                            <MapPin className="w-3 h-3" />
-                            <span>{userLocation?.name}</span>
-                            <Star className="w-3 h-3 text-yellow-400 fill-current ml-2" />
-                            <span>{user.rating}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
+      {/* Search Results */}
+{showUserResults && (
+  <div className="space-y-2 max-h-64 overflow-y-auto">
+    {usersLoading ? (
+      <div className={`text-center py-4 text-sm ${
+        darkMode ? "text-gray-400" : "text-gray-500"
+      }`}>
+        Searching...
+      </div>
+    ) : filteredUsers.length > 0 ? (
+      filteredUsers.map((user, index) => {
+        const userLocation = locations.find(
+          (loc) => loc.id === user.location || loc.name === user.location
+        );
+        return (
+          <div
+            key={index}
+            onClick={() => handleViewUserProfile(user)}
+            className={`p-3 rounded-lg border transition-colors cursor-pointer ${
+              darkMode
+                ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
+                : "border-gray-200 bg-gray-50 hover:bg-gray-100"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4
+                    className={`font-medium text-sm truncate ${
+                      darkMode ? "text-white" : "text-gray-900"
+                    }`}
+                  >
+                    {user.name}
+                  </h4>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                      user.type === "seller"
+                        ? darkMode
+                          ? "bg-blue-600 text-blue-100"
+                          : "bg-blue-100 text-blue-600"
+                        : darkMode
+                        ? "bg-purple-600 text-purple-100"
+                        : "bg-purple-100 text-purple-600"
+                    }`}
+                  >
+                    {user.type}
+                  </span>
+                </div>
                 <div
-                  className={`text-center py-4 ${
+                  className={`flex items-center gap-1 text-xs ${
                     darkMode ? "text-gray-400" : "text-gray-500"
                   }`}
                 >
-                  No users found
+                  <MapPin className="w-3 h-3" />
+                  <span className="truncate">{userLocation?.name || user.location}</span>
+                  <Star className="w-3 h-3 text-yellow-400 fill-current ml-2" />
+                  <span>{user.rating || 0}</span>
                 </div>
-              )}
+              </div>
             </div>
-          )}
+          </div>
+        );
+      })
+    ) : (
+      <div
+        className={`text-center py-4 text-sm ${
+          darkMode ? "text-gray-400" : "text-gray-500"
+        }`}
+      >
+        No users found
+      </div>
+    )}
+  </div>
+)}
         </div>
       </div>
     </div>
