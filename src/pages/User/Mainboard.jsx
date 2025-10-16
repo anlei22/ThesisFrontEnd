@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import useUserSearch from '../../hooks/useUserSearch';
+import useTopSellers from '../../hooks/useTopSellers';  // ✅ ADD THIS
 import Navbar from "../../components/Navbar";
 import NewsFeed from "./UserUI/NewsFeed";
 import ChatInterface from "./UserUI/ChatInterface";
@@ -10,6 +11,7 @@ import { AuthProvider, useAuth } from "../../context/AuthContext";
 import LoginModal from "../../components/LoginModal";
 import Bookmark from './UserUI/Bookmark';
 import Notifications from './UserUI/Notifications';
+
 
 import {
   Star,
@@ -65,7 +67,7 @@ const Mainboard = () => {
   const [postLocation, setPostLocation] = useState("all");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-const [postSearchQuery, setPostSearchQuery] = useState(''); // 👈 ADD THIS LINE
+
   // USER Search states
   const [userSearchTerm, setUserSearchTerm] = useState("");
   const [userSearchType, setUserSearchType] = useState("both");
@@ -121,257 +123,23 @@ const { users: apiUsers, loading: usersLoading } = useUserSearch(userSearchTerm,
     { id: "talang", name: "Talang" },
   ];
 
-  // All users data
-  const allUsers = [
-    {
-      name: "Clark Oclarit",
-      username: "@clarkoclarit",
-      bio: "Experienced livestock seller specializing in pigs and cattle. Providing quality animals to farmers across Central Luzon for over 10 years.",
-      location: "abelo",
-      avatar: "https://i.pravatar.cc/150?img=1",
-      coverPhoto:
-        "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&h=300&fit=crop",
-      phone: "+63 912 345 6789",
-      joinDate: "Joined June 2023",
-      followers: 156,
-      following: 89,
-      posts: 45,
-      rating: 4.8,
-      totalReviews: 32,
-      isVerified: true,
-      userType: "seller",
-      totalListings: 120,
-      specialties: ["baboy", "baka"],
-      type: "seller",
-      userPosts: [],
-      reviews: [],
-    },
-    {
-      name: "Joshbee Mendoza Atienza",
-      username: "@joshbeemendozaatienza",
-      bio: "Fish farming specialist with premium bangus and tilapia. Fresh from our ponds in Alas-as.",
-      location: "alas-as",
-      avatar: "https://i.pravatar.cc/150?img=2",
-      coverPhoto:
-        "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=300&fit=crop",
-      phone: "+63 923 456 7890",
-      joinDate: "Joined June 2023",
-      followers: 203,
-      following: 67,
-      posts: 32,
-      rating: 4.9,
-      totalReviews: 28,
-      isVerified: true,
-      userType: "seller",
-      totalListings: 95,
-      specialties: ["bangus", "tilapia"],
-      type: "seller",
-      userPosts: [],
-      reviews: [],
-    },
-    {
-      name: "Maricel Bautista",
-      username: "@maricelbautista",
-      bio: "Dedicated goat farmer with premium quality breeding goats raised in Balete.",
-      location: "balete",
-      avatar: "https://i.pravatar.cc/150?img=7",
-      coverPhoto:
-        "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&h=300&fit=crop",
-      phone: "+63 911 234 5678",
-      joinDate: "Joined June 2023",
-      followers: 178,
-      following: 54,
-      posts: 22,
-      rating: 4.7,
-      totalReviews: 19,
-      isVerified: true,
-      userType: "seller",
-      totalListings: 88,
-      specialties: ["kambing"],
-      type: "seller",
-      userPosts: [],
-      reviews: [],
-    },
-    {
-      name: "Rommel Dela Cruz",
-      username: "@rommeldelacruz",
-      bio: "Trusted cattle trader supplying premium beef cattle across Batangas and nearby provinces.",
-      location: "san isidro",
-      avatar: "https://i.pravatar.cc/150?img=8",
-      coverPhoto:
-        "https://images.unsplash.com/photo-1549924231-f129b911e442?w=800&h=300&fit=crop",
-      phone: "+63 922 345 6789",
-      joinDate: "Joined June 2023",
-      followers: 260,
-      following: 98,
-      posts: 39,
-      rating: 4.8,
-      totalReviews: 25,
-      isVerified: true,
-      userType: "seller",
-      totalListings: 110,
-      specialties: ["baka"],
-      type: "seller",
-      userPosts: [],
-      reviews: [],
-    },
-    {
-      name: "Justine Roco",
-      username: "@justineroco",
-      bio: "Large-scale livestock breeder specializing in goats and water buffalo. Quality breeding stock available.",
-      location: "balete",
-      avatar: "https://i.pravatar.cc/150?img=3",
-      coverPhoto:
-        "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&h=300&fit=crop",
-      phone: "+63 934 567 8901",
-      joinDate: "Joined June 2023",
-      followers: 342,
-      following: 124,
-      posts: 67,
-      rating: 4.7,
-      totalReviews: 41,
-      isVerified: true,
-      userType: "seller",
-      totalListings: 200,
-      specialties: ["kambing", "kalabaw"],
-      type: "seller",
-      userPosts: [],
-      reviews: [],
-    },
-    {
-      name: "Angela Encarnacion",
-      username: "@angelaencarnacion",
-      bio: "Premium poultry breeder specializing in pigeons and chickens. Award-winning bloodlines available.",
-      location: "baluk-baluk",
-      avatar: "https://i.pravatar.cc/150?img=4",
-      coverPhoto:
-        "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&h=300&fit=crop",
-      phone: "+63 945 678 9012",
-      joinDate: "Joined June 2023",
-      followers: 189,
-      following: 93,
-      posts: 28,
-      rating: 5.0,
-      totalReviews: 18,
-      isVerified: true,
-      userType: "seller",
-      totalListings: 75,
-      specialties: ["kalapati", "manok"],
-      type: "seller",
-      userPosts: [],
-      reviews: [],
-    },
-    {
-      name: "Venus De Ramos",
-      username: "@venusderamos",
-      bio: "Specialty birds and rabbit breeder. Focusing on ducks and domestic rabbits for meat and breeding.",
-      location: "bancoro",
-      avatar: "https://i.pravatar.cc/150?img=5",
-      coverPhoto:
-        "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&h=300&fit=crop",
-      phone: "+63 956 789 0123",
-      joinDate: "Joined June 2023",
-      followers: 127,
-      following: 76,
-      posts: 21,
-      rating: 4.6,
-      totalReviews: 15,
-      isVerified: false,
-      userType: "seller",
-      totalListings: 60,
-      specialties: ["pato", "rabbit"],
-      type: "seller",
-      userPosts: [],
-      reviews: [],
-    },
-    {
-      name: "John Lei Sabangan",
-      username: "@johnleisabangan",
-      bio: "Duck and rabbit farming specialist. Providing quality animals for sustainable farming in Bancoro.",
-      location: "bancoro",
-      avatar: "https://i.pravatar.cc/150?img=6",
-      coverPhoto:
-        "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&h=300&fit=crop",
-      phone: "+63 967 890 1234",
-      joinDate: "Joined June 2023",
-      followers: 143,
-      following: 82,
-      posts: 19,
-      rating: 4.6,
-      totalReviews: 12,
-      isVerified: true,
-      userType: "seller",
-      totalListings: 60,
-      specialties: ["pato", "rabbit"],
-      type: "seller",
-      userPosts: [],
-      reviews: [],
-    },
-    {
-      name: "Eduardo Villanueva",
-      username: "@eduardovillanueva",
-      bio: "Sheep and goat farmer with a focus on organic livestock raising in San Luis.",
-      location: "san luis",
-      avatar: "https://i.pravatar.cc/150?img=9",
-      coverPhoto:
-        "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=800&h=300&fit=crop",
-      phone: "+63 935 678 9012",
-      joinDate: "Joined June 2023",
-      followers: 98,
-      following: 45,
-      posts: 15,
-      rating: 4.5,
-      totalReviews: 9,
-      isVerified: false,
-      userType: "seller",
-      totalListings: 40,
-      specialties: ["tupa", "kambing"],
-      type: "seller",
-      userPosts: [],
-      reviews: [],
-    },
-    {
-      name: "Kristine Aguilar",
-      username: "@kristineaguilar",
-      bio: "Chicken and duck farming expert providing quality poultry for Batangas households.",
-      location: "alas-as",
-      avatar: "https://i.pravatar.cc/150?img=10",
-      coverPhoto:
-        "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?w=800&h=300&fit=crop",
-      phone: "+63 936 789 0124",
-      joinDate: "Joined June 2023",
-      followers: 154,
-      following: 68,
-      posts: 24,
-      rating: 4.7,
-      totalReviews: 14,
-      isVerified: true,
-      userType: "seller",
-      totalListings: 55,
-      specialties: ["manok", "pato"],
-      type: "seller",
-      userPosts: [],
-      reviews: [],
-    },
-  ];
 
-  // Filter users based on search
-  const filteredUsers = React.useMemo(() => {
-    if (!userSearchTerm.trim()) return [];
 
-    return allUsers
-      .filter((user) => {
-        const nameMatch = user.name
-          .toLowerCase()
-          .includes(userSearchTerm.toLowerCase());
 
-        const typeMatch =
-          userSearchType === "both" || user.type === userSearchType;
+const filteredUsers = React.useMemo(() => {
+  if (!apiUsers || apiUsers.length === 0) return [];
+  return apiUsers.slice(0, 8);
+}, [apiUsers]);
 
-        return nameMatch && typeMatch;
-      })
-      .slice(0, 8);
-  }, [userSearchTerm, userSearchType]);
+// Ensure API key is set
+useEffect(() => {
+  if (!import.meta.env.VITE_API_KEY) {
+    console.warn('⚠️ VITE_API_KEY not set in .env.local');
+  }
+}, []);
+const { sellers, loading: sellersLoading } = useTopSellers(10);
+
+
 
   const handleViewUserProfile = (user) => {
     setSelectedUser(user);
@@ -441,13 +209,12 @@ const renderMainContent = () => {
         );
       }
       return (
-        <NewsFeed
-          darkMode={darkMode}
-          onCreatePost={handleCreatePost}
-          postCategory={apiCategoryName === postCategory ? postCategory : apiCategoryName}
-          postLocation={postLocation}
-          searchQuery={postSearchQuery}
-        />
+       <NewsFeed
+  darkMode={darkMode}
+  onCreatePost={handleCreatePost}
+  postCategory={apiCategoryName === postCategory ? postCategory : apiCategoryName}
+  postLocation={postLocation}
+/>
       );
     case "chat":
       return <ChatInterface darkMode={darkMode} />;
@@ -482,10 +249,7 @@ const renderMainContent = () => {
     return { color: "", border: "border-transparent" };
   };
 
-  const sellers = allUsers
-    .filter((user) => user.type === "seller")
-    .slice(0, 10);
-
+ 
   // Mobile Search Interface
   const MobileSearchInterface = () => (
     <div className="space-y-4">
@@ -701,7 +465,6 @@ const renderMainContent = () => {
             )}
           </div>
 
-      {/* Search Results */}
 {showUserResults && (
   <div className="space-y-2 max-h-64 overflow-y-auto">
     {usersLoading ? (
@@ -712,9 +475,6 @@ const renderMainContent = () => {
       </div>
     ) : filteredUsers.length > 0 ? (
       filteredUsers.map((user, index) => {
-        const userLocation = locations.find(
-          (loc) => loc.id === user.location || loc.name === user.location
-        );
         return (
           <div
             key={index}
@@ -760,7 +520,10 @@ const renderMainContent = () => {
                   }`}
                 >
                   <MapPin className="w-3 h-3" />
-                  <span className="truncate">{userLocation?.name || user.location}</span>
+                  {/* FIXED: Changed from user.address to user.location */}
+                  <span className="truncate">
+                    {user.location || "No location set"}
+                  </span>
                   <Star className="w-3 h-3 text-yellow-400 fill-current ml-2" />
                   <span>{user.rating || 0}</span>
                 </div>
@@ -780,7 +543,86 @@ const renderMainContent = () => {
     )}
   </div>
 )}
-        </div>
+
+
+{showUserResults && (
+  <div className="space-y-2 max-h-64 overflow-y-auto">
+    {usersLoading ? (
+      <div className={`text-center py-4 text-sm ${
+        darkMode ? "text-gray-400" : "text-gray-500"
+      }`}>
+        Searching...
+      </div>
+    ) : filteredUsers.length > 0 ? (
+      filteredUsers.map((user, index) => {
+        return (
+          <div
+            key={index}
+            onClick={() => handleViewUserProfile(user)}
+            className={`p-3 rounded-lg border transition-colors cursor-pointer ${
+              darkMode
+                ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
+                : "border-gray-200 bg-gray-50 hover:bg-gray-100"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4
+                    className={`font-medium text-sm truncate ${
+                      darkMode ? "text-white" : "text-gray-900"
+                    }`}
+                  >
+                    {user.name}
+                  </h4>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                      user.type === "seller"
+                        ? darkMode
+                          ? "bg-blue-600 text-blue-100"
+                          : "bg-blue-100 text-blue-600"
+                        : darkMode
+                        ? "bg-purple-600 text-purple-100"
+                        : "bg-purple-100 text-purple-600"
+                    }`}
+                  >
+                    {user.type}
+                  </span>
+                </div>
+                <div
+                  className={`flex items-center gap-1 text-xs ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  <MapPin className="w-3 h-3" />
+                  {/* FIXED: Changed from user.address to user.location */}
+                  <span className="truncate">
+                    {user.location || "No location set"}
+                  </span>
+                  <Star className="w-3 h-3 text-yellow-400 fill-current ml-2" />
+                  <span>{user.rating || 0}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })
+    ) : (
+      <div
+        className={`text-center py-4 text-sm ${
+          darkMode ? "text-gray-400" : "text-gray-500"
+        }`}
+      >
+        No users found
+      </div>
+    )}
+  </div>
+)}    </div>
       </div>
     </div>
   );
@@ -938,79 +780,86 @@ const renderMainContent = () => {
         )}
       </div>
 
-      {/* Search Results */}
-      {showUserResults && (
-        <div className="space-y-2 max-h-64 overflow-y-auto">
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((user, index) => {
-              const userLocation = locations.find(
-                (loc) => loc.id === user.location
-              );
-              return (
+
+
+{showUserResults && (
+  <div className="space-y-2 max-h-64 overflow-y-auto">
+    {usersLoading ? (
+      <div className={`text-center py-4 text-sm ${
+        darkMode ? "text-gray-400" : "text-gray-500"
+      }`}>
+        Searching...
+      </div>
+    ) : filteredUsers.length > 0 ? (
+      filteredUsers.map((user, index) => {
+        return (
+          <div
+            key={index}
+            onClick={() => handleViewUserProfile(user)}
+            className={`p-3 rounded-lg border transition-colors cursor-pointer ${
+              darkMode
+                ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
+                : "border-gray-200 bg-gray-50 hover:bg-gray-100"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4
+                    className={`font-medium text-sm truncate ${
+                      darkMode ? "text-white" : "text-gray-900"
+                    }`}
+                  >
+                    {user.name}
+                  </h4>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                      user.type === "seller"
+                        ? darkMode
+                          ? "bg-blue-600 text-blue-100"
+                          : "bg-blue-100 text-blue-600"
+                        : darkMode
+                        ? "bg-purple-600 text-purple-100"
+                        : "bg-purple-100 text-purple-600"
+                    }`}
+                  >
+                    {user.type}
+                  </span>
+                </div>
                 <div
-                  key={index}
-                  onClick={() => handleViewUserProfile(user)}
-                  className={`p-3 rounded-lg border transition-colors cursor-pointer ${
-                    darkMode
-                      ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
-                      : "border-gray-200 bg-gray-50 hover:bg-gray-100"
+                  className={`flex items-center gap-1 text-xs ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4
-                          className={`font-medium text-sm truncate ${
-                            darkMode ? "text-white" : "text-gray-900"
-                          }`}
-                        >
-                          {user.name}
-                        </h4>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
-                            user.type === "seller"
-                              ? darkMode
-                                ? "bg-blue-600 text-blue-100"
-                                : "bg-blue-100 text-blue-600"
-                              : darkMode
-                              ? "bg-purple-600 text-purple-100"
-                              : "bg-purple-100 text-purple-600"
-                          }`}
-                        >
-                          {user.type}
-                        </span>
-                      </div>
-                      <div
-                        className={`flex items-center gap-1 text-xs ${
-                          darkMode ? "text-gray-400" : "text-gray-500"
-                        }`}
-                      >
-                        <MapPin className="w-3 h-3" />
-                        <span className="truncate">{userLocation?.name}</span>
-                        <Star className="w-3 h-3 text-yellow-400 fill-current ml-2" />
-                        <span>{user.rating}</span>
-                      </div>
-                    </div>
-                  </div>
+                  <MapPin className="w-3 h-3" />
+                  {/* FIXED: Changed from user.address to user.location */}
+                  <span className="truncate">
+                    {user.location || "No location set"}
+                  </span>
+                  <Star className="w-3 h-3 text-yellow-400 fill-current ml-2" />
+                  <span>{user.rating || 0}</span>
                 </div>
-              );
-            })
-          ) : (
-            <div
-              className={`text-center py-4 text-sm ${
-                darkMode ? "text-gray-400" : "text-gray-500"
-              }`}
-            >
-              No users found
+              </div>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        );
+      })
+    ) : (
+      <div
+        className={`text-center py-4 text-sm ${
+          darkMode ? "text-gray-400" : "text-gray-500"
+        }`}
+      >
+        No users found
+      </div>
+    )}
+  </div>
+)}
     </div>
 
     {/* Filter Posts Card */}
@@ -1028,46 +877,7 @@ const renderMainContent = () => {
         Filter Posts
       </h3>
 
-      {/* 🎯 POST SEARCH INPUT - NEW ADDITION 🎯 */}
-      <div className="mb-4">
-        <label
-          className={`block text-sm font-medium mb-2 ${
-            darkMode ? "text-gray-300" : "text-gray-700"
-          }`}
-        >
-          Search Posts
-        </label>
-        <div className="relative">
-          <Search
-            className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-              darkMode ? "text-gray-400" : "text-gray-500"
-            }`}
-          />
-          <input
-            type="text"
-            placeholder="Search animals, breeds, titles..."
-            value={postSearchQuery}
-            onChange={(e) => setPostSearchQuery(e.target.value)}
-            className={`w-full pl-10 pr-10 py-2 rounded-lg border transition-colors ${
-              darkMode
-                ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
-                : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
-            } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-          />
-          {postSearchQuery && (
-            <button
-              onClick={() => setPostSearchQuery("")}
-              className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
-                darkMode
-                  ? "text-gray-400 hover:text-gray-200"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      </div>
+     
 
       {/* Category Dropdown */}
       <div className="mb-4 relative">
@@ -1272,9 +1082,10 @@ const renderMainContent = () => {
                       >
                         <div className="p-4 space-y-3">
                           {sellers.map((user, index) => {
-                            const userLocation = locations?.find(
-                              (loc) => loc.id === user.location
-                            );
+  // API returns location as string, so find matching location
+  const userLocation = locations?.find(
+    (loc) => loc.name === user.location || loc.id === user.location
+  );
                             const rankBadge = getRankBadge(index);
 
                             return (

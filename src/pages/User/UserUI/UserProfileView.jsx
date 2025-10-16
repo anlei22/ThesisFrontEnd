@@ -1,33 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Heart, 
-  MessageCircle, 
-  Share, 
-  Bookmark, 
-  QrCode, 
-  Star, 
-  MapPin, 
-  Calendar, 
-  ShieldCheck,
-  MoreHorizontal,
-  Send,
-  X,
-  Camera,
-  Grid,
-  List,
-  ArrowLeft,
-  UserPlus,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
+import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, ChevronLeft, ChevronRight, Grid, List, Flag, MoreVertical  } from 'lucide-react';
+// Constants
+const COLORS = {
+  dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
+  light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', muted: 'text-gray-600', border: 'border-gray-200' }
+};
 
-// Default user data
 const DEFAULT_USER = {
   name: 'Juan Dela Cruz',
   username: '@juandelacruz',
   avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
   coverPhoto: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
-  bio: 'Professional livestock farmer specializing in cattle and poultry. Providing high-quality animals to farmers across the region.',
+  bio: 'Professional livestock farmer specializing in cattle and poultry.',
   location: 'Nueva Ecija, Philippines',
   joinDate: 'Joined March 2023',
   rating: 4.8,
@@ -35,308 +19,151 @@ const DEFAULT_USER = {
   followers: 1234,
   following: 567,
   isVerified: true,
-  userType: 'seller',
   specialties: ['Cattle', 'Poultry', 'Goats']
 };
 
-// Sample posts data
 const SAMPLE_POSTS = [
   {
     id: 1,
-    content: 'Beautiful healthy cattle ready for sale! These are well-maintained and vaccinated.',
-    images: [
-      'https://images.unsplash.com/photo-1560493676-04071c5f467b?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&h=600&fit=crop'
-    ],
+    content: 'Beautiful healthy cattle ready for sale! Vaccinated and well-maintained.',
+    images: ['https://images.unsplash.com/photo-1560493676-04071c5f467b?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&h=600&fit=crop'],
     likes: 145,
     comments: 23,
     bookmarks: 45,
     timestamp: '2 hours ago',
-    animalInfo: {
-      title: 'Premium Cattle',
-      type: 'Cattle',
-      breed: 'Brahman',
+    isLiked: false,
+    isBookmarked: false,
+    animalInfo: { 
+      title: 'Premium Cattle', 
+      type: 'Cattle', 
+      breed: 'Brahman', 
       age: '2 years',
-      price: '₱85,000',
-      availability: 'available'
+      sex: 'Male',
+      price: '₱85,000', 
+      availability: 'available',
+      description: 'Premium quality Brahman cattle in excellent health condition. Regularly vaccinated and dewormed. Perfect for breeding or meat production. Well-trained and easy to handle.'
     }
   },
   {
     id: 2,
-    content: 'High-quality free-range chickens. Perfect for egg production and meat.',
-    images: [
-      'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&h=600&fit=crop'
-    ],
+    content: 'High-quality free-range chickens for egg production.',
+    images: ['https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&h=600&fit=crop'],
     likes: 89,
     comments: 15,
     bookmarks: 28,
     timestamp: '5 hours ago',
-    animalInfo: {
-      title: 'Free-Range Chickens',
-      type: 'Poultry',
-      breed: 'Rhode Island Red',
+    isLiked: true,
+    isBookmarked: false,
+    animalInfo: { 
+      title: 'Free-Range Chickens', 
+      type: 'Poultry', 
+      breed: 'Rhode Island Red', 
       age: '6 months',
-      price: '₱350 each',
-      availability: 'available'
+      sex: 'Female',
+      price: '₱350 each', 
+      availability: 'available',
+      description: 'Healthy free-range Rhode Island Red chickens. Excellent egg layers producing 5-6 eggs per week. Fed with organic feed and raised in spacious, natural environment.'
     }
   },
   {
     id: 3,
-    content: 'Young goats available! Great for breeding or meat production.',
-    images: [
-      'https://images.unsplash.com/photo-1533318087102-b3ad366ed041?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop'
-    ],
+    content: 'Beautiful goats for sale - great for dairy or meat production.',
+    images: ['https://images.unsplash.com/photo-1533318087102-b3ad366ed041?w=800&h=600&fit=crop'],
     likes: 67,
     comments: 12,
-    bookmarks: 19,
+    bookmarks: 18,
     timestamp: '1 day ago',
-    animalInfo: {
-      title: 'Young Goats',
-      type: 'Goats',
-      breed: 'Boer',
-      age: '8 months',
-      price: '₱12,000',
-      availability: 'sold'
+    isLiked: false,
+    isBookmarked: true,
+    animalInfo: { 
+      title: 'Dairy Goats', 
+      type: 'Goats', 
+      breed: 'Saanen', 
+      age: '1.5 years',
+      sex: 'Female',
+      price: '₱12,000', 
+      availability: 'sold',
+      description: 'High-producing Saanen dairy goats. Excellent milk production with good fat content. Friendly and easy to handle. Perfect for small-scale dairy operations.'
     }
   }
 ];
 
-// Sample reviews data
 const SAMPLE_REVIEWS = [
   {
     id: 1,
-    reviewer: 'Maria Santos',
-    reviewerAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
+    user: { name: 'Maria Santos', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop' },
     rating: 5,
-    comment: 'Excellent service! The cattle I purchased were healthy and well-maintained. Juan is very professional and knowledgeable.',
-    timestamp: '1 week ago'
+    text: 'Excellent seller! The cattle were in perfect condition as described. Very professional and knowledgeable.',
+    timestamp: '2 weeks ago'
   },
   {
     id: 2,
-    reviewer: 'Pedro Reyes',
-    reviewerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
-    rating: 4.5,
-    comment: 'Great experience buying chickens from Juan. They are healthy and productive. Highly recommended!',
-    timestamp: '2 weeks ago'
+    user: { name: 'Pedro Reyes', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop' },
+    rating: 4,
+    text: 'Good quality livestock. Delivery was on time and animals were healthy. Would buy again.',
+    timestamp: '1 month ago'
   }
 ];
 
-// Rating Stars Component
-const RatingStars = ({ rating, darkMode }) => {
-  return (
-    <div className="flex items-center space-x-1">
-      {[...Array(5)].map((_, i) => (
-        <Star
-          key={i}
-          className={`w-4 h-4 ${
-            i < Math.floor(rating || 0)
-              ? "text-yellow-400 fill-current"
-              : darkMode ? "text-gray-600" : "text-gray-300"
-          }`}
-        />
-      ))}
-    </div>
-  );
-};
+const INITIAL_COMMENTS = [
+  {
+    id: 1,
+    user: { name: 'Maria Santos', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop' },
+    text: 'Interested in this cattle! Can you provide more details about vaccination records?',
+    timestamp: '1 hour ago',
+    likes: 3,
+    replies: [
+      {
+        id: 101,
+        user: { name: 'Juan Dela Cruz', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop' },
+        text: 'Hi Maria! Yes, all vaccination records are available. I can send them to you.',
+        timestamp: '45 minutes ago',
+        likes: 1
+      }
+    ]
+  }
+];
 
-// Profile Header Component
-const ProfileHeader = ({ user, darkMode, onBack }) => {
-  return (
-    <>
-      {onBack && (
-        <button
-          onClick={onBack}
-          className={`mb-4 flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-            darkMode
-              ? 'bg-gray-800 hover:bg-gray-700 text-white'
-              : 'bg-white hover:bg-gray-50 text-gray-900 shadow-sm'
-          }`}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
-      )}
-    </>
-  );
-};
+// Rating Stars
+const RatingStars = ({ rating, darkMode }) => (
+  <div className="flex items-center space-x-1">
+    {[...Array(5)].map((_, i) => (
+      <Star key={i} className={`w-4 h-4 ${i < Math.floor(rating || 0) ? 'text-yellow-400 fill-current' : darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
+    ))}
+  </div>
+);
 
-// Cover Photo Component
-const CoverPhoto = ({ coverPhoto }) => {
-  return (
-    <div className="relative h-48 md:h-64">
-      <img
-        src={coverPhoto}
-        alt="Cover"
-        className="w-full h-full object-cover"
-      />
-      <div className="absolute top-4 right-4">
-        <button className="p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-all">
-          <Camera className="w-5 h-5" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// Profile Avatar Component
-const ProfileAvatar = ({ avatar, name }) => {
-  return (
-    <div className="flex justify-center md:justify-start -mt-16 mb-4">
-      <div className="relative">
-        <img
-          src={avatar}
-          alt={name}
-          className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg"
-        />
-        <button className="absolute bottom-2 right-2 p-2 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all">
-          <Camera className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// Profile Actions Component
-const ProfileActions = ({ 
-  isFollowing, 
-  onFollow, 
-  onQRCode, 
-  onMessage, 
-  darkMode 
-}) => {
-  return (
-    <div className="flex justify-center md:justify-end space-x-3">
-      <button
-        onClick={onFollow}
-        className={`px-6 py-2 rounded-lg font-medium transition-all ${
-          isFollowing
-            ? darkMode
-              ? "bg-gray-700 hover:bg-gray-600 text-white"
-              : "bg-gray-200 hover:bg-gray-300 text-gray-900"
-            : "bg-green-600 hover:bg-green-700 text-white"
-        }`}
-      >
-        <UserPlus className="w-4 h-4 inline mr-2" />
-        {isFollowing ? "Following" : "Follow"}
-      </button>
-      <button
-        onClick={onQRCode}
-        className={`px-4 py-2 rounded-lg font-medium transition-all ${
-          darkMode
-            ? "bg-gray-700 hover:bg-gray-600 text-white"
-            : "bg-gray-100 hover:bg-gray-200 text-gray-900"
-        }`}
-      >
-        <QrCode className="w-4 h-4 inline mr-2" />
-        QR Code
-      </button>
-      <button
-        onClick={onMessage}
-        className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all"
-      >
-        <MessageCircle className="w-4 h-4 inline mr-2" />
-        Message
-      </button>
-    </div>
-  );
-};
-
-// Profile Stats Component
-const ProfileStats = ({ posts, followers, following, darkMode }) => {
-  return (
-    <div className="flex justify-center md:justify-start space-x-6 mb-4">
-      <div className="text-center">
-        <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          {posts}
+// Post Grid Item
+const PostGridItem = ({ post, onClick }) => (
+  <button onClick={onClick} className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer">
+    <img src={post.images[0]} alt={post.animalInfo.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity flex items-center justify-center">
+      <div className="opacity-0 group-hover:opacity-100 text-white flex items-center space-x-4">
+        <div className="flex items-center space-x-1">
+          <Heart className="w-5 h-5 fill-current" />
+          <span>{post.likes}</span>
         </div>
-        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Posts
-        </div>
-      </div>
-      <div className="text-center">
-        <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          {followers.toLocaleString()}
-        </div>
-        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Followers
-        </div>
-      </div>
-      <div className="text-center">
-        <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          {following.toLocaleString()}
-        </div>
-        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Following
+        <div className="flex items-center space-x-1">
+          <MessageCircle className="w-5 h-5 fill-current" />
+          <span>{post.comments}</span>
         </div>
       </div>
     </div>
-  );
-};
-
-// Post Grid Item Component
-const PostGridItem = ({ post, onClick }) => {
+  </button>
+);
+// Post List Item
+const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLike, onBookmark, onImageClick }) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  
   return (
-    <div
-      onClick={onClick}
-      className="cursor-pointer aspect-square relative rounded-lg overflow-hidden group"
-    >
-      <img
-        src={post.images[0]}
-        alt="Post"
-        className="w-full h-full object-cover"
-      />
-      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-        <div className="text-white flex space-x-6">
-          <div className="flex items-center space-x-2">
-            <Heart className="w-5 h-5 fill-current" />
-            <span className="font-semibold">{post.likes}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <MessageCircle className="w-5 h-5 fill-current" />
-            <span className="font-semibold">{post.comments}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Post List Item Component (Newsfeed Style)
-const PostListItem = ({ 
-  post, 
-  user, 
-  darkMode, 
-  likedPosts, 
-  bookmarkedPosts,
-  onLike,
-  onBookmark,
-  onMessage,
-  onShare,
-  onImageClick
-}) => {
-  return (
-    <div className={`rounded-lg border transition-colors duration-300 relative overflow-hidden ${
-      darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-green-100'
-    }`}>
+    <div className={`rounded-lg border overflow-hidden relative ${scheme.card} ${scheme.border}`}>
       {/* Diagonal Ribbon */}
       {post.animalInfo && (
         <div className="absolute top-0 right-0 w-32 h-35 overflow-hidden z-10">
-          <div
-            className={`absolute top-4 right-[-32px] w-40 h-8 transform rotate-45 text-center text-white text-xs font-bold leading-8 shadow-lg ${
-              post.animalInfo.availability === "available"
-                ? "bg-green-500"
-                : post.animalInfo.availability === "sold"
-                ? "bg-red-500"
-                : "bg-gray-500"
-            }`}
-          >
-            {post.animalInfo.availability === "available"
-              ? "AVAILABLE"
-              : post.animalInfo.availability === "sold"
-              ? "SOLD OUT"
-              : post.animalInfo.availability.toUpperCase()}
+          <div className={`absolute top-4 right-[-32px] w-40 h-8 transform rotate-45 text-center text-white text-xs font-bold leading-8 shadow-lg ${
+            post.animalInfo.availability === 'available' ? 'bg-green-500' : 'bg-red-500'
+          }`}>
+            {post.animalInfo.availability === 'available' ? 'AVAILABLE' : 'SOLD OUT'}
           </div>
         </div>
       )}
@@ -345,57 +172,43 @@ const PostListItem = ({
       <div className="p-6 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img
-              src={user.avatar}
-              alt={user.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
             <div>
               <div className="flex items-center space-x-1">
-                <h3 className={`font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>
-                  {user.name}
-                </h3>
+                <h3 className={`font-semibold ${scheme.text}`}>{user.name}</h3>
                 {user.isVerified && (
                   <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs">✓</span>
                   </div>
                 )}
               </div>
-              <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                {post.timestamp}
-              </p>
+              <p className={`text-sm ${scheme.muted}`}>{post.timestamp}</p>
             </div>
           </div>
-          <button className={`p-2 rounded-full transition-colors duration-300 ${
-            darkMode ? "text-gray-400 hover:bg-gray-700" : "text-gray-500 hover:bg-gray-100"
-          }`}>
+          <button className={`p-2 rounded-full hover:opacity-80 ${scheme.muted}`}>
             <MoreHorizontal className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Post Content */}
+      {/* Content */}
       <div className="px-6 pb-4">
         {post.animalInfo && (
           <div className="mt-4">
-            <h3 className={`text-lg font-semibold mb-1 text-center ${
-              darkMode ? "text-green-200" : "text-green-800"
-            }`}>
+            <h3 className={`text-lg font-semibold mb-1 text-center ${darkMode ? 'text-green-200' : 'text-green-800'}`}>
               {post.animalInfo.title}
             </h3>
-            {post.content && (
+            
+            {post.animalInfo.description && (
               <div className="mb-2 text-center">
-                <p className={`text-sm leading-relaxed ${
-                  darkMode ? "text-gray-200" : "text-gray-800"
-                }`}>
-                  {post.content}
+                <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                  {post.animalInfo.description}
                 </p>
               </div>
             )}
+            
             <div className="flex justify-center items-center">
-              <span className={`text-lg font-bold ${
-                darkMode ? "text-green-400" : "text-green-600"
-              }`}>
+              <span className={`text-lg font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
                 {post.animalInfo.price}
               </span>
             </div>
@@ -403,35 +216,18 @@ const PostListItem = ({
         )}
       </div>
 
-      {/* Post Images */}
-      {post.images && post.images.length > 0 && (
+      {/* Images */}
+      {post.images?.length > 0 && (
         <div className="px-6 pb-4">
-          <div
-            onClick={onImageClick}
-            className={`grid gap-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition-opacity ${
-              post.images.length === 1 ? "grid-cols-1" :
-              post.images.length === 2 ? "grid-cols-2" :
-              post.images.length === 3 ? "grid-cols-2" : "grid-cols-2"
-            }`}
-          >
-            {post.images.slice(0, 4).map((image, index) => (
-              <div
-                key={index}
-                className={`relative ${
-                  post.images.length === 3 && index === 0 ? "row-span-2" : ""
-                }`}
-              >
-                <img
-                  src={image}
-                  alt={`Post image ${index + 1}`}
-                  className="w-full h-full object-cover"
-                  style={{ minHeight: "200px", maxHeight: "400px" }}
-                />
-                {index === 3 && post.images.length > 4 && (
+          <div className={`grid gap-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition-opacity ${
+            post.images.length === 1 ? 'grid-cols-1' : post.images.length === 2 ? 'grid-cols-2' : post.images.length === 3 ? 'grid-cols-2' : 'grid-cols-2'
+          }`} onClick={onImageClick}>
+            {post.images.slice(0, 4).map((image, i) => (
+              <div key={i} className={`relative ${post.images.length === 3 && i === 0 ? 'row-span-2' : ''}`}>
+                <img src={image} alt={`Post ${i}`} className="w-full h-full object-cover" style={{ minHeight: '200px', maxHeight: '400px' }} />
+                {i === 3 && post.images.length > 4 && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <span className="text-white text-xl font-semibold">
-                      +{post.images.length - 4}
-                    </span>
+                    <span className="text-white text-xl font-semibold">+{post.images.length - 4}</span>
                   </div>
                 )}
               </div>
@@ -439,228 +235,612 @@ const PostListItem = ({
           </div>
         </div>
       )}
-
-      {/* Post Stats */}
-      <div className={`px-6 py-3 border-t flex items-center justify-between ${
-        darkMode ? "border-gray-700" : "border-gray-100"
-      }`}>
-        <div className="flex items-center space-x-4 text-sm">
-          <span className={darkMode ? "text-gray-400" : "text-gray-500"}>
-            {post.likes} likes
-          </span>
-          <span className={darkMode ? "text-gray-400" : "text-gray-500"}>
-            {post.bookmarks} bookmarks
-          </span>
-        </div>
+      {/* Stats */}
+<div className={`px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-sm ${scheme.muted}`}>
+       <span>{post.likes} likes</span> • <span>{post.bookmarks} saves</span>
       </div>
 
-      {/* Post Actions */}
-      <div className={`px-6 py-3 border-t flex items-center justify-around ${
-        darkMode ? "border-gray-700" : "border-gray-100"
-      }`}>
-        <button
-          onClick={onLike}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-            likedPosts.has(post.id)
-              ? darkMode ? "text-green-400 bg-gray-700" : "text-green-600 bg-green-50"
-              : darkMode ? "text-gray-400 hover:bg-gray-700 hover:text-green-400" : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
-          }`}
-        >
-          <Heart className={`w-5 h-5 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
-          <span className="font-medium text-sm">Like</span>
-        </button>
-
-        <button
-          onClick={onMessage}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-            darkMode
-              ? "text-gray-400 hover:bg-gray-700 hover:text-blue-400"
-              : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
-          }`}
-        >
-          <MessageCircle className="w-5 h-5" />
-          <span className="font-medium text-sm">Comment</span>
-        </button>
-
-        <button
-          onClick={onBookmark}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-            bookmarkedPosts.has(post.id)
-              ? darkMode ? "text-yellow-400 bg-gray-700" : "text-yellow-600 bg-yellow-50"
-              : darkMode ? "text-gray-400 hover:bg-gray-700 hover:text-yellow-400" : "text-gray-600 hover:bg-gray-100 hover:text-yellow-600"
-          }`}
-        >
-          <Bookmark className={`w-5 h-5 ${bookmarkedPosts.has(post.id) ? 'fill-current' : ''}`} />
-          <span className="font-medium text-sm">Save</span>
-        </button>
-
-        <button
-          onClick={onShare}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-            darkMode
-              ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
-              : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
-          }`}
-        >
-          <Share className="w-5 h-5" />
-          <span className="font-medium text-sm">Share</span>
-        </button>
+      {/* Actions */}
+      <div className={`flex items-center justify-around border-t py-2 ${scheme.border}`}>
+        {[
+          { icon: Heart, label: 'Like', action: onLike, active: likedPosts.has(post.id), color: 'text-green-600' },
+          { icon: MessageCircle, label: 'Comment', action: onImageClick, color: 'text-blue-600' },
+          { icon: Bookmark, label: 'Save', action: onBookmark, active: bookmarkedPosts.has(post.id), color: 'text-yellow-600' },
+          { icon: Share, label: 'Share', action: () => {}, color: 'text-green-600' }
+        ].map(({ icon: Icon, label, action, active, color }) => (
+          <button key={label} onClick={action} className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${active ? color : scheme.muted}`}>
+            <Icon className={`w-5 h-5 ${active ? 'fill-current' : ''}`} />
+            <span className="text-sm font-medium">{label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
 };
 
-// Review Item Component
+// Review Item
 const ReviewItem = ({ review, darkMode }) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  
   return (
-    <div className={`border rounded-lg p-4 ${
-      darkMode ? "border-gray-700 bg-gray-700" : "border-gray-200 bg-gray-50"
-    }`}>
+    <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
       <div className="flex items-start space-x-3">
-        <img
-          src={review.reviewerAvatar}
-          alt={review.reviewer}
-          className="w-12 h-12 rounded-full object-cover"
-        />
+        <img src={review.user.avatar} alt={review.user.name} className="w-10 h-10 rounded-full object-cover" />
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>
-              {review.reviewer}
-            </h4>
-            <span className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-              {review.timestamp}
-            </span>
+          <div className="flex items-center justify-between mb-1">
+            <h4 className={`font-semibold ${scheme.text}`}>{review.user.name}</h4>
+            <span className={`text-xs ${scheme.muted}`}>{review.timestamp}</span>
           </div>
-          <div className="flex items-center space-x-1 mb-2">
-            <RatingStars rating={review.rating} darkMode={darkMode} />
-            <span className={`ml-2 text-sm font-medium ${
-              darkMode ? "text-gray-300" : "text-gray-700"
-            }`}>
-              {review.rating.toFixed(1)}
-            </span>
-          </div>
-          <p className={darkMode ? "text-gray-300" : "text-gray-700"}>
-            {review.comment}
-          </p>
+          <RatingStars rating={review.rating} darkMode={darkMode} />
+          <p className={`mt-2 text-sm ${scheme.text}`}>{review.text}</p>
         </div>
       </div>
+    </div>
+  );
+};
+
+// Post Modal
+// Post Modal
+const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [comments, setComments] = useState(INITIAL_COMMENTS);
+  const [commentText, setCommentText] = useState('');
+  const [replyText, setReplyText] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [showReportMenu, setShowReportMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportComment, setReportComment] = useState('');
+
+  const reportReasons = [
+    'Spam or misleading',
+    'Inappropriate content',
+    'False information',
+    'Animal welfare concerns',
+    'Scam or fraud',
+    'Other'
+  ];
+
+  const handleReportSubmit = () => {
+    if (!reportReason) {
+      alert('Please select a reason for reporting');
+      return;
+    }
+
+    console.log('Report submitted:', {
+      postId: post?.id,
+      reason: reportReason,
+      comment: reportComment,
+    });
+
+    alert('Thank you for your report. We will review it shortly.');
+
+    setShowReportModal(false);
+    setShowReportMenu(false);
+    setReportReason('');
+    setReportComment('');
+  };
+
+  const handleAddComment = () => {
+    if (commentText.trim()) {
+      setComments([...comments, {
+        id: Date.now(),
+        user: { name: 'You', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop' },
+        text: commentText,
+        timestamp: 'Just now',
+        likes: 0,
+        replies: []
+      }]);
+      setCommentText('');
+    }
+  };
+
+  const handleAddReply = (commentId) => {
+    if (replyText.trim()) {
+      setComments(comments.map(comment => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            replies: [...(comment.replies || []), {
+              id: Date.now(),
+              user: { name: 'You', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop' },
+              text: replyText,
+              timestamp: 'Just now',
+              likes: 0
+            }]
+          };
+        }
+        return comment;
+      }));
+      setReplyText('');
+      setReplyingTo(null);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose} />
+
+        <div className={`relative rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden ${scheme.card}`}>
+          {/* Header */}
+         {/* Header */}
+          <div className={`flex items-center justify-between p-6 border-b ${scheme.border}`}>
+            <div className="flex items-center space-x-4">
+              <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
+              <div>
+                <h2 className={`text-xl font-semibold ${scheme.text}`}>{post.animalInfo.title}</h2>
+                <div className="flex items-center space-x-4 mt-1">
+                  <p className={scheme.muted}>by {user.name}</p>
+                  <span className={scheme.muted}>•</span>
+                  <p className={`text-sm ${scheme.muted}`}>{post.timestamp}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              {/* Report Menu Button - Only show if logged in */}
+              {isAuthenticated && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowReportMenu(!showReportMenu)}
+                    className={`p-2 rounded-lg transition-colors ${
+                      darkMode
+                        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                        : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <MoreVertical className="w-6 h-6" />
+                  </button>
+                  
+                  {/* Dropdown Menu */}
+                  {showReportMenu && (
+                    <div
+                      className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 ${
+                        darkMode
+                          ? "bg-gray-700 border border-gray-600"
+                          : "bg-white border border-gray-200"
+                      }`}
+                    >
+                      <button
+                        onClick={() => {
+                          setShowReportModal(true);
+                          setShowReportMenu(false);
+                        }}
+                        className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors rounded-lg ${
+                          darkMode
+                            ? "text-gray-300 hover:bg-gray-600"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        <Flag className="w-5 h-5 text-red-500" />
+                        <span>Report Post</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Close Button */}
+              <button onClick={onClose} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+            <div className="p-6">
+              {/* Images */}
+              {post.images && post.images.length > 0 && (
+                <div className="mb-6">
+                  <div className="relative">
+                    <img src={post.images[currentImageIndex]} alt={post.animalInfo.title} className="w-full h-80 object-cover rounded-xl" />
+                    {post.images.length > 1 && (
+                      <>
+                        <button onClick={() => setCurrentImageIndex(prev => prev === 0 ? post.images.length - 1 : prev - 1)} 
+                          className={`absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg ${darkMode ? 'bg-gray-700 bg-opacity-80' : 'bg-white bg-opacity-80'}`}>
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => setCurrentImageIndex(prev => prev === post.images.length - 1 ? 0 : prev + 1)}
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg ${darkMode ? 'bg-gray-700 bg-opacity-80' : 'bg-white bg-opacity-80'}`}>
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                          {post.images.map((_, index) => (
+                            <button key={index} onClick={() => setCurrentImageIndex(index)}
+                              className={`w-2 h-2 rounded-full ${index === currentImageIndex ? 'bg-white' : 'bg-white bg-opacity-50'}`} />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {post.images.length > 1 && (
+                    <div className="flex space-x-3 mt-4 overflow-x-auto pb-2">
+                      {post.images.map((image, index) => (
+                        <button key={index} onClick={() => setCurrentImageIndex(index)}
+                          className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${index === currentImageIndex ? 'border-green-500' : darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                          <img src={image} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Description */}
+              <div className="mb-6">
+                <h3 className={`text-lg font-medium mb-3 ${scheme.text}`}>Description</h3>
+                <p className={`leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{post.animalInfo.description}</p>
+              </div>
+
+              {/* Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                <div className="space-y-5">
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Animal Type</h4>
+                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${darkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800'}`}>
+                      {post.animalInfo.type}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Age & Sex</h4>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-700'}>{post.animalInfo.age} • {post.animalInfo.sex}</p>
+                  </div>
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Status</h4>
+                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${post.animalInfo.availability === 'available' ? (darkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800') : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800')}`}>
+                      {post.animalInfo.availability}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-5">
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Breed</h4>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-700'}>{post.animalInfo.breed}</p>
+                  </div>
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Location</h4>
+                    <div className="flex items-start space-x-2">
+                      <MapPin className={`w-4 h-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{user.location}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Price</h4>
+                    <p className="text-lg font-bold text-green-600">{post.animalInfo.price}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats */}
+              {isAuthenticated && (
+                <div className={`flex items-center justify-between p-4 rounded-lg mb-6 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                  <div className="flex items-center space-x-6">
+                    <div className="text-center">
+                      <p className={`text-2xl font-bold ${scheme.text}`}>{post.likes}</p>
+                      <p className={`text-xs ${scheme.muted}`}>Likes</p>
+                    </div>
+                    <div className="text-center">
+                      <p className={`text-2xl font-bold ${scheme.text}`}>{post.bookmarks}</p>
+                      <p className={`text-xs ${scheme.muted}`}>Bookmarks</p>
+                    </div>
+                    <div className="text-center">
+                      <p className={`text-2xl font-bold ${scheme.text}`}>{comments.length}</p>
+                      <p className={`text-xs ${scheme.muted}`}>Comments</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className={`flex items-center p-3 rounded-lg mb-6 border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} ${isAuthenticated ? 'justify-around' : 'justify-between'}`}>
+                {isAuthenticated ? (
+                  <>
+                    <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${post.isLiked ? 'text-green-600' : scheme.muted}`}>
+                      <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : ''}`} />
+                      <span className="font-medium">Like</span>
+                    </button>
+                    <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${post.isBookmarked ? 'text-yellow-600' : scheme.muted}`}>
+                      <Bookmark className={`w-5 h-5 ${post.isBookmarked ? 'fill-current' : ''}`} />
+                      <span className="font-medium">Save</span>
+                    </button>
+                    <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}>
+                      <Share className="w-5 h-5" />
+                      <span className="font-medium">Share</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}>
+                      <Share className="w-5 h-5" />
+                      <span className="font-medium">Share</span>
+                    </button>
+                    <div className={`text-center px-4 py-2 text-sm ${scheme.muted}`}>Login to like, comment & save</div>
+                  </>
+                )}
+              </div>
+
+              {/* Comments */}
+              {isAuthenticated && (
+                <div className={`border-t pt-4 ${scheme.border}`}>
+                  <h3 className={`text-lg font-semibold mb-4 ${scheme.text}`}>Comments ({comments.length})</h3>
+                  
+                  {/* Add Comment */}
+                  <div className="mb-6">
+                    <div className={`flex space-x-3 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                      <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-semibold">U</span>
+                      </div>
+                      <div className="flex-1">
+                        <textarea value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Write a comment..." rows="3"
+                          className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode ? 'bg-gray-600 text-white' : 'bg-white text-gray-900 border border-gray-200'}`} />
+                        <div className="flex justify-end mt-2">
+                          <button onClick={handleAddComment} disabled={!commentText.trim()}
+                            className={`px-4 py-2 rounded-lg font-medium ${commentText.trim() ? 'bg-green-600 hover:bg-green-700 text-white' : (darkMode ? 'bg-gray-600 text-gray-400' : 'bg-gray-200 text-gray-400')} cursor-${commentText.trim() ? 'pointer' : 'not-allowed'}`}>
+                            Post Comment
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Comments List */}
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {comments.map((comment) => (
+                      <div key={comment.id}>
+                        <div className={`flex space-x-3 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                          <img src={comment.user.avatar} alt={comment.user.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <div>
+                                <h4 className={`font-semibold text-sm ${scheme.text}`}>{comment.user.name}</h4>
+                                <p className={`text-xs ${scheme.muted}`}>{comment.timestamp}</p>
+                              </div>
+                            </div>
+                            <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{comment.text}</p>
+                            <div className="flex items-center space-x-4">
+                              <button className={`flex items-center space-x-1 text-xs ${scheme.muted}`}>
+                                <Heart className="w-4 h-4" />
+                                <span>{comment.likes > 0 ? comment.likes : 'Like'}</span>
+                              </button>
+                              <button onClick={() => setReplyingTo(comment.id)} className={`text-xs ${scheme.muted}`}>Reply</button>
+                              {comment.replies?.length > 0 && (
+                                <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                  {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Reply Input */}
+                        {replyingTo === comment.id && (
+                          <div className={`ml-12 mt-2 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                            <div className="flex space-x-3">
+                              <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                                <span className="text-white font-semibold text-xs">U</span>
+                              </div>
+                              <div className="flex-1">
+                                <textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} placeholder={`Reply to ${comment.user.name}...`} rows="2" autoFocus
+                                  className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode ? 'bg-gray-600 text-white' : 'bg-white text-gray-900 border border-gray-200'}`} />
+                                <div className="flex justify-end space-x-2 mt-2">
+                                  <button onClick={() => setReplyingTo(null)} className={`px-3 py-1.5 rounded-lg text-sm font-medium ${darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}>
+                                    Cancel
+                                  </button>
+                                  <button onClick={() => handleAddReply(comment.id)} disabled={!replyText.trim()}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${replyText.trim() ? 'bg-green-600 hover:bg-green-700 text-white' : (darkMode ? 'bg-gray-600 text-gray-400' : 'bg-gray-200 text-gray-400')} cursor-${replyText.trim() ? 'pointer' : 'not-allowed'}`}>
+                                    Reply
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Replies */}
+                        {comment.replies && comment.replies.length > 0 && (
+                          <div className="ml-12 mt-2 space-y-2">
+                            {comment.replies.map((reply) => (
+                              <div key={reply.id} className={`flex space-x-3 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                <img src={reply.user.avatar} alt={reply.user.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <div>
+                                      <h4 className={`font-semibold text-sm ${scheme.text}`}>{reply.user.name}</h4>
+                                      <p className={`text-xs ${scheme.muted}`}>{reply.timestamp}</p>
+                                    </div>
+                                  </div>
+                                  <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{reply.text}</p>
+                                  <button className={`flex items-center space-x-1 text-xs ${scheme.muted}`}>
+                                    <Heart className="w-3 h-3" />
+                                    <span>{reply.likes > 0 ? reply.likes : 'Like'}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
+              onClick={() => setShowReportModal(false)}
+            />
+
+            <div
+              className={`relative rounded-2xl shadow-xl max-w-md w-full ${
+                darkMode ? "bg-gray-800" : "bg-white"
+              }`}
+            >
+              {/* Modal Header */}
+              <div
+                className={`flex items-center justify-between p-6 border-b ${
+                  darkMode ? "border-gray-700" : "border-gray-200"
+                }`}
+              >
+                <h2
+                  className={`text-xl font-semibold ${
+                    darkMode ? "text-white" : "text-gray-900"
+                  }`}
+                >
+                  Report Post
+                </h2>
+                <button
+                  onClick={() => setShowReportModal(false)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    darkMode
+                      ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6">
+                <p
+                  className={`text-sm mb-4 ${
+                    darkMode ? "text-gray-300" : "text-gray-600"
+                  }`}
+                >
+                  Help us understand what's wrong with this post. Your report
+                  will be reviewed by our team.
+                </p>
+
+                {/* Reason Selection */}
+                <div className="mb-4">
+                  <label
+                    className={`block text-sm font-medium mb-2 ${
+                      darkMode ? "text-gray-200" : "text-gray-700"
+                    }`}
+                  >
+                    Reason for reporting <span className="text-red-500">*</span>
+                  </label>
+                  <div className="space-y-2">
+                    {reportReasons.map((reason) => (
+                      <label
+                        key={reason}
+                        className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${
+                          reportReason === reason
+                            ? darkMode
+                              ? "bg-red-900 bg-opacity-30 border-2 border-red-500"
+                              : "bg-red-50 border-2 border-red-500"
+                            : darkMode
+                            ? "bg-gray-700 hover:bg-gray-600 border-2 border-gray-600"
+                            : "bg-gray-50 hover:bg-gray-100 border-2 border-gray-200"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="reportReason"
+                          value={reason}
+                          checked={reportReason === reason}
+                          onChange={(e) => setReportReason(e.target.value)}
+                          className="mr-3 text-red-500 focus:ring-red-500"
+                        />
+                        <span
+                          className={`text-sm ${
+                            darkMode ? "text-gray-200" : "text-gray-700"
+                          }`}
+                        >
+                          {reason}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Additional Comments */}
+                <div className="mb-6">
+                  <label
+                    className={`block text-sm font-medium mb-2 ${
+                      darkMode ? "text-gray-200" : "text-gray-700"
+                    }`}
+                  >
+                    Additional details (optional)
+                  </label>
+                  <textarea
+                    value={reportComment}
+                    onChange={(e) => setReportComment(e.target.value)}
+                    placeholder="Provide any additional information that might help us understand the issue..."
+                    rows="4"
+                    className={`w-full px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                      darkMode
+                        ? "bg-gray-700 text-white placeholder-gray-400 border border-gray-600"
+                        : "bg-gray-50 text-gray-900 placeholder-gray-500 border border-gray-300"
+                    }`}
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => {
+                      setShowReportModal(false);
+                      setReportReason("");
+                      setReportComment("");
+                    }}
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                      darkMode
+                        ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                        : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                    }`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleReportSubmit}
+                    disabled={!reportReason}
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                      reportReason
+                        ? "bg-red-500 hover:bg-red-600 text-white"
+                        : darkMode
+                        ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
+                    Report Post
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 // QR Code Modal
 const QRCodeModal = ({ user, darkMode, onClose }) => {
-  const generateQRCode = () => {
-    const profileUrl = `https://livestock-app.com/profile/${user.username}`;
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(profileUrl)}`;
-  };
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://livestock-app.com/profile/${user.username}`)}`;
 
-  return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" 
-      onClick={onClose}
-    >
-      <div 
-        className={`max-w-sm w-full p-6 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`} 
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="text-center">
-          <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Share Profile
-          </h3>
-          <div className="w-48 h-48 mx-auto mb-4 bg-white rounded-lg flex items-center justify-center p-2">
-            <img
-              src={generateQRCode()}
-              alt="Profile QR Code"
-              className="w-full h-full object-contain"
-            />
-          </div>
-          <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Scan this QR code to view {user.name}'s profile
-          </p>
-          <div className="flex space-x-3">
-            <button
-              onClick={onClose}
-              className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all ${
-                darkMode
-                  ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-              }`}
-            >
-              Close
-            </button>
-            <button 
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = generateQRCode();
-                link.download = `${user.name}-profile-qr.png`;
-                link.click();
-              }}
-              className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all"
-            >
-              Download
-            </button>
-          </div>
+  return (  
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className={`max-w-sm w-full p-6 rounded-2xl ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
+        <h3 className={`text-xl font-bold mb-4 text-center ${scheme.text}`}>Share Profile</h3>
+        <div className="w-48 h-48 mx-auto mb-4 bg-white rounded-lg flex items-center justify-center">
+          <img src={qrUrl} alt="QR Code" className="w-full h-full object-contain" />
         </div>
-      </div>
-    </div>
-  );
-};
-
-// Share Modal
-const ShareModal = ({ user, darkMode, onClose }) => {
-  return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" 
-      onClick={onClose}
-    >
-      <div 
-        className={`max-w-sm w-full p-6 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`} 
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="text-center">
-          <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Share Post
-          </h3>
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            {['Facebook', 'Twitter', 'WhatsApp'].map((platform) => (
-              <button
-                key={platform}
-                className={`p-4 rounded-lg transition-all hover:scale-105 ${
-                  darkMode
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                }`}
-              >
-                <div className="text-2xl mb-2">
-                  {platform === 'Facebook' ? '📘' : 
-                  platform === 'Twitter' ? '🐦' : '💬'}
-                </div>
-                <div className="text-xs">{platform}</div>
-              </button>
-            ))}
-          </div>
-          <div className="flex space-x-3">
-            <button
-              onClick={onClose}
-              className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all ${
-                darkMode
-                  ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-              }`}
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={() => {
-                navigator.clipboard.writeText(`Check out this post from ${user.name}!`);
-                onClose();
-              }}
-              className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all"
-            >
-              Copy Link
-            </button>
-          </div>
+        <p className={`text-sm text-center mb-4 ${scheme.muted}`}>Scan to view {user.name}'s profile</p>
+        <div className="flex space-x-3">
+          <button onClick={onClose} className={`flex-1 px-4 py-2 rounded-lg font-medium ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-900'}`}>Close</button>
+          <button className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium">Download</button>
         </div>
       </div>
     </div>
@@ -669,559 +849,185 @@ const ShareModal = ({ user, darkMode, onClose }) => {
 
 // Message Modal
 const MessageModal = ({ user, darkMode, onClose }) => {
-  const [chatMessage, setChatMessage] = useState('');
-  const [chatMessages, setChatMessages] = useState([
-    {
-      id: 1,
-      sender: 'user',
-      message: 'Hello! I\'m interested in your livestock.',
-      timestamp: '10:30 AM'
-    },
-    {
-      id: 2,
-      sender: 'other',
-      message: 'Hi! Thank you for your interest. What specific animals are you looking for?',
-      timestamp: '10:32 AM'
-    }
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState([
+    { id: 1, sender: 'other', text: 'Hi! Interested in your livestock.', time: '10:30 AM' },
+    { id: 2, sender: 'user', text: 'Thank you! What animals are you looking for?', time: '10:32 AM' }
   ]);
-  const chatEndRef = useRef(null);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
 
   const sendMessage = () => {
-    if (chatMessage.trim()) {
-      const newMessage = {
-        id: chatMessages.length + 1,
-        sender: 'user',
-        message: chatMessage,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setChatMessages([...chatMessages, newMessage]);
-      setChatMessage('');
+    if (message.trim()) {
+      setMessages([...messages, { id: messages.length + 1, sender: 'user', text: message, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+      setMessage('');
     }
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" 
-      onClick={onClose}
-    >
-      <div 
-        className={`w-full max-w-lg rounded-2xl overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'}`} 
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Chat Header */}
-        <div className={`flex items-center justify-between p-4 border-b ${
-          darkMode ? 'border-gray-700 bg-gray-750' : 'border-gray-200 bg-gray-50'
-        }`}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className={`w-full max-w-lg rounded-2xl overflow-hidden ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
+        <div className={`flex items-center justify-between p-4 border-b ${scheme.border}`}>
           <div className="flex items-center space-x-3">
-            <img
-              src={user.avatar}
-              alt={user.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
             <div>
-              <h4 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                {user.name}
-              </h4>
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Online
-                </span>
-              </div>
+              <h4 className={`font-semibold ${scheme.text}`}>{user.name}</h4>
+              <span className="text-xs text-green-500">Online</span>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-full transition-colors ${
-              darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-            }`}
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <button onClick={onClose} className={`p-2 rounded-full hover:opacity-80 ${scheme.muted}`}><X className="w-5 h-5" /></button>
         </div>
-
-        {/* Chat Messages */}
         <div className="h-96 overflow-y-auto p-4 space-y-4">
-          {chatMessages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-xs px-4 py-2 rounded-2xl ${
-                message.sender === 'user'
-                  ? 'bg-green-600 text-white'
-                  : darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-800'
-              }`}>
-                <p className="text-sm">{message.message}</p>
-                <p className="text-xs mt-1 opacity-70">{message.timestamp}</p>
+          {messages.map(msg => (
+            <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-xs px-4 py-2 rounded-2xl ${msg.sender === 'user' ? 'bg-green-600 text-white' : darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>
+                <p className="text-sm">{msg.text}</p>
+                <p className="text-xs mt-1 opacity-70">{msg.time}</p>
               </div>
             </div>
           ))}
-          <div ref={chatEndRef} />
         </div>
-
-        {/* Chat Input */}
-        <div className={`p-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-          <div className="flex items-center space-x-2">
-            <input
-              type="text"
-              value={chatMessage}
-              onChange={(e) => setChatMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-              placeholder="Type a message..."
-              className={`flex-1 px-4 py-3 rounded-full text-sm border ${
-                darkMode
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                  : 'bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500'
-              } focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent`}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={!chatMessage.trim()}
-              className="p-3 bg-green-600 hover:bg-green-700 text-white rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Send className="w-5 h-5" />
-            </button>
-          </div>
+        <div className={`p-4 border-t flex items-center space-x-2 ${scheme.border}`}>
+          <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder="Type a message..." className={`flex-1 px-4 py-2 rounded-full text-sm border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-100 border-gray-300'} focus:outline-none focus:ring-2 focus:ring-green-500`} />
+          <button onClick={sendMessage} disabled={!message.trim()} className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-full disabled:opacity-50"><Send className="w-5 h-5" /></button>
         </div>
       </div>
     </div>
   );
 };
 
-// Post Modal
-const PostModal = ({ 
-  post, 
-  user, 
-  darkMode, 
-  likedPosts, 
-  bookmarkedPosts,
-  onClose,
-  onLike,
-  onBookmark,
-  onMessage,
-  onShare
-}) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const nextImage = () => {
-    if (post && post.images) {
-      setCurrentImageIndex((prev) => 
-        prev === post.images.length - 1 ? 0 : prev + 1
-      );
-    }
-  };
-
-  const prevImage = () => {
-    if (post && post.images) {
-      setCurrentImageIndex((prev) => 
-        prev === 0 ? post.images.length - 1 : prev - 1
-      );
-    }
-  };
-
-  return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4" 
-      onClick={onClose}
-    >
-      <div 
-        className={`w-full max-w-5xl h-full max-h-[90vh] rounded-2xl overflow-hidden flex flex-col md:flex-row ${
-          darkMode ? 'bg-gray-800' : 'bg-white'
-        }`} 
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Left Side - Image */}
-        <div className="md:w-2/3 bg-black flex items-center justify-center relative">
-          {post.images && post.images.length > 0 && (
-            <>
-              <img
-                src={post.images[currentImageIndex]}
-                alt="Post"
-                className="max-h-full max-w-full object-contain"
-              />
-              {post.images.length > 1 && (
-                <>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                    className="absolute left-4 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-all"
-                  >
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                    className="absolute right-4 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-all"
-                  >
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                    {post.images.map((_, index) => (
-                      <div
-                        key={index}
-                        className={`w-2 h-2 rounded-full ${
-                          index === currentImageIndex ? 'bg-white' : 'bg-white bg-opacity-50'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Right Side - Details */}
-        <div className="md:w-1/3 flex flex-col">
-          {/* Header */}
-          <div className={`p-4 border-b flex items-center justify-between ${
-            darkMode ? 'border-gray-700' : 'border-gray-200'
-          }`}>
-            <div className="flex items-center space-x-3">
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-              <div>
-                <div className="flex items-center space-x-1">
-                  <h3 className={`font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>
-                    {user.name}
-                  </h3>
-                  {user.isVerified && (
-                    <ShieldCheck className="w-4 h-4 text-green-500 fill-current" />
-                  )}
-                </div>
-                <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                  {post.timestamp}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <p className={`mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              {post.content}
-            </p>
-
-            {/* Animal Info */}
-            {post.animalInfo && (
-              <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className={`font-semibold text-lg ${
-                    darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {post.animalInfo.title}
-                  </h4>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    post.animalInfo.availability === 'available'
-                      ? 'bg-green-500 text-white'
-                      : 'bg-red-500 text-white'
-                  }`}>
-                    {post.animalInfo.availability.toUpperCase()}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <div className={`flex justify-between ${
-                    darkMode ? 'text-gray-300' : 'text-gray-600'
-                  }`}>
-                    <span className="font-medium">Type:</span>
-                    <span>{post.animalInfo.type}</span>
-                  </div>
-                  <div className={`flex justify-between ${
-                    darkMode ? 'text-gray-300' : 'text-gray-600'
-                  }`}>
-                    <span className="font-medium">Breed:</span>
-                    <span>{post.animalInfo.breed}</span>
-                  </div>
-                  <div className={`flex justify-between ${
-                    darkMode ? 'text-gray-300' : 'text-gray-600'
-                  }`}>
-                    <span className="font-medium">Age:</span>
-                    <span>{post.animalInfo.age}</span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t border-gray-300 dark:border-gray-600">
-                    <span className={`font-semibold ${
-                      darkMode ? 'text-white' : 'text-gray-900'
-                    }`}>Price:</span>
-                    <span className="text-green-600 font-bold text-lg">
-                      {post.animalInfo.price}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Stats */}
-          <div className={`px-4 py-3 border-t flex justify-between text-sm ${
-            darkMode ? 'border-gray-700 text-gray-400' : 'border-gray-200 text-gray-600'
-          }`}>
-            <span>{post.likes} likes</span>
-            <div className="space-x-4">
-              <span>{post.comments} comments</span>
-              <span>{post.bookmarks} bookmarks</span>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className={`p-4 border-t flex justify-around ${
-            darkMode ? 'border-gray-700' : 'border-gray-200'
-          }`}>
-            <button
-              onClick={(e) => { e.stopPropagation(); onLike(); }}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                likedPosts.has(post.id)
-                  ? 'text-red-500'
-                  : darkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-600'
-              }`}
-            >
-              <Heart className={`w-5 h-5 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onMessage(); onClose(); }}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                darkMode
-                  ? 'text-gray-400 hover:text-blue-400'
-                  : 'text-gray-600 hover:text-blue-600'
-              }`}
-            >
-              <MessageCircle className="w-5 h-5" />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onBookmark(); }}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                bookmarkedPosts.has(post.id)
-                  ? 'text-yellow-500'
-                  : darkMode ? 'text-gray-400 hover:text-yellow-400' : 'text-gray-600 hover:text-yellow-600'
-              }`}
-            >
-              <Bookmark className={`w-5 h-5 ${bookmarkedPosts.has(post.id) ? 'fill-current' : ''}`} />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onShare(); }}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                darkMode
-                  ? 'text-gray-400 hover:text-green-400'
-                  : 'text-gray-600 hover:text-green-600'
-              }`}
-            >
-              <Share className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Main Component
-const UserViewProfile = ({ 
-  user, 
-  userPosts = [], 
-  reviews = [], 
-  darkMode = false, 
-  onBack
-}) => {
-  // State management
-  const [activeTab, setActiveTab] = useState('posts');
-  const [viewMode, setViewMode] = useState('list');
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [likedPosts, setLikedPosts] = useState(new Set([1]));
-  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set([2]));
-  
-  // Modal states
-  const [showQRCode, setShowQRCode] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [showMessageModal, setShowMessageModal] = useState(false);
-  const [showPostModal, setShowPostModal] = useState(false);
-  const [selectedPost, setSelectedPost] = useState(null);
-
-  // Data
+// Main Profile Component
+export default function UserViewProfile({ user, userPosts = [], darkMode = false, onBack }) {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
   const currentUser = user || DEFAULT_USER;
   const posts = userPosts.length > 0 ? userPosts : SAMPLE_POSTS;
-  const userReviews = reviews.length > 0 ? reviews : SAMPLE_REVIEWS;
 
-  // Initialize follower count
-  useEffect(() => {
-    setFollowerCount(currentUser.followers || 1234);
-  }, [currentUser.followers]);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(currentUser.followers || 1234);
+  const [likedPosts, setLikedPosts] = useState(new Set([2]));
+  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set([3]));
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('posts');
+  const [viewMode, setViewMode] = useState('grid');
+  const [selectedPost, setSelectedPost] = useState(null);
 
-  // Handlers
   const handleFollow = () => {
     setIsFollowing(!isFollowing);
     setFollowerCount(prev => isFollowing ? prev - 1 : prev + 1);
   };
 
   const toggleLike = (postId) => {
-    const newLikedPosts = new Set(likedPosts);
-    if (newLikedPosts.has(postId)) {
-      newLikedPosts.delete(postId);
-    } else {
-      newLikedPosts.add(postId);
-    }
-    setLikedPosts(newLikedPosts);
+    const newLiked = new Set(likedPosts);
+    newLiked.has(postId) ? newLiked.delete(postId) : newLiked.add(postId);
+    setLikedPosts(newLiked);
   };
 
   const toggleBookmark = (postId) => {
-    const newBookmarkedPosts = new Set(bookmarkedPosts);
-    if (newBookmarkedPosts.has(postId)) {
-      newBookmarkedPosts.delete(postId);
-    } else {
-      newBookmarkedPosts.add(postId);
-    }
-    setBookmarkedPosts(newBookmarkedPosts);
-  };
-
-  const openPostModal = (post) => {
-    setSelectedPost(post);
-    setShowPostModal(true);
+    const newBookmarked = new Set(bookmarkedPosts);
+    newBookmarked.has(postId) ? newBookmarked.delete(postId) : newBookmarked.add(postId);
+    setBookmarkedPosts(newBookmarked);
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      darkMode ? 'bg-gray-900' : 'bg-gray-50'
-    }`}>
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Back Button */}
-        <ProfileHeader user={currentUser} darkMode={darkMode} onBack={onBack} />
-
+    <div className={`min-h-screen transition-colors ${scheme.bg}`}>
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Card */}
-        <div className={`rounded-2xl overflow-hidden shadow-lg ${
-          darkMode ? 'bg-gray-800' : 'bg-white'
-        }`}>
+        <div className={`rounded-2xl overflow-hidden shadow-lg ${scheme.card}`}>
           {/* Cover Photo */}
-          <CoverPhoto coverPhoto={currentUser.coverPhoto} />
-
-          {/* Profile Info */}
-          <div className="relative px-6 pb-6">
+          <div className="relative h-48 md:h-64 overflow-hidden">
+            <img src={currentUser.coverPhoto} alt="Cover" className="w-full h-full object-cover" />
+          </div>
+          
+          <div className="px-6 pb-6">
             {/* Avatar */}
-            <ProfileAvatar avatar={currentUser.avatar} name={currentUser.name} />
-
-            {/* Name and Actions */}
-            <div className="text-center md:text-left">
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
-                <div className="mb-4 md:mb-0">
-                  <div className="flex items-center justify-center md:justify-start space-x-2 mb-1">
-                    <h1 className={`text-2xl font-bold ${
-                      darkMode ? "text-white" : "text-gray-900"
-                    }`}>
-                      {currentUser.name}
-                    </h1>
-                    {currentUser.isVerified && (
-                      <ShieldCheck className="w-6 h-6 text-blue-500 fill-current" />
-                    )}
-                  </div>
-                  <p className={`text-base ${
-                    darkMode ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    {currentUser.username}
-                  </p>
+            <div className="flex justify-center md:justify-start -mt-16 mb-6">
+              <img src={currentUser.avatar} alt={currentUser.name} className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg" />
+            </div>
+            
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6 text-center md:text-left">
+              <div>
+                <div className="flex items-center justify-center md:justify-start space-x-2 mb-1">
+                  <h1 className={`text-2xl font-bold ${scheme.text}`}>{currentUser.name}</h1>
+                  {currentUser.isVerified && <ShieldCheck className="w-6 h-6 text-blue-500 fill-current" />}
                 </div>
-
-                <ProfileActions 
-                  isFollowing={isFollowing}
-                  onFollow={handleFollow}
-                  onQRCode={() => setShowQRCode(true)}
-                  onMessage={() => setShowMessageModal(true)}
-                  darkMode={darkMode}
-                />
+                <p className={`text-base ${scheme.muted}`}>{currentUser.username}</p>
               </div>
-
-              {/* Stats */}
-              <ProfileStats 
-                posts={posts.length}
-                followers={followerCount}
-                following={currentUser.following || 0}
-                darkMode={darkMode}
-              />
-
-              {/* Bio */}
-              <p className={`mb-4 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
-                {currentUser.bio}
-              </p>
-
-              {/* Specialties */}
-              {currentUser.specialties && (
-                <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
-                  {currentUser.specialties.map((specialty, index) => (
-                    <span
-                      key={index}
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        darkMode
-                          ? "bg-gray-700 text-gray-300"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {specialty}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Location & Join Date */}
-              <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm mb-4">
-                <div className={`flex items-center space-x-1 ${
-                  darkMode ? "text-gray-400" : "text-gray-600"
-                }`}>
-                  <MapPin className="w-4 h-4" />
-                  <span>{currentUser.location}</span>
-                </div>
-                <div className={`flex items-center space-x-1 ${
-                  darkMode ? "text-gray-400" : "text-gray-600"
-                }`}>
-                  <Calendar className="w-4 h-4" />
-                  <span>{currentUser.joinDate}</span>
-                </div>
-              </div>
-
-              {/* Rating */}
-              <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg ${
-                darkMode ? "bg-gray-700" : "bg-gray-50"
-              }`}>
-                <RatingStars rating={currentUser.rating} darkMode={darkMode} />
-                <span className={`text-sm font-medium ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  {(currentUser.rating || 0).toFixed(1)} ({currentUser.totalReviews || 0} reviews)
-                </span>
+              <div className="flex justify-center md:justify-end gap-2 mt-4 md:mt-0">
+                <button onClick={handleFollow} className={`px-6 py-2 rounded-lg font-medium transition ${isFollowing ? (darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-900') : 'bg-green-600 hover:bg-green-700 text-white'}`}>
+                  {isFollowing ? 'Following' : 'Follow'}
+                </button>
+                <button onClick={() => setShowQRCode(true)} className={`px-4 py-2 rounded-lg font-medium transition ${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}>
+                  <QrCode className="w-4 h-4" />
+                </button>
+                <button onClick={() => setShowMessageModal(true)} className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Message</span>
+                </button>
               </div>
             </div>
+
+            {/* Stats */}
+            <div className="flex justify-center md:justify-start gap-8 mb-6">
+              {[
+                { label: 'Posts', value: posts.length },
+                { label: 'Followers', value: followerCount.toLocaleString() },
+                { label: 'Following', value: (currentUser.following || 0).toLocaleString() }
+              ].map(({ label, value }) => (
+                <div key={label} className="text-center">
+                  <div className={`text-xl font-bold ${scheme.text}`}>{value}</div>
+                  <div className={`text-sm ${scheme.muted}`}>{label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Bio */}
+            <p className={`mb-4 ${scheme.text} text-center md:text-left`}>{currentUser.bio}</p>
+
+            {/* Specialties */}
+            {currentUser.specialties?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4 justify-center md:justify-start">
+                {currentUser.specialties.map(specialty => (
+                  <span key={specialty} className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>{specialty}</span>
+                ))}
+              </div>
+            )}
+
+            {/* Location & Join Date */}
+            <div className="flex flex-wrap gap-4 mb-4 text-sm justify-center md:justify-start">
+              <div className={`flex items-center space-x-1 ${scheme.muted}`}><MapPin className="w-4 h-4" /><span>{currentUser.location}</span></div>
+              <div className={`flex items-center space-x-1 ${scheme.muted}`}><Calendar className="w-4 h-4" /><span>{currentUser.joinDate}</span></div>
+            </div>
+
+            {/* Rating */}
+            <div
+  className={`p-4 rounded-lg text-center max-w-md mx-auto ${
+    darkMode ? "bg-gray-700" : "bg-gray-50"
+  }`}
+>
+  <div className="flex items-center justify-center space-x-1 mb-1">
+    <RatingStars rating={currentUser.rating} darkMode={darkMode} />
+  </div>
+  <div
+    className={`text-sm ${
+      darkMode ? "text-gray-400" : "text-gray-600"
+    }`}
+  >
+    {currentUser.rating.toFixed(1)} ({currentUser.totalReviews} reviews)
+  </div>
+</div>
+
           </div>
         </div>
 
         {/* Tabs */}
-        <div className={`mt-6 rounded-2xl overflow-hidden shadow-lg ${
-          darkMode ? "bg-gray-800" : "bg-white"
-        }`}>
-          <div className="border-b border-gray-200 dark:border-gray-700">
+        <div className={`rounded-2xl overflow-hidden shadow-lg ${scheme.card}`}>
+          <div className={`border-b ${scheme.border}`}>
             <div className="flex justify-between items-center px-6">
               <nav className="flex space-x-8">
-                {["posts", "reviews"].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                      activeTab === tab
-                        ? "border-green-500 text-green-600"
-                        : `border-transparent ${
-                            darkMode
-                              ? "text-gray-400 hover:text-gray-300"
-                              : "text-gray-500 hover:text-gray-700"
-                          }`
-                    }`}
-                  >
+                {['posts', 'reviews'].map((tab) => (
+                  <button key={tab} onClick={() => setActiveTab(tab)}
+                    className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab ? 'border-green-500 text-green-600' : `border-transparent ${scheme.muted}`}`}>
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>
                 ))}
@@ -1229,28 +1035,12 @@ const UserViewProfile = ({
               
               {activeTab === 'posts' && (
                 <div className="flex space-x-2">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'grid'
-                        ? 'bg-green-600 text-white'
-                        : darkMode
-                        ? 'text-gray-400 hover:bg-gray-700'
-                        : 'text-gray-500 hover:bg-gray-100'
-                    }`}
-                  >
+                  <button onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded transition-colors ${viewMode === 'grid' ? 'bg-green-600 text-white' : scheme.muted}`}>
                     <Grid className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'list'
-                        ? 'bg-green-600 text-white'
-                        : darkMode
-                        ? 'text-gray-400 hover:bg-gray-700'
-                        : 'text-gray-500 hover:bg-gray-100'
-                    }`}
-                  >
+                  <button onClick={() => setViewMode('list')}
+                    className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-green-600 text-white' : scheme.muted}`}>
                     <List className="w-4 h-4" />
                   </button>
                 </div>
@@ -1259,18 +1049,12 @@ const UserViewProfile = ({
           </div>
 
           <div className="p-6">
-            {activeTab === "posts" && (
-              <div className={viewMode === 'grid' 
-                ? 'grid grid-cols-2 md:grid-cols-3 gap-4' 
-                : 'space-y-4'
-              }>
+            {activeTab === 'posts' && (
+              <div className={viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 gap-4' : 'space-y-4'}>
                 {posts.map((post) => (
                   <div key={post.id}>
                     {viewMode === 'grid' ? (
-                      <PostGridItem 
-                        post={post} 
-                        onClick={() => openPostModal(post)}
-                      />
+                      <PostGridItem post={post} onClick={() => setSelectedPost(post)} />
                     ) : (
                       <PostListItem 
                         post={post}
@@ -1280,9 +1064,7 @@ const UserViewProfile = ({
                         bookmarkedPosts={bookmarkedPosts}
                         onLike={() => toggleLike(post.id)}
                         onBookmark={() => toggleBookmark(post.id)}
-                        onMessage={() => setShowMessageModal(true)}
-                        onShare={() => setShowShareModal(true)}
-                        onImageClick={() => openPostModal(post)}
+                        onImageClick={() => setSelectedPost(post)}
                       />
                     )}
                   </div>
@@ -1290,58 +1072,61 @@ const UserViewProfile = ({
               </div>
             )}
 
-            {activeTab === "reviews" && (
-              <div className="space-y-4">
-                {userReviews.map((review) => (
-                  <ReviewItem key={review.id} review={review} darkMode={darkMode} />
-                ))}
-              </div>
-            )}
+           {activeTab === 'reviews' && (
+  <div className="space-y-4">
+    {/* Existing reviews */}
+    {SAMPLE_REVIEWS.map((review) => (
+      <ReviewItem key={review.id} review={review} darkMode={darkMode} />
+    ))}
+
+    {/* Divider (optional, just for visual separation) */}
+    <hr className={`my-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`} />
+
+    {/* Write a new review */}
+    <div
+      className={`p-4 rounded-lg ${
+        darkMode ? 'bg-gray-700' : 'bg-gray-50'
+      }`}
+    >
+      <h4
+        className={`text-sm font-medium mb-2 ${
+          darkMode ? 'text-gray-300' : 'text-gray-700'
+        }`}
+      >
+        Write a Review
+      </h4>
+
+      <textarea
+        rows="3"
+        placeholder="Share your experience..."
+        className={`w-full p-2 rounded-md border text-sm resize-none focus:outline-none focus:ring-2 ${
+          darkMode
+            ? 'bg-gray-800 border-gray-600 text-gray-200 focus:ring-blue-500'
+            : 'bg-white border-gray-300 text-gray-700 focus:ring-blue-400'
+        }`}
+      />
+
+      <button
+        className={`mt-3 px-4 py-2 rounded-md text-sm font-medium transition ${
+          darkMode
+            ? 'bg-green-600 hover:bg-green-700 text-white'
+            : 'bg-green-600 hover:bg-green-700 text-white'  
+        }`}
+      >
+        Send Review
+      </button>
+    </div>
+  </div>
+)}
+
           </div>
         </div>
 
         {/* Modals */}
-        {showQRCode && (
-          <QRCodeModal 
-            user={currentUser} 
-            darkMode={darkMode} 
-            onClose={() => setShowQRCode(false)} 
-          />
-        )}
-
-        {showShareModal && (
-          <ShareModal 
-            user={currentUser} 
-            darkMode={darkMode} 
-            onClose={() => setShowShareModal(false)} 
-          />
-        )}
-
-        {showMessageModal && (
-          <MessageModal 
-            user={currentUser} 
-            darkMode={darkMode} 
-            onClose={() => setShowMessageModal(false)} 
-          />
-        )}
-
-        {showPostModal && selectedPost && (
-          <PostModal 
-            post={selectedPost}
-            user={currentUser}
-            darkMode={darkMode}
-            likedPosts={likedPosts}
-            bookmarkedPosts={bookmarkedPosts}
-            onClose={() => setShowPostModal(false)}
-            onLike={() => toggleLike(selectedPost.id)}
-            onBookmark={() => toggleBookmark(selectedPost.id)}
-            onMessage={() => setShowMessageModal(true)}
-            onShare={() => setShowShareModal(true)}
-          />
-        )}
+        {showQRCode && <QRCodeModal user={currentUser} darkMode={darkMode} onClose={() => setShowQRCode(false)} />}
+        {showMessageModal && <MessageModal user={currentUser} darkMode={darkMode} onClose={() => setShowMessageModal(false)} />}
+        {selectedPost && <PostModal post={selectedPost} user={currentUser} darkMode={darkMode} onClose={() => setSelectedPost(null)} />}
       </div>
     </div>
   );
-};
-
-export default UserViewProfile;
+}

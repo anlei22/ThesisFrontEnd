@@ -1,252 +1,178 @@
 import React, { useState } from 'react';
-import { 
-  XMarkIcon, 
-  TrashIcon, 
-  MapPinIcon,
-  BookmarkIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon
-} from '@heroicons/react/24/outline';
-import { BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
+import { Bookmark, Trash2, Search, Filter, Grid, List, Fish, Bird, Rabbit, User } from 'lucide-react';
 
-const BookmarksPage = ({ isOpen, onClose, darkMode }) => {
-  const [bookmarkedItems, setBookmarkedItems] = useState([
-    { 
-      id: 1, 
-      name: 'Golden Retriever Puppy', 
-      price: 800, 
-      image: '/api/placeholder/100/100',
-      animalType: 'Dog',
-      address: '123 Pet Street, San Fernando, Central Luzon',
-      date: '2 days ago'
-    },
-    { 
-      id: 2, 
-      name: 'Persian Cat', 
-      price: 500, 
-      image: '/api/placeholder/100/100',
-      animalType: 'Cat',
-      address: '456 Meow Avenue, San Fernando, Central Luzon',
-      date: '5 days ago'
-    },
-    { 
-      id: 3, 
-      name: 'Beagle Puppy', 
-      price: 650, 
-      image: '/api/placeholder/100/100',
-      animalType: 'Dog',
-      address: '789 Bark Road, Angeles City, Central Luzon',
-      date: '1 week ago'
-    }
+export default function BookmarkedAnimals() {
+  const [bookmarkedAnimals, setBookmarkedAnimals] = useState([
+    { id: 1, name: 'Baboy', category: 'Pig', type: 'Livestock', postedBy: 'Juan dela Cruz', location: 'Quezon City', savedDate: '2024-10-15', emoji: '🐷' },
+    { id: 2, name: 'Baka', category: 'Cow', type: 'Livestock', postedBy: 'Maria Santos', location: 'Bulacan', savedDate: '2024-10-14', emoji: '🐄' },
+    { id: 3, name: 'Bangus', category: 'Bangus', type: 'Fish', postedBy: 'Pedro Reyes', location: 'Dagupan', savedDate: '2024-10-13', emoji: '🐟' },
+    { id: 4, name: 'Manok', category: 'Chicken', type: 'Poultry', postedBy: 'Ana Garcia', location: 'Pampanga', savedDate: '2024-10-12', emoji: '🐔' },
+    { id: 5, name: 'Kambing', category: 'Goat', type: 'Livestock', postedBy: 'Jose Mendoza', location: 'Batangas', savedDate: '2024-10-11', emoji: '🐐' },
+    { id: 6, name: 'Kalabaw', category: 'Carabao', type: 'Livestock', postedBy: 'Rosa Villanueva', location: 'Nueva Ecija', savedDate: '2024-10-10', emoji: '🐃' },
+    { id: 7, name: 'Tilapia', category: 'Tilapia', type: 'Fish', postedBy: 'Carlos Ramos', location: 'Laguna', savedDate: '2024-10-09', emoji: '🐠' },
+    { id: 8, name: 'Rabbit', category: 'Rabbit', type: 'Small Animal', postedBy: 'Linda Cruz', location: 'Rizal', savedDate: '2024-10-08', emoji: '🐰' },
+    { id: 9, name: 'Kalapati', category: 'Kalapati', type: 'Bird', postedBy: 'Roberto Tan', location: 'Manila', savedDate: '2024-10-07', emoji: '🕊️' },
   ]);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState('grid');
 
   const removeBookmark = (id) => {
-    setBookmarkedItems(items => items.filter(item => item.id !== id));
+    setBookmarkedAnimals(bookmarkedAnimals.filter(animal => animal.id !== id));
   };
 
-  const filteredItems = bookmarkedItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.animalType.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filterType === 'all' || item.animalType.toLowerCase() === filterType.toLowerCase();
-    return matchesSearch && matchesFilter;
-  });
-
-  if (!isOpen) return null;
+  const filteredAnimals = bookmarkedAnimals.filter(animal =>
+    animal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    animal.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    animal.postedBy.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div className={`w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden ${
-        darkMode ? 'bg-gray-900' : 'bg-white'
-      }`}>
-        {/* Header */}
-        <div className={`px-6 py-4 border-b flex items-center justify-between ${
-          darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
-        }`}>
-          <div className="flex items-center space-x-3">
-            <div className={`p-2 rounded-lg ${
-              darkMode ? 'bg-green-600' : 'bg-green-500'
-            }`}>
-              <BookmarkIconSolid className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <Bookmark className="w-6 h-6 text-emerald-600 fill-emerald-600" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">My Bookmarks</h1>
+                <p className="text-gray-600 mt-1">{bookmarkedAnimals.length} saved animals</p>
+              </div>
             </div>
-            <div>
-              <h2 className={`text-xl font-bold ${
-                darkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                My Bookmarks
-              </h2>
-              <p className={`text-sm ${
-                darkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                {filteredItems.length} saved item{filteredItems.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-lg transition-colors ${
-              darkMode
-                ? 'text-gray-400 hover:text-white hover:bg-gray-700'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Search and Filter Bar */}
-        <div className={`px-6 py-4 border-b ${
-          darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
-        }`}>
-          <div className="flex flex-col sm:flex-row gap-3">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <MagnifyingGlassIcon className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-                darkMode ? 'text-gray-400' : 'text-gray-500'
-              }`} />
-              <input
-                type="text"
-                placeholder="Search bookmarks..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full pl-10 pr-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                  darkMode
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                }`}
-              />
-            </div>
-
-            {/* Filter */}
-            <div className="relative">
-              <FunnelIcon className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-                darkMode ? 'text-gray-400' : 'text-gray-500'
-              }`} />
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className={`pl-10 pr-8 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none cursor-pointer ${
-                  darkMode
-                    ? 'bg-gray-700 border-gray-600 text-white'
-                    : 'bg-white border-gray-300 text-gray-900'
-                }`}
+            
+            {/* View Toggle */}
+            <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
               >
-                <option value="all">All Types</option>
-                <option value="dog">Dogs</option>
-                <option value="cat">Cats</option>
-                <option value="bird">Birds</option>
-              </select>
+                <Grid className="w-5 h-5 text-gray-700" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+              >
+                <List className="w-5 h-5 text-gray-700" />
+              </button>
             </div>
           </div>
+
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by animal, category, or seller..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
+            />
+          </div>
         </div>
+      </div>
 
-        {/* Bookmarks List */}
-        <div className={`flex-1 overflow-y-auto ${
-          darkMode ? 'bg-gray-900' : 'bg-white'
-        }`}>
-          {filteredItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full p-8">
-              <BookmarkIcon className={`w-24 h-24 mb-4 ${
-                darkMode ? 'text-gray-700' : 'text-gray-300'
-              }`} />
-              <h3 className={`text-xl font-semibold mb-2 ${
-                darkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                {searchQuery || filterType !== 'all' ? 'No bookmarks found' : 'No bookmarks yet'}
-              </h3>
-              <p className={`text-sm ${
-                darkMode ? 'text-gray-500' : 'text-gray-400'
-              }`}>
-                {searchQuery || filterType !== 'all' 
-                  ? 'Try adjusting your search or filter'
-                  : 'Start bookmarking items to see them here'}
-              </p>
-            </div>
-          ) : (
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredItems.map((item) => (
-                <div 
-                  key={item.id} 
-                  className={`rounded-xl border overflow-hidden transition-all hover:shadow-lg cursor-pointer ${
-                    darkMode 
-                      ? 'bg-gray-800 border-gray-700 hover:border-green-600' 
-                      : 'bg-white border-gray-200 hover:border-green-500'
-                  }`}
-                >
-                  {/* Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={item.image} 
-                      alt={item.name}
-                      className="w-full h-full object-cover transition-transform hover:scale-105"
-                    />
-                    <div className="absolute top-3 right-3">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeBookmark(item.id);
-                        }}
-                        className="p-2 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg transition-colors"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <div className={`absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs font-medium ${
-                      darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
-                    }`}>
-                      {item.animalType}
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4">
-                    <h3 className={`text-lg font-semibold mb-2 ${
-                      darkMode ? 'text-white' : 'text-gray-900'
-                    }`}>
-                      {item.name}
-                    </h3>
-                    
-                    <div className={`flex items-start space-x-2 mb-3 text-sm ${
-                      darkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
-                      <MapPinIcon className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                      <span className="line-clamp-2">{item.address}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-green-500">
-                        ${item.price}
-                      </span>
-                      <span className={`text-xs ${
-                        darkMode ? 'text-gray-500' : 'text-gray-400'
-                      }`}>
-                        {item.date}
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      className={`w-full mt-4 py-2 rounded-lg font-medium transition-colors ${
-                        darkMode
-                          ? 'bg-green-600 hover:bg-green-700 text-white'
-                          : 'bg-green-500 hover:bg-green-600 text-white'
-                      }`}
-                    >
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {filteredAnimals.length === 0 ? (
+          <div className="text-center py-16">
+            <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No bookmarks found</h3>
+            <p className="text-gray-500">Start exploring and save your favorite animals!</p>
+          </div>
+        ) : (
+          <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+            {filteredAnimals.map(animal => (
+              viewMode === 'grid' ? (
+                <GridCard key={animal.id} animal={animal} onRemove={removeBookmark} />
+              ) : (
+                <ListCard key={animal.id} animal={animal} onRemove={removeBookmark} />
+              )
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}
 
-export default BookmarksPage;
+function GridCard({ animal, onRemove }) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden group">
+      <div className="relative h-48 bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+        <div className="text-7xl">{animal.emoji}</div>
+        
+        <button
+          onClick={() => onRemove(animal.id)}
+          className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-50 hover:shadow-lg transform hover:scale-110 active:scale-95"
+          aria-label="Remove bookmark"
+        >
+          <Trash2 className="w-4 h-4 text-red-500" />
+        </button>
+      </div>
+
+      <div className="p-5">
+        <h3 className="text-xl font-bold text-gray-800 mb-1">{animal.name}</h3>
+        <p className="text-sm text-gray-500 mb-3">{animal.category}</p>
+        
+        <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
+          <User className="w-4 h-4 text-gray-400" />
+          <span className="font-medium">{animal.postedBy}</span>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-3">
+          <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+            {animal.type}
+          </span>
+          <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+            {animal.location}
+          </span>
+        </div>
+        
+        <p className="text-xs text-gray-400">Saved {animal.savedDate}</p>
+      </div>
+    </div>
+  );
+}
+
+function ListCard({ animal, onRemove }) {
+  return (
+    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 p-5 group">
+      <div className="flex items-center gap-4">
+        <div className="flex-shrink-0 w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-lg flex items-center justify-center text-4xl">
+          {animal.emoji}
+        </div>
+        
+        <div className="flex-grow">
+          <h3 className="text-lg font-bold text-gray-800">{animal.name}</h3>
+          <p className="text-sm text-gray-500 mb-2">{animal.category}</p>
+          
+          <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
+            <User className="w-4 h-4 text-gray-400" />
+            <span className="font-medium">{animal.postedBy}</span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+              {animal.type}
+            </span>
+            <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+              {animal.location}
+            </span>
+            <span className="text-xs text-gray-400 px-2 py-1">Saved {animal.savedDate}</span>
+          </div>
+        </div>
+        
+        <button
+          onClick={() => onRemove(animal.id)}
+          className="flex-shrink-0 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-50 transform hover:scale-110 active:scale-95"
+          aria-label="Remove bookmark"
+        >
+          <Trash2 className="w-5 h-5 text-red-500" />
+        </button>
+      </div>
+    </div>
+  );
+}

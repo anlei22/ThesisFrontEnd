@@ -1420,106 +1420,104 @@ const NewsFeed = ({
                 darkMode ? "bg-gray-800" : "bg-white"
               }`}
             >
+              {/* Modal Header */}
+              <div
+                className={`flex items-center justify-between p-6 border-b ${
+                  darkMode ? "border-gray-700" : "border-gray-200"
+                }`}
+              >
+                <div className="flex items-center space-x-4">
+                  <img
+                    src={selectedPost.user.avatar}
+                    alt={selectedPost.user.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <h2
+                      className={`text-xl font-semibold ${
+                        darkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {selectedPost.animalInfo.title}
+                    </h2>
+                    <div className="flex items-center space-x-4 mt-1">
+                      <p
+                        className={darkMode ? "text-gray-400" : "text-gray-600"}
+                      >
+                        by {selectedPost.user.name}
+                      </p>
+                      <span
+                        className={darkMode ? "text-gray-600" : "text-gray-400"}
+                      >
+                        •
+                      </span>
+                      <p
+                        className={`text-sm ${
+                          darkMode ? "text-gray-500" : "text-gray-500"
+                        }`}
+                      >
+                        {selectedPost.timestamp}
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
+                <div className="flex items-center space-x-2">
+                  {/* Report Menu Button - Only show if logged in */}
+                  {isAuthenticated && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowReportMenu(!showReportMenu)}
+                        className={`p-2 rounded-lg transition-colors ${
+                          darkMode
+                            ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                            : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        <EllipsisVerticalIcon className="w-6 h-6" />
+                      </button>
 
-{/* Modal Header */}
-<div
-  className={`flex items-center justify-between p-6 border-b ${
-    darkMode ? "border-gray-700" : "border-gray-200"
-  }`}
->
-  <div className="flex items-center space-x-4">
-    <img
-      src={selectedPost.user.avatar}
-      alt={selectedPost.user.name}
-      className="w-12 h-12 rounded-full object-cover"
-    />
-    <div>
-      <h2
-        className={`text-xl font-semibold ${
-          darkMode ? "text-white" : "text-gray-900"
-        }`}
-      >
-        {selectedPost.animalInfo.title}
-      </h2>
-      <div className="flex items-center space-x-4 mt-1">
-        <p
-          className={darkMode ? "text-gray-400" : "text-gray-600"}
-        >
-          by {selectedPost.user.name}
-        </p>
-        <span
-          className={darkMode ? "text-gray-600" : "text-gray-400"}
-        >
-          •
-        </span>
-        <p
-          className={`text-sm ${
-            darkMode ? "text-gray-500" : "text-gray-500"
-          }`}
-        >
-          {selectedPost.timestamp}
-        </p>
-      </div>
-    </div>
-  </div>
+                      {/* Dropdown Menu */}
+                      {showReportMenu && (
+                        <div
+                          className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 ${
+                            darkMode
+                              ? "bg-gray-700 border border-gray-600"
+                              : "bg-white border border-gray-200"
+                          }`}
+                        >
+                          <button
+                            onClick={() => {
+                              setShowReportModal(true);
+                              setShowReportMenu(false);
+                            }}
+                            className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors ${
+                              darkMode
+                                ? "text-gray-300 hover:bg-gray-600"
+                                : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                          >
+                            <FlagIcon className="w-5 h-5 text-red-500" />
+                            <span>Report Post</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-  <div className="flex items-center space-x-2">
-    {/* Report Menu Button - Only show if logged in */}
-    {isAuthenticated && (
-      <div className="relative">
-        <button
-          onClick={() => setShowReportMenu(!showReportMenu)}
-          className={`p-2 rounded-lg transition-colors ${
-            darkMode
-              ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-              : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          <EllipsisVerticalIcon className="w-6 h-6" />
-        </button>
-
-        {/* Dropdown Menu */}
-        {showReportMenu && (
-          <div
-            className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 ${
-              darkMode
-                ? "bg-gray-700 border border-gray-600"
-                : "bg-white border border-gray-200"
-            }`}
-          >
-            <button
-              onClick={() => {
-                setShowReportModal(true);
-                setShowReportMenu(false);
-              }}
-              className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors ${
-                darkMode
-                  ? "text-gray-300 hover:bg-gray-600"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <FlagIcon className="w-5 h-5 text-red-500" />
-              <span>Report Post</span>
-            </button>
-          </div>
-        )}
-      </div>
-    )}
-
-    {/* Close Button */}
-    <button
-      onClick={closeModal}
-      className={`p-2 rounded-lg transition-colors ${
-        darkMode
-          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-          : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-      }`}
-    >
-      <XMarkIcon className="w-6 h-6" />
-    </button>
-  </div>
-</div>
+                  {/* Close Button */}
+                  <button
+                    onClick={closeModal}
+                    className={`p-2 rounded-lg transition-colors ${
+                      darkMode
+                        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                        : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <XMarkIcon className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
               {/* Modal Content */}
               <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
                 <div className="p-6">

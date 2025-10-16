@@ -16,18 +16,29 @@ const useUserSearch = (searchTerm, userType = 'both') => {
       setError(null);
 
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/users/search?search=${encodeURIComponent(searchTerm)}&type=${userType}`
+        const apiUrl = import.meta.env.VITE_BACKEND_URI || 'http://127.0.0.1:8000/api/';
+        const apiKey = import.meta.env.VITE_API_KEY;
+        
+       const response = await fetch(
+  `${apiUrl}news-feed/users/search?search=${encodeURIComponent(searchTerm)}&type=${userType}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`,
+            },
+          }
         );
 
         if (!response.ok) {
-          throw new Error('Failed to search users');
+          throw new Error(`Failed to search users: ${response.status}`);
         }
 
         const data = await response.json();
         
         if (data.status === 'success') {
-          setUsers(data.users);
+          setUsers(data.users || []);
+          console.log('✅ Users Found:', data.users);
         } else {
           setError(data.message || 'Failed to search users');
         }
@@ -42,7 +53,7 @@ const useUserSearch = (searchTerm, userType = 'both') => {
 
     const debounceTimer = setTimeout(() => {
       searchUsers();
-    }, 300); // Debounce search by 300ms
+    }, 300);
 
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, userType]);
