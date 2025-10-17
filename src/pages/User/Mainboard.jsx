@@ -302,13 +302,17 @@ const renderMainContent = () => {
               </button>
 
               {showCategoryDropdown && (
-                <div
-                  className={`absolute top-full left-0 w-full mt-1 ${
-                    darkMode ? "bg-gray-700" : "bg-white"
-                  } border-2 ${
-                    darkMode ? "border-gray-600" : "border-gray-300"
-                  } rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto`}
-                >
+               <div
+  className={`absolute top-full left-0 w-full mt-1 ${
+    darkMode ? "bg-gray-700" : "bg-white"
+  } border-2 ${
+    darkMode ? "border-gray-600" : "border-gray-300"
+  } rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto`}
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // Edge/IE
+  }}
+>
                   {categories.map((category) => (
                     <button
                       key={category.id}
@@ -466,7 +470,13 @@ const renderMainContent = () => {
           </div>
 
 {showUserResults && (
-  <div className="space-y-2 max-h-64 overflow-y-auto">
+<div
+  className="space-y-2 max-h-64 overflow-hidden"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // Edge/IE
+  }}
+>
     {usersLoading ? (
       <div className={`text-center py-4 text-sm ${
         darkMode ? "text-gray-400" : "text-gray-500"
@@ -545,84 +555,8 @@ const renderMainContent = () => {
 )}
 
 
-{showUserResults && (
-  <div className="space-y-2 max-h-64 overflow-y-auto">
-    {usersLoading ? (
-      <div className={`text-center py-4 text-sm ${
-        darkMode ? "text-gray-400" : "text-gray-500"
-      }`}>
-        Searching...
-      </div>
-    ) : filteredUsers.length > 0 ? (
-      filteredUsers.map((user, index) => {
-        return (
-          <div
-            key={index}
-            onClick={() => handleViewUserProfile(user)}
-            className={`p-3 rounded-lg border transition-colors cursor-pointer ${
-              darkMode
-                ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
-                : "border-gray-200 bg-gray-50 hover:bg-gray-100"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4
-                    className={`font-medium text-sm truncate ${
-                      darkMode ? "text-white" : "text-gray-900"
-                    }`}
-                  >
-                    {user.name}
-                  </h4>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
-                      user.type === "seller"
-                        ? darkMode
-                          ? "bg-blue-600 text-blue-100"
-                          : "bg-blue-100 text-blue-600"
-                        : darkMode
-                        ? "bg-purple-600 text-purple-100"
-                        : "bg-purple-100 text-purple-600"
-                    }`}
-                  >
-                    {user.type}
-                  </span>
-                </div>
-                <div
-                  className={`flex items-center gap-1 text-xs ${
-                    darkMode ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  <MapPin className="w-3 h-3" />
-                  {/* FIXED: Changed from user.address to user.location */}
-                  <span className="truncate">
-                    {user.location || "No location set"}
-                  </span>
-                  <Star className="w-3 h-3 text-yellow-400 fill-current ml-2" />
-                  <span>{user.rating || 0}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })
-    ) : (
-      <div
-        className={`text-center py-4 text-sm ${
-          darkMode ? "text-gray-400" : "text-gray-500"
-        }`}
-      >
-        No users found
-      </div>
-    )}
-  </div>
-)}    </div>
+ 
+   </div>
       </div>
     </div>
   );
@@ -783,7 +717,13 @@ const renderMainContent = () => {
 
 
 {showUserResults && (
-  <div className="space-y-2 max-h-64 overflow-y-auto">
+<div
+  className="space-y-2 max-h-60 overflow-y-auto"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // Edge/IE
+  }}
+>
     {usersLoading ? (
       <div className={`text-center py-4 text-sm ${
         darkMode ? "text-gray-400" : "text-gray-500"
@@ -913,13 +853,17 @@ const renderMainContent = () => {
           </button>
 
           {showCategoryDropdown && (
-            <div
-              className={`absolute top-full left-0 w-full mt-1 ${
-                darkMode ? "bg-gray-700" : "bg-white"
-              } border ${
-                darkMode ? "border-gray-600" : "border-gray-300"
-              } rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto`}
-            >
+         <div
+  className={`absolute top-full left-0 w-full mt-1 ${
+    darkMode ? "bg-gray-700" : "bg-white"
+  } border ${
+    darkMode ? "border-gray-600" : "border-gray-300"
+  } rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto`}
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // Edge/IE
+  }}
+>
               {categories.map((category) => (
                 <button
                   key={category.id}
@@ -982,13 +926,17 @@ const renderMainContent = () => {
           </button>
 
           {showLocationDropdown && (
-            <div
-              className={`absolute top-full left-0 w-full mt-1 ${
-                darkMode ? "bg-gray-700" : "bg-white"
-              } border ${
-                darkMode ? "border-gray-600" : "border-gray-300"
-              } rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto`}
-            >
+          <div
+  className={`absolute top-full left-0 w-full mt-1 ${
+    darkMode ? "bg-gray-700" : "bg-white"
+  } border ${
+    darkMode ? "border-gray-600" : "border-gray-300"
+  } rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto`}
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // Edge/IE
+  }}
+>
               {locations.map((location) => (
                 <button
                   key={location.id}

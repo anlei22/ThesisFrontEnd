@@ -875,7 +875,13 @@ const handleSubmit = async () => {
         </div>
 
         {/* Content */}
-        <div className="p-6 max-h-[55vh] overflow-y-auto">
+<div
+  className="p-6 max-h-[55vh] overflow-y-auto"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // IE and Edge
+  }}
+>
           {currentStep === 1 && renderAnimalSelectionStep()}
           {currentStep === 2 && renderDetailsStep()}
           {currentStep === 3 && renderReviewStep()}

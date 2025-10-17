@@ -1298,7 +1298,13 @@ const NewsFeed = ({
                       </div>
 
                       {/* Comments List */}
-                      <div className="space-y-3 max-h-96 overflow-y-auto">
+<div
+  className="space-y-3 max-h-96 overflow-y-auto"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // IE & Edge
+  }}
+>
                         {postComments[post.id] &&
                         postComments[post.id].length > 0 ? (
                           postComments[post.id].map((comment) => (
@@ -1410,10 +1416,11 @@ const NewsFeed = ({
       {isModalOpen && selectedPost && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
-              onClick={closeModal}
-            />
+      <div
+  className="fixed inset-0 bg-transparent backdrop-blur-md transition-opacity"
+  onClick={closeModal}
+/>
+
 
             <div
               className={`relative rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden ${
@@ -1519,7 +1526,13 @@ const NewsFeed = ({
                 </div>
               </div>
               {/* Modal Content */}
-              <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+<div
+  className="overflow-y-auto max-h-[calc(90vh-120px)]"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // Internet Explorer & Edge
+  }}
+>
                 <div className="p-6">
                   {/* Image Gallery */}
                   {selectedPost.images && selectedPost.images.length > 0 && (
@@ -1985,7 +1998,13 @@ const NewsFeed = ({
                       )}
 
                       {/* Comments List */}
-                      <div className="space-y-4 max-h-96 overflow-y-auto">
+<div
+  className="space-y-4 max-h-96 overflow-y-auto"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // IE & Edge
+  }}
+>
                         {comments.length > 0 ? (
                           comments.map((comment) => (
                             <div key={comment.id}>
@@ -2254,10 +2273,11 @@ const NewsFeed = ({
       {showReportModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
-              onClick={() => setShowReportModal(false)}
-            />
+           <div
+  className="fixed inset-0 bg-transparent backdrop-blur-md transition-opacity"
+  onClick={() => setShowReportModal(false)}
+/>
+
 
             <div
               className={`relative rounded-2xl shadow-xl max-w-md w-full ${

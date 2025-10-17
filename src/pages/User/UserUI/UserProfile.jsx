@@ -6,6 +6,34 @@ const COLORS = {
   dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
   light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', muted: 'text-gray-600', border: 'border-gray-200' }
 };
+const SuccessModal = ({ message, darkMode, onClose }) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  
+  useEffect(() => {
+    const timer = setTimeout(onClose, 2000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+<div className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50">
+
+      <div className={`rounded-2xl p-8 max-w-sm w-full text-center ${scheme.card}`}>
+        {/* Checkmark Circle */}
+        <div className="mb-4 flex justify-center">
+          <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+            <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Message */}
+        <h3 className={`text-xl font-bold mb-2 ${scheme.text}`}>Success!</h3>
+        <p className={`text-sm ${scheme.muted}`}>{message}</p>
+      </div>
+    </div>
+  );
+};
 
 const DEFAULT_USER = {
   name: 'Juan Dela Cruz',
@@ -263,78 +291,242 @@ const ReviewItem = ({ review, darkMode }) => {
   );
 };
 
+// Replace lines 241-248 with this complete component:
+
 // Edit Profile Modal
 const EditProfileModal = ({ user, darkMode, onClose, onSave }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const [formData, setFormData] = useState({
-    name: user.name,
-    bio: user.bio,
-    location: user.location,
-    specialties: user.specialties.join(', ')
+    firstName: user.firstName || user.name?.split(' ')[0] || '',
+    lastName: user.lastName || user.name?.split(' ')[1] || '',
+    username: user.username || '',
+    email: user.email || '',
+    phoneNumber: user.phoneNumber || '',
+    address: user.address || '',
+    bio: user.bio || '',
+    location: user.location || '',
+    specialties: user.specialties?.join(', ') || '',
+    avatar: user.avatar || null,
+    coverPhoto: user.coverPhoto || null
   });
+
+  const [previewAvatar, setPreviewAvatar] = useState(null);
+  const [previewCover, setPreviewCover] = useState(null);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleFileChange = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (type === 'avatar') {
+          setFormData(prev => ({ ...prev, avatar: reader.result }));
+          setPreviewAvatar(reader.result);
+        } else {
+          setFormData(prev => ({ ...prev, coverPhoto: reader.result }));
+          setPreviewCover(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave({
-      ...formData,
-      specialties: formData.specialties.split(',').map(s => s.trim()).filter(s => s)
+      name: `${formData.firstName} ${formData.lastName}`,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      username: formData.username,
+      email: formData.email,
+      phoneNumber: formData.phoneNumber,
+      address: formData.address,
+      bio: formData.bio,
+      location: formData.location,
+    
+      avatar: previewAvatar || formData.avatar,
+      coverPhoto: previewCover || formData.coverPhoto
     });
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className={`max-w-lg w-full rounded-2xl ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
+<div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div
+    className={`relative w-full max-w-2xl max-h-[80vh] rounded-2xl shadow-2xl overflow-y-auto transition-all duration-300 ${scheme.card} my-8`}
+    onClick={(e) => e.stopPropagation()}
+    style={{
+      scrollbarWidth: "none", // Firefox
+      msOverflowStyle: "none", // IE/Edge
+    }}
+  >
+        {/* Header */}
         <div className={`flex items-center justify-between p-6 border-b ${scheme.border}`}>
-          <h3 className={`text-xl font-bold ${scheme.text}`}>Edit Profile</h3>
-          <button onClick={onClose} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+          <h3 className={`text-2xl font-bold ${scheme.text}`}>Edit Profile</h3>
+          <button onClick={onClose} className={`p-2 rounded-lg transition ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
             <X className="w-6 h-6" />
           </button>
         </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Name</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
-            />
-          </div>
+
+        {/* Form */}
+<form
+  onSubmit={handleSubmit}
+  className="p-6 space-y-6 max-h-[calc(90vh-120px)] overflow-y-auto"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // Edge/IE
+  }}
+>
+
           
+          {/* Cover Photo Section */}
           <div>
-            <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Bio</label>
+            <label className={`block text-sm font-semibold mb-3 ${scheme.text}`}>Cover Photo</label>
+            <div className={`relative h-32 rounded-lg border-2 border-dashed ${scheme.border} cursor-pointer overflow-hidden transition`}>
+              {previewCover || formData.coverPhoto ? (
+                <img src={previewCover || formData.coverPhoto} alt="Cover" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Camera className={`w-6 h-6 ${scheme.text}`} />
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, 'cover')}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* Avatar Section */}
+          <div>
+            <label className={`block text-sm font-semibold mb-3 ${scheme.text}`}>Profile Picture</label>
+            <div className={`relative w-24 h-24 rounded-full border-2 border-dashed ${scheme.border} cursor-pointer overflow-hidden transition`}>
+              {previewAvatar || formData.avatar ? (
+                <img src={previewAvatar || formData.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Camera className={`w-5 h-5 ${scheme.text}`} />
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, 'avatar')}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* First & Last Name */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${scheme.text}`}>First Name</label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${scheme.text}`}>Last Name</label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+          </div>
+
+          {/* Username & Email */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${scheme.text}`}>Username</label>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${scheme.text}`}>Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+          </div>
+
+          {/* Phone & Address */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${scheme.text}`}>Phone Number</label>
+              <input
+                type="tel"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${scheme.text}`}>Address</label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+          </div>
+
+          {/* Bio */}
+          <div>
+            <label className={`block text-sm font-semibold mb-2 ${scheme.text}`}>Bio</label>
             <textarea
+              name="bio"
               value={formData.bio}
-              onChange={(e) => setFormData({...formData, bio: e.target.value})}
+              onChange={handleInputChange}
               rows="3"
               className={`w-full px-4 py-2 rounded-lg border resize-none ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
             />
           </div>
-          
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Location</label>
-            <input
-              type="text"
-              value={formData.location}
-              onChange={(e) => setFormData({...formData, location: e.target.value})}
-              className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
-            />
+
+          {/* Location & Specialties */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${scheme.text}`}>Location</label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+           
           </div>
-          
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Specialties (comma-separated)</label>
-            <input
-              type="text"
-              value={formData.specialties}
-              onChange={(e) => setFormData({...formData, specialties: e.target.value})}
-              placeholder="e.g., Cattle, Poultry, Goats"
-              className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
-            />
-          </div>
-          
-          <div className="flex space-x-3 pt-4">
+
+          {/* Action Buttons */}
+          <div className="flex space-x-3 pt-4 border-t">
             <button
               type="button"
               onClick={onClose}
@@ -354,7 +546,6 @@ const EditProfileModal = ({ user, darkMode, onClose, onSave }) => {
     </div>
   );
 };
-
 // Edit Post Modal
 const EditPostModal = ({ post, darkMode, onClose, onSave }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
@@ -376,8 +567,19 @@ const EditPostModal = ({ post, darkMode, onClose, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className={`max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
+<div
+  className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50 p-4"
+  onClick={onClose}
+>
+
+<div
+  className={`max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl ${scheme.card}`}
+  onClick={(e) => e.stopPropagation()}
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // Edge/IE
+  }}
+>
         <div className={`flex items-center justify-between p-6 border-b ${scheme.border} sticky top-0 ${scheme.card} z-10`}>
           <h3 className={`text-xl font-bold ${scheme.text}`}>Edit Post</h3>
           <button onClick={onClose} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
@@ -489,8 +691,11 @@ const EditPostModal = ({ post, darkMode, onClose, onSave }) => {
           </div>
         </form>
       </div>
+    
     </div>
+    
   );
+  
 };
 
 // Post Modal
@@ -502,6 +707,21 @@ const PostModal = ({ post, user, darkMode, onClose, onEdit, onDelete, isAuthenti
   const [replyText, setReplyText] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [showActionMenu, setShowActionMenu] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);  // ADD THIS
+  const [isDeleting, setIsDeleting] = useState(false);  // ADD THIS
+
+const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    onDelete(post.id);
+    setIsDeleting(false);
+    setShowDeleteModal(false);
+    onClose();
+  };
 
   const handleAddComment = () => {
     if (commentText.trim()) {
@@ -539,17 +759,15 @@ const PostModal = ({ post, user, darkMode, onClose, onEdit, onDelete, isAuthenti
     }
   };
 
-  const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-      onDelete(post.id);
-      onClose();
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose} />
+<div
+  className="fixed inset-0 bg-white/10 backdrop-blur-md"
+  onClick={onClose}
+/>
+
 
         <div className={`relative rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden ${scheme.card}`}>
           {/* Header */}
@@ -602,20 +820,20 @@ const PostModal = ({ post, user, darkMode, onClose, onEdit, onDelete, isAuthenti
                       <Edit className="w-5 h-5 text-blue-500" />
                       <span>Edit Post</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        handleDelete();
-                        setShowActionMenu(false);
-                      }}
-                      className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors rounded-b-lg ${
-                        darkMode
-                          ? "text-gray-300 hover:bg-gray-600"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }`}
-                    >
-                      <Trash2 className="w-5 h-5 text-red-500" />
-                      <span>Delete Post</span>
-                    </button>
+                  <button
+  onClick={() => {
+    handleDelete();
+    setShowActionMenu(false);
+  }}
+  className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors rounded-b-lg ${
+    darkMode
+      ? "text-gray-300 hover:bg-gray-600"
+      : "text-gray-700 hover:bg-gray-100"
+  }`}
+>
+  <Trash2 className="w-5 h-5 text-red-500" />
+  <span>Delete Post</span>
+</button>
                   </div>
                 )}
               </div>
@@ -628,7 +846,13 @@ const PostModal = ({ post, user, darkMode, onClose, onEdit, onDelete, isAuthenti
           </div>
 
           {/* Content */}
-          <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+<div
+  className="overflow-y-auto max-h-[calc(90vh-120px)]"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // Edge/IE
+  }}
+>
             <div className="p-6">
               {/* Images */}
               {post.images && post.images.length > 0 && (
@@ -869,6 +1093,16 @@ const PostModal = ({ post, user, darkMode, onClose, onEdit, onDelete, isAuthenti
           </div>
         </div>
       </div>
+       {showDeleteModal && (
+        <DeleteConfirmationModal
+          title="Delete Post"
+          message={`Are you sure you want to delete this post? This action cannot be undone.`}
+          darkMode={darkMode}
+          onConfirm={confirmDelete}
+          onCancel={() => setShowDeleteModal(false)}
+          isLoading={isDeleting}
+        />
+      )}
     </div>
   );
 };
@@ -879,7 +1113,11 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://livestock-app.com/profile/${user.username}`)}`;
 
   return (  
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+<div
+  className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50 p-4"
+  onClick={onClose}
+>
+
       <div className={`max-w-sm w-full p-6 rounded-2xl ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
         <h3 className={`text-xl font-bold mb-4 text-center ${scheme.text}`}>Share Profile</h3>
         <div className="w-48 h-48 mx-auto mb-4 bg-white rounded-lg flex items-center justify-center">
@@ -894,13 +1132,69 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
     </div>
   );
 };
+// Add this new component before your main UserViewProfile component
 
+const DeleteConfirmationModal = ({ 
+  title = "Delete Post", 
+  message = "Are you sure you want to delete this post? This action cannot be undone.", 
+  darkMode, 
+  onConfirm, 
+  onCancel,
+  isLoading = false 
+}) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+
+  return (
+<div className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50">
+
+      <div className={`rounded-2xl p-8 max-w-sm w-full text-center ${scheme.card}`}>
+        {/* Warning Icon */}
+        <div className="mb-4 flex justify-center">
+          <div className="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4v2m0-6a4 4 0 100 8 4 4 0 000-8z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Title */}
+        <h3 className={`text-xl font-bold mb-2 ${scheme.text}`}>{title}</h3>
+        
+        {/* Message */}
+        <p className={`text-sm mb-6 ${scheme.muted}`}>{message}</p>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${
+              darkMode 
+                ? 'bg-gray-700 text-white hover:bg-gray-600 disabled:opacity-50' 
+                : 'bg-gray-200 text-gray-900 hover:bg-gray-300 disabled:opacity-50'
+            }`}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition disabled:opacity-50"
+          >
+            {isLoading ? 'Deleting...' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 // Main Profile Component
 export default function UserViewProfile({ user, userPosts = [], darkMode = false, onBack }) {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const currentUser = user || DEFAULT_USER;
   const posts = userPosts.length > 0 ? userPosts : SAMPLE_POSTS;
 
+  // State declarations
   const [profileData, setProfileData] = useState(currentUser);
   const [postsList, setPostsList] = useState(posts);
   const [likedPosts, setLikedPosts] = useState(new Set([2]));
@@ -910,26 +1204,20 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
   const [showEditPost, setShowEditPost] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [activeTab, setActiveTab] = useState('posts');
-  const [selectedPost, setSelectedPost] = useState(null);
+const [selectedPost, setSelectedPost] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
-  const toggleLike = (postId) => {
-    const newLiked = new Set(likedPosts);
-    newLiked.has(postId) ? newLiked.delete(postId) : newLiked.add(postId);
-    setLikedPosts(newLiked);
-  };
 
-  const toggleBookmark = (postId) => {
-    const newBookmarked = new Set(bookmarkedPosts);
-    newBookmarked.has(postId) ? newBookmarked.delete(postId) : newBookmarked.add(postId);
-    setBookmarkedPosts(newBookmarked);
-  };
 
+// Handler functions
+// Handler functions
   const handleSaveProfile = (updatedData) => {
     setProfileData({
       ...profileData,
       ...updatedData
     });
-    alert('Profile updated successfully!');
+    setSuccessMessage('Profile updated successfully!');
+    setShowEditProfile(false);
   };
 
   const handleEditPost = (post) => {
@@ -944,13 +1232,29 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
         ? { ...p, animalInfo: { ...p.animalInfo, ...updatedPostData } }
         : p
     ));
-    alert('Post updated successfully!');
+    setSuccessMessage('Post updated successfully!');
+    setShowEditPost(false);
   };
 
   const handleDeletePost = (postId) => {
     setPostsList(postsList.filter(p => p.id !== postId));
-    alert('Post deleted successfully!');
+    setSuccessMessage('Post deleted successfully!');
   };
+
+
+  const toggleLike = (postId) => {
+    const newLiked = new Set(likedPosts);
+    newLiked.has(postId) ? newLiked.delete(postId) : newLiked.add(postId);
+    setLikedPosts(newLiked);
+  };
+
+  const toggleBookmark = (postId) => {
+    const newBookmarked = new Set(bookmarkedPosts);
+    newBookmarked.has(postId) ? newBookmarked.delete(postId) : newBookmarked.add(postId);
+    setBookmarkedPosts(newBookmarked);
+  };
+
+
 
   return (
     <div className={`min-h-screen transition-colors ${scheme.bg}`}>
@@ -1077,19 +1381,30 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
         </div>
 
         {/* Modals */}
-        {showQRCode && <QRCodeModal user={profileData} darkMode={darkMode} onClose={() => setShowQRCode(false)} />}
-        {showEditProfile && <EditProfileModal user={profileData} darkMode={darkMode} onClose={() => setShowEditProfile(false)} onSave={handleSaveProfile} />}
-        {showEditPost && editingPost && <EditPostModal post={editingPost} darkMode={darkMode} onClose={() => setShowEditPost(false)} onSave={handleSavePost} />}
-        {selectedPost && (
-          <PostModal 
-            post={selectedPost} 
-            user={profileData} 
-            darkMode={darkMode} 
-            onClose={() => setSelectedPost(null)}
-            onEdit={handleEditPost}
-            onDelete={handleDeletePost}
-          />
-        )}
+         {showQRCode && <QRCodeModal user={profileData} darkMode={darkMode} onClose={() => setShowQRCode(false)} />}
+      {showEditProfile && <EditProfileModal user={profileData} darkMode={darkMode} onClose={() => setShowEditProfile(false)} onSave={handleSaveProfile} />}
+      {showEditPost && editingPost && <EditPostModal post={editingPost} darkMode={darkMode} onClose={() => setShowEditPost(false)} onSave={handleSavePost} />}
+      
+      {/* Success message modal - at main component level */}
+      {successMessage && (
+        <SuccessModal 
+          message={successMessage} 
+          darkMode={darkMode} 
+          onClose={() => setSuccessMessage(null)} 
+        />
+      )}
+
+      {selectedPost && (
+        <PostModal 
+          post={selectedPost} 
+          user={profileData} 
+          darkMode={darkMode} 
+          onClose={() => setSelectedPost(null)}
+          onEdit={handleEditPost}
+          onDelete={handleDeletePost}
+        />
+      )}
+   
       </div>
     </div>
   );
