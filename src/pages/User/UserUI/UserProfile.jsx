@@ -1,748 +1,871 @@
-import React, { useState, useEffect } from "react";
-import {
-  Star,
-  Heart,
-  MessageCircle,
-  Share,
-  Camera,
-  Edit,
-  MapPin,
-  Calendar,
-  User,
-  QrCode,
-  X,
-  Phone,
-  ShieldCheck,
-  Users,
-  Store,
-  ShoppingCart,
-  MoreVertical,
-  Trash2,
-  Bookmark, // Fixed: Added missing import
-} from "lucide-react";
+import React, { useState, useRef, useEffect } from 'react';
+import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, ChevronLeft, ChevronRight, Grid, List, Flag, MoreVertical, Edit, Trash2  } from 'lucide-react';
 
-// Mock useAuth hook
-const useAuth = () => ({
-  user: { name: "Alex Johnson", email: "alex@example.com" },
-  isAuthenticated: true,
-  logout: () => console.log("Logout"),
-});
+// Constants
+const COLORS = {
+  dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
+  light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', muted: 'text-gray-600', border: 'border-gray-200' }
+};
 
-// Login Modal Component
-const LoginModal = ({ isOpen, onClose, darkMode }) => {
-  if (!isOpen) return null;
+const DEFAULT_USER = {
+  name: 'Juan Dela Cruz',
+  username: '@juandelacruz',
+  avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
+  coverPhoto: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
+  bio: 'Professional livestock farmer specializing in cattle and poultry.',
+  location: 'Nueva Ecija, Philippines',
+  joinDate: 'Joined March 2023',
+  rating: 4.8,
+  totalReviews: 127,
+  followers: 1234,
+  following: 567,
+  isVerified: true,
+  specialties: ['Cattle', 'Poultry', 'Goats']
+};
 
+const SAMPLE_POSTS = [
+  {
+    id: 1,
+    content: 'Beautiful healthy cattle ready for sale! Vaccinated and well-maintained.',
+    images: ['https://images.unsplash.com/photo-1560493676-04071c5f467b?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&h=600&fit=crop'],
+    likes: 145,
+    comments: 23,
+    bookmarks: 45,
+    timestamp: '2 hours ago',
+    isLiked: false,
+    isBookmarked: false,
+    animalInfo: { 
+      title: 'Premium Cattle', 
+      type: 'Cattle', 
+      breed: 'Brahman', 
+      age: '2 years',
+      sex: 'Male',
+      price: '₱85,000', 
+      availability: 'available',
+      description: 'Premium quality Brahman cattle in excellent health condition. Regularly vaccinated and dewormed. Perfect for breeding or meat production. Well-trained and easy to handle.'
+    }
+  },
+  {
+    id: 2,
+    content: 'High-quality free-range chickens for egg production.',
+    images: ['https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&h=600&fit=crop'],
+    likes: 89,
+    comments: 15,
+    bookmarks: 28,
+    timestamp: '5 hours ago',
+    isLiked: true,
+    isBookmarked: false,
+    animalInfo: { 
+      title: 'Free-Range Chickens', 
+      type: 'Poultry', 
+      breed: 'Rhode Island Red', 
+      age: '6 months',
+      sex: 'Female',
+      price: '₱350 each', 
+      availability: 'available',
+      description: 'Healthy free-range Rhode Island Red chickens. Excellent egg layers producing 5-6 eggs per week. Fed with organic feed and raised in spacious, natural environment.'
+    }
+  },
+  {
+    id: 3,
+    content: 'Beautiful goats for sale - great for dairy or meat production.',
+    images: ['https://images.unsplash.com/photo-1533318087102-b3ad366ed041?w=800&h=600&fit=crop'],
+    likes: 67,
+    comments: 12,
+    bookmarks: 18,
+    timestamp: '1 day ago',
+    isLiked: false,
+    isBookmarked: true,
+    animalInfo: { 
+      title: 'Dairy Goats', 
+      type: 'Goats', 
+      breed: 'Saanen', 
+      age: '1.5 years',
+      sex: 'Female',
+      price: '₱12,000', 
+      availability: 'sold',
+      description: 'High-producing Saanen dairy goats. Excellent milk production with good fat content. Friendly and easy to handle. Perfect for small-scale dairy operations.'
+    }
+  }
+];
+
+const SAMPLE_REVIEWS = [
+  {
+    id: 1,
+    user: { name: 'Maria Santos', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop' },
+    rating: 5,
+    text: 'Excellent seller! The cattle were in perfect condition as described. Very professional and knowledgeable.',
+    timestamp: '2 weeks ago'
+  },
+  {
+    id: 2,
+    user: { name: 'Pedro Reyes', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop' },
+    rating: 4,
+    text: 'Good quality livestock. Delivery was on time and animals were healthy. Would buy again.',
+    timestamp: '1 month ago'
+  }
+];
+
+const INITIAL_COMMENTS = [
+  {
+    id: 1,
+    user: { name: 'Maria Santos', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop' },
+    text: 'Interested in this cattle! Can you provide more details about vaccination records?',
+    timestamp: '1 hour ago',
+    likes: 3,
+    replies: [
+      {
+        id: 101,
+        user: { name: 'Juan Dela Cruz', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop' },
+        text: 'Hi Maria! Yes, all vaccination records are available. I can send them to you.',
+        timestamp: '45 minutes ago',
+        likes: 1
+      }
+    ]
+  }
+];
+
+// Rating Stars
+const RatingStars = ({ rating, darkMode }) => (
+  <div className="flex items-center space-x-1">
+    {[...Array(5)].map((_, i) => (
+      <Star key={i} className={`w-4 h-4 ${i < Math.floor(rating || 0) ? 'text-yellow-400 fill-current' : darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
+    ))}
+  </div>
+);
+
+// Post List Item
+const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLike, onBookmark, onImageClick }) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div
-        className={`p-6 rounded-lg ${darkMode ? "bg-gray-800" : "bg-white"}`}
-      >
-        <h2
-          className={`text-xl font-bold mb-4 ${
-            darkMode ? "text-white" : "text-gray-900"
-          }`}
-        >
-          Login Required
-        </h2>
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg"
-        >
-          Close
-        </button>
+    <div className={`rounded-lg border overflow-hidden relative ${scheme.card} ${scheme.border}`}>
+      {/* Diagonal Ribbon */}
+      {post.animalInfo && (
+        <div className="absolute top-0 right-0 w-32 h-35 overflow-hidden z-10">
+          <div className={`absolute top-4 right-[-32px] w-40 h-8 transform rotate-45 text-center text-white text-xs font-bold leading-8 shadow-lg ${
+            post.animalInfo.availability === 'available' ? 'bg-green-500' : 'bg-red-500'
+          }`}>
+            {post.animalInfo.availability === 'available' ? 'AVAILABLE' : 'SOLD OUT'}
+          </div>
+        </div>
+      )}
+
+      {/* Post Header */}
+      <div className="p-6 pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+            <div>
+              <div className="flex items-center space-x-1">
+                <h3 className={`font-semibold ${scheme.text}`}>{user.name}</h3>
+                {user.isVerified && (
+                  <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                )}
+              </div>
+              <p className={`text-sm ${scheme.muted}`}>{post.timestamp}</p>
+            </div>
+          </div>
+          <button className={`p-2 rounded-full hover:opacity-80 ${scheme.muted}`}>
+            <MoreHorizontal className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="px-6 pb-4">
+        {post.animalInfo && (
+          <div className="mt-4">
+            <h3 className={`text-lg font-semibold mb-1 text-center ${darkMode ? 'text-green-200' : 'text-green-800'}`}>
+              {post.animalInfo.title}
+            </h3>
+            
+            {post.animalInfo.description && (
+              <div className="mb-2 text-center">
+                <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                  {post.animalInfo.description}
+                </p>
+              </div>
+            )}
+            
+            <div className="flex justify-center items-center">
+              <span className={`text-lg font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                {post.animalInfo.price}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Images */}
+      {post.images?.length > 0 && (
+        <div className="px-6 pb-4">
+          <div className={`grid gap-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition-opacity ${
+            post.images.length === 1 ? 'grid-cols-1' : post.images.length === 2 ? 'grid-cols-2' : post.images.length === 3 ? 'grid-cols-2' : 'grid-cols-2'
+          }`} onClick={onImageClick}>
+            {post.images.slice(0, 4).map((image, i) => (
+              <div key={i} className={`relative ${post.images.length === 3 && i === 0 ? 'row-span-2' : ''}`}>
+                <img src={image} alt={`Post ${i}`} className="w-full h-full object-cover" style={{ minHeight: '200px', maxHeight: '400px' }} />
+                {i === 3 && post.images.length > 4 && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <span className="text-white text-xl font-semibold">+{post.images.length - 4}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Stats */}
+      <div className={`px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-sm ${scheme.muted}`}>
+        <span>{post.likes} likes</span> • <span>{post.bookmarks} saves</span>
+      </div>
+
+      {/* Actions */}
+      <div className={`flex items-center justify-around border-t py-2 ${scheme.border}`}>
+        {[
+          { icon: Heart, label: 'Like', action: onLike, active: likedPosts.has(post.id), color: 'text-green-600' },
+          { icon: MessageCircle, label: 'Comment', action: onImageClick, color: 'text-blue-600' },
+          { icon: Bookmark, label: 'Save', action: onBookmark, active: bookmarkedPosts.has(post.id), color: 'text-yellow-600' },
+          { icon: Share, label: 'Share', action: () => {}, color: 'text-green-600' }
+        ].map(({ icon: Icon, label, action, active, color }) => (
+          <button key={label} onClick={action} className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${active ? color : scheme.muted}`}>
+            <Icon className={`w-5 h-5 ${active ? 'fill-current' : ''}`} />
+            <span className="text-sm font-medium">{label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
 };
 
-// Post Options Dropdown Component
-const PostOptionsDropdown = ({ postId, onEdit, onDelete, darkMode }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
+// Review Item
+const ReviewItem = ({ review, darkMode }) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-          darkMode
-            ? "text-gray-400 hover:text-gray-300"
-            : "text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        <MoreVertical className="w-5 h-5" />
-      </button>
-
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-          <div
-            className={`absolute right-0 top-full mt-1 w-48 rounded-lg shadow-lg border z-20 ${
-              darkMode
-                ? "bg-gray-800 border-gray-700"
-                : "bg-white border-gray-200"
-            }`}
-          >
-            <div className="py-1">
-              <button
-                onClick={() => {
-                  onEdit(postId);
-                  setIsOpen(false);
-                }}
-                className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-2 ${
-                  darkMode
-                    ? "text-gray-300 hover:text-white"
-                    : "text-gray-700 hover:text-gray-900"
-                }`}
-              >
-                <Edit className="w-4 h-4" />
-                <span>Edit Post</span>
-              </button>
-              <button
-                onClick={() => {
-                  onDelete(postId);
-                  setIsOpen(false);
-                }}
-                className={`w-full px-4 py-2 text-left text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center space-x-2 ${
-                  darkMode
-                    ? "text-red-400 hover:text-red-300"
-                    : "text-red-600 hover:text-red-700"
-                }`}
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Delete Post</span>
-              </button>
-            </div>
+    <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+      <div className="flex items-start space-x-3">
+        <img src={review.user.avatar} alt={review.user.name} className="w-10 h-10 rounded-full object-cover" />
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-1">
+            <h4 className={`font-semibold ${scheme.text}`}>{review.user.name}</h4>
+            <span className={`text-xs ${scheme.muted}`}>{review.timestamp}</span>
           </div>
-        </>
-      )}
+          <RatingStars rating={review.rating} darkMode={darkMode} />
+          <p className={`mt-2 text-sm ${scheme.text}`}>{review.text}</p>
+        </div>
+      </div>
     </div>
   );
 };
 
-// Edit Post Modal Component
-const EditPostModal = ({ isOpen, onClose, post, onSave, darkMode }) => {
-  const [editContent, setEditContent] = useState("");
-  const [editTitle, setEditTitle] = useState("");
-  const [editPrice, setEditPrice] = useState("");
-  const [editType, setEditType] = useState("");
+// Edit Profile Modal
+const EditProfileModal = ({ user, darkMode, onClose, onSave }) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  const [formData, setFormData] = useState({
+    name: user.name,
+    bio: user.bio,
+    location: user.location,
+    specialties: user.specialties.join(', ')
+  });
 
-  useEffect(() => {
-    if (post) {
-      setEditContent(post.content || "");
-      setEditTitle(post.animalInfo?.title || "");
-      setEditPrice(post.animalInfo?.price || "");
-      setEditType(post.animalInfo?.type || "");
-    }
-  }, [post]);
-
-  const handleSave = () => {
-    const updatedPost = {
-      ...post,
-      content: editContent,
-      animalInfo: {
-        ...post.animalInfo,
-        title: editTitle,
-        price: editPrice,
-        type: editType,
-      },
-    };
-    onSave(updatedPost);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({
+      ...formData,
+      specialties: formData.specialties.split(',').map(s => s.trim()).filter(s => s)
+    });
     onClose();
   };
 
-  if (!isOpen || !post) return null;
-  if (loading) {
-    return (
-      <div className={`flex items-center justify-center h-full ${
-        darkMode ? 'bg-gray-900' : 'bg-white'
-      }`}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-          <p className={`mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Loading profile...
-          </p>
-        </div>
-      </div>
-    );
-  }
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div
-        className={`max-w-lg w-full max-h-[90vh] overflow-y-auto rounded-xl ${
-          darkMode ? "bg-gray-800" : "bg-white"
-        }`}
-      >
-        <div className="sticky top-0 bg-inherit border-b border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center justify-between">
-            <h2
-              className={`text-xl font-bold ${
-                darkMode ? "text-white" : "text-gray-900"
-              }`}
-            >
-              Edit Post
-            </h2>
-            <button
-              onClick={onClose}
-              className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                darkMode ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className={`max-w-lg w-full rounded-2xl ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
+        <div className={`flex items-center justify-between p-6 border-b ${scheme.border}`}>
+          <h3 className={`text-xl font-bold ${scheme.text}`}>Edit Profile</h3>
+          <button onClick={onClose} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+            <X className="w-6 h-6" />
+          </button>
         </div>
-
-        <div className="p-4 space-y-4">
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label
-              className={`block text-sm font-medium mb-1 ${
-                darkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Title
-            </label>
+            <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Name</label>
             <input
               type="text"
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-              placeholder="Post title"
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
             />
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                className={`block text-sm font-medium mb-1 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Price
-              </label>
-              <input
-                type="text"
-                value={editPrice}
-                onChange={(e) => setEditPrice(e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-                placeholder="$0"
-              />
-            </div>
-
-            <div>
-              <label
-                className={`block text-sm font-medium mb-1 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Type
-              </label>
-              <input
-                type="text"
-                value={editType}
-                onChange={(e) => setEditType(e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-                placeholder="Animal type"
-              />
-            </div>
-          </div>
-
+          
           <div>
-            <label
-              className={`block text-sm font-medium mb-1 ${
-                darkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Description
-            </label>
+            <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Bio</label>
             <textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              rows="4"
-              className={`w-full px-3 py-2 border rounded-md ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-              placeholder="Write your post content..."
+              value={formData.bio}
+              onChange={(e) => setFormData({...formData, bio: e.target.value})}
+              rows="3"
+              className={`w-full px-4 py-2 rounded-lg border resize-none ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
             />
           </div>
-
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Location</label>
+            <input
+              type="text"
+              value={formData.location}
+              onChange={(e) => setFormData({...formData, location: e.target.value})}
+              className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+            />
+          </div>
+          
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Specialties (comma-separated)</label>
+            <input
+              type="text"
+              value={formData.specialties}
+              onChange={(e) => setFormData({...formData, specialties: e.target.value})}
+              placeholder="e.g., Cattle, Poultry, Goats"
+              className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+            />
+          </div>
+          
+          <div className="flex space-x-3 pt-4">
             <button
+              type="button"
               onClick={onClose}
-              className={`px-4 py-2 border rounded-md ${
-                darkMode
-                  ? "border-gray-600 text-gray-300 hover:bg-gray-700"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
+              className={`flex-1 px-4 py-2 rounded-lg font-medium ${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-900 hover:bg-gray-300'}`}
             >
               Cancel
             </button>
             <button
-              onClick={handleSave}
-              className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              type="submit"
+              className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium"
             >
               Save Changes
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
 };
 
-// Edit Profile Modal Component
-const EditProfileModal = ({
-  isOpen,
-  onClose,
-  editForm,
-  setEditForm,
-  onSave,
-  loading,
-  darkMode,
-}) => {
-  if (!isOpen) return null;
+// Edit Post Modal
+const EditPostModal = ({ post, darkMode, onClose, onSave }) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  const [formData, setFormData] = useState({
+    title: post.animalInfo.title,
+    description: post.animalInfo.description,
+    type: post.animalInfo.type,
+    breed: post.animalInfo.breed,
+    age: post.animalInfo.age,
+    sex: post.animalInfo.sex,
+    price: post.animalInfo.price,
+    availability: post.animalInfo.availability
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+    onClose();
+  };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-2 sm:p-4 overflow-y-auto">
-      <div
-        className={`w-full max-w-4xl my-2 sm:my-4 rounded-xl shadow-2xl ${
-          darkMode ? "bg-gray-800" : "bg-white"
-        }`}
-      >
-        <div className="sticky top-0 bg-inherit border-b border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center justify-between">
-            <h2
-              className={`text-xl font-bold ${
-                darkMode ? "text-white" : "text-gray-900"
-              }`}
-            >
-              Edit Profile
-            </h2>
-            <button
-              onClick={onClose}
-              className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                darkMode ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              <X className="w-5 h-5" />
-            </button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className={`max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
+        <div className={`flex items-center justify-between p-6 border-b ${scheme.border} sticky top-0 ${scheme.card} z-10`}>
+          <h3 className={`text-xl font-bold ${scheme.text}`}>Edit Post</h3>
+          <button onClick={onClose} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Title</label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Type</label>
+              <input
+                type="text"
+                value={formData.type}
+                onChange={(e) => setFormData({...formData, type: e.target.value})}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Breed</label>
+              <input
+                type="text"
+                value={formData.breed}
+                onChange={(e) => setFormData({...formData, breed: e.target.value})}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Age</label>
+              <input
+                type="text"
+                value={formData.age}
+                onChange={(e) => setFormData({...formData, age: e.target.value})}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Sex</label>
+              <select
+                value={formData.sex}
+                onChange={(e) => setFormData({...formData, sex: e.target.value})}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Price</label>
+              <input
+                type="text"
+                value={formData.price}
+                onChange={(e) => setFormData({...formData, price: e.target.value})}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Availability</label>
+              <select
+                value={formData.availability}
+                onChange={(e) => setFormData({...formData, availability: e.target.value})}
+                className={`w-full px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+              >
+                <option value="available">Available</option>
+                <option value="sold">Sold</option>
+              </select>
+            </div>
           </div>
-        </div>
-
-     <div className="p-6 space-y-8">
-  {/* Cover + Profile */}
-  <div className="relative w-full">
-    {/* Cover Photo */}
-    <div className="relative">
-      <img
-        src={
-          editForm.coverPhoto ||
-          "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1000&h=300&fit=crop"
-        }
-        alt="Cover"
-        className="w-full h-40 md:h-56 rounded-lg object-cover"
-      />
-      <label className="absolute bottom-3 right-3 cursor-pointer px-3 py-1.5 bg-white/80 dark:bg-gray-800/80 text-xs rounded-lg shadow hover:bg-white dark:hover:bg-gray-700 transition-colors">
-        Change Cover
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              const mockUrl = `https://images.unsplash.com/photo-${Date.now()}?w=1000&h=300&fit=crop`;
-              setEditForm((prev) => ({ ...prev, coverPhoto: mockUrl }));
-            }
-          }}
-        />
-      </label>
-    </div>
-
-    {/* Profile Picture */}
-    <div className="absolute -bottom-12 left-6 flex items-center space-x-4">
-      <img
-        src={
-          editForm.profilePic ||
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
-        }
-        alt="Profile"
-        className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 object-cover"
-      />
-      <label className="cursor-pointer px-3 py-1.5 bg-white/80 dark:bg-gray-800/80 text-xs rounded-lg shadow hover:bg-white dark:hover:bg-gray-700 transition-colors">
-        Change Photo
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              const mockUrl = `https://images.unsplash.com/photo-${Date.now()}?w=150&h=150&fit=crop&crop=face`;
-              setEditForm((prev) => ({ ...prev, profilePic: mockUrl }));
-            }
-          }}
-        />
-      </label>
-    </div>
-  </div>
-
-  {/* Form Sections */}
-  <div className="pt-14 space-y-6">
-    {/* Basic Info */}
-    <div>
-      <h2 className="text-lg font-semibold mb-4">Basic Information</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* First Name */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            First Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={editForm.firstName}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, firstName: e.target.value }))
-            }
-            placeholder="Enter first name"
-            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          />
-        </div>
-
-        {/* Middle Name */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Middle Name</label>
-          <input
-            type="text"
-            value={editForm.middleName}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, middleName: e.target.value }))
-            }
-            placeholder="Enter middle name"
-            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          />
-        </div>
-
-        {/* Last Name */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Last Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={editForm.surname}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, surname: e.target.value }))
-            }
-            placeholder="Enter last name"
-            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          />
-        </div>
-      </div>
-    </div>
-
-    {/* Contact Info */}
-    <div>
-      <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Email *</label>
-          <input
-            type="email"
-            value={editForm.email}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, email: e.target.value }))
-            }
-            placeholder="Enter email address"
-            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Phone *</label>
-          <input
-            type="tel"
-            value={editForm.phone}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, phone: e.target.value }))
-            }
-            placeholder="Enter phone number"
-            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          />
-        </div>
-      </div>
-      <div className="mt-4">
-        <label className="block text-sm font-medium mb-1">Address *</label>
-        <input
-          type="text"
-          value={editForm.address}
-          onChange={(e) =>
-            setEditForm((prev) => ({ ...prev, address: e.target.value }))
-          }
-          placeholder="Enter full address"
-          className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-        />
-      </div>
-    </div>
-
-    {/* Personal Info */}
-    <div>
-      <h2 className="text-lg font-semibold mb-4">Personal Details</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Birthday *</label>
-          <input
-            type="date"
-            value={editForm.birthday}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, birthday: e.target.value }))
-            }
-            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Age *</label>
-          <input
-            type="number"
-            min="13"
-            max="120"
-            value={editForm.age}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, age: e.target.value }))
-            }
-            placeholder="Enter age"
-            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Sex *</label>
-          <select
-            value={editForm.sex}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, sex: e.target.value }))
-            }
-            className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          >
-            <option value="">Select sex</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    {/* User Role */}
-    <div>
-      <label className="block text-sm font-medium mb-1">User Role *</label>
-      <select
-        value={editForm.role}
-        onChange={(e) =>
-          setEditForm((prev) => ({ ...prev, role: e.target.value }))
-        }
-        className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-      >
-        <option value="">Select role</option>
-        <option value="buyer">Buyer</option>
-        <option value="seller">Seller</option>
-        <option value="both">Buyer & Seller</option>
-      </select>
-    </div>
-
-    {/* Password */}
-    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-      <h3 className="text-lg font-semibold mb-4">Change Password</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input
-          type="password"
-          placeholder="New Password"
-          value={editForm.password}
-          onChange={(e) =>
-            setEditForm((prev) => ({ ...prev, password: e.target.value }))
-          }
-          className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-        />
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          value={editForm.confirmPassword}
-          onChange={(e) =>
-            setEditForm((prev) => ({
-              ...prev,
-              confirmPassword: e.target.value,
-            }))
-          }
-          className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
-        />
-      </div>
-      {editForm.password &&
-        editForm.confirmPassword &&
-        editForm.password !== editForm.confirmPassword && (
-          <p className="text-red-500 text-sm mt-2">Passwords do not match</p>
-        )}
-    </div>
-
-    {/* Actions */}
-    <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-      <button
-        onClick={onClose}
-        disabled={loading}
-        className="px-4 py-2 border rounded-md text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-      >
-        Cancel
-      </button>
-      <button
-        onClick={onSave}
-        disabled={loading}
-        className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center"
-      >
-        {loading && (
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-        )}
-        {loading ? "Saving..." : "Save Changes"}
-      </button>
-    </div>
-  </div>
-</div>
-      </div>
-    </div>
-  );
-};
-
-const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, darkMode }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div
-        className={`max-w-md w-full p-6 rounded-xl ${
-          darkMode ? "bg-gray-800" : "bg-white"
-        }`}
-      >
-        <div className="text-center">
-          <Trash2 className="w-12 h-12 mx-auto mb-4 text-red-500" />
-          <h2
-            className={`text-xl font-bold mb-2 ${
-              darkMode ? "text-white" : "text-gray-900"
-            }`}
-          >
-            Delete Post
-          </h2>
-          <p
-            className={`text-sm mb-6 ${
-              darkMode ? "text-gray-300" : "text-gray-600"
-            }`}
-          >
-            Are you sure you want to delete this post? This action cannot be
-            undone.
-          </p>
-        </div>
-
-        <div className="flex space-x-3">
-          <button
-            onClick={onClose}
-            className={`flex-1 px-4 py-2 border rounded-md ${
-              darkMode
-                ? "border-gray-600 text-gray-300 hover:bg-gray-700"
-                : "border-gray-300 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Phone Verification Modal
-const PhoneVerificationModal = ({
-  isOpen,
-  onClose,
-  onVerify,
-  verificationCode,
-  setVerificationCode,
-  darkMode,
-}) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div
-        className={`max-w-md w-full p-6 rounded-xl ${
-          darkMode ? "bg-gray-800" : "bg-white"
-        }`}
-      >
-        <div className="text-center">
-          <Phone className="w-12 h-12 mx-auto mb-4 text-green-500" />
-          <h2
-            className={`text-xl font-bold mb-2 ${
-              darkMode ? "text-white" : "text-gray-900"
-            }`}
-          >
-            Verify Phone Number
-          </h2>
-          <p
-            className={`text-sm mb-6 ${
-              darkMode ? "text-gray-300" : "text-gray-600"
-            }`}
-          >
-            Enter the verification code sent to your phone (use 123456 for demo)
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <input
-            type="text"
-            value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md text-center text-lg ${
-              darkMode
-                ? "bg-gray-700 border-gray-600 text-white"
-                : "bg-white border-gray-300 text-gray-900"
-            }`}
-            placeholder="Enter 6-digit code"
-            maxLength="6"
-          />
-
-          <div className="flex space-x-3">
+          
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${scheme.text}`}>Description</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              rows="4"
+              className={`w-full px-4 py-2 rounded-lg border resize-none ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
+            />
+          </div>
+          
+          <div className="flex space-x-3 pt-4">
             <button
+              type="button"
               onClick={onClose}
-              className={`flex-1 px-4 py-2 border rounded-md ${
-                darkMode
-                  ? "border-gray-600 text-gray-300 hover:bg-gray-700"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
+              className={`flex-1 px-4 py-2 rounded-lg font-medium ${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-900 hover:bg-gray-300'}`}
             >
               Cancel
             </button>
             <button
-              onClick={onVerify}
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              type="submit"
+              className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium"
             >
-              Verify
+              Save Changes
             </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Post Modal
+const PostModal = ({ post, user, darkMode, onClose, onEdit, onDelete, isAuthenticated = true }) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [comments, setComments] = useState(INITIAL_COMMENTS);
+  const [commentText, setCommentText] = useState('');
+  const [replyText, setReplyText] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [showActionMenu, setShowActionMenu] = useState(false);
+
+  const handleAddComment = () => {
+    if (commentText.trim()) {
+      setComments([...comments, {
+        id: Date.now(),
+        user: { name: 'You', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop' },
+        text: commentText,
+        timestamp: 'Just now',
+        likes: 0,
+        replies: []
+      }]);
+      setCommentText('');
+    }
+  };
+
+  const handleAddReply = (commentId) => {
+    if (replyText.trim()) {
+      setComments(comments.map(comment => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            replies: [...(comment.replies || []), {
+              id: Date.now(),
+              user: { name: 'You', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop' },
+              text: replyText,
+              timestamp: 'Just now',
+              likes: 0
+            }]
+          };
+        }
+        return comment;
+      }));
+      setReplyText('');
+      setReplyingTo(null);
+    }
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      onDelete(post.id);
+      onClose();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose} />
+
+        <div className={`relative rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden ${scheme.card}`}>
+          {/* Header */}
+          <div className={`flex items-center justify-between p-6 border-b ${scheme.border}`}>
+            <div className="flex items-center space-x-4">
+              <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
+              <div>
+                <h2 className={`text-xl font-semibold ${scheme.text}`}>{post.animalInfo.title}</h2>
+                <div className="flex items-center space-x-4 mt-1">
+                  <p className={scheme.muted}>by {user.name}</p>
+                  <span className={scheme.muted}>•</span>
+                  <p className={`text-sm ${scheme.muted}`}>{post.timestamp}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              {/* Edit/Delete Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowActionMenu(!showActionMenu)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    darkMode
+                      ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <MoreVertical className="w-6 h-6" />
+                </button>
+                
+                {showActionMenu && (
+                  <div
+                    className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 ${
+                      darkMode
+                        ? "bg-gray-700 border border-gray-600"
+                        : "bg-white border border-gray-200"
+                    }`}
+                  >
+                    <button
+                      onClick={() => {
+                        onEdit(post);
+                        setShowActionMenu(false);
+                      }}
+                      className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors ${
+                        darkMode
+                          ? "text-gray-300 hover:bg-gray-600"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      <Edit className="w-5 h-5 text-blue-500" />
+                      <span>Edit Post</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleDelete();
+                        setShowActionMenu(false);
+                      }}
+                      className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors rounded-b-lg ${
+                        darkMode
+                          ? "text-gray-300 hover:bg-gray-600"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      <Trash2 className="w-5 h-5 text-red-500" />
+                      <span>Delete Post</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Close Button */}
+              <button onClick={onClose} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+            <div className="p-6">
+              {/* Images */}
+              {post.images && post.images.length > 0 && (
+                <div className="mb-6">
+                  <div className="relative">
+                    <img src={post.images[currentImageIndex]} alt={post.animalInfo.title} className="w-full h-80 object-cover rounded-xl" />
+                    {post.images.length > 1 && (
+                      <>
+                        <button onClick={() => setCurrentImageIndex(prev => prev === 0 ? post.images.length - 1 : prev - 1)} 
+                          className={`absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg ${darkMode ? 'bg-gray-700 bg-opacity-80' : 'bg-white bg-opacity-80'}`}>
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => setCurrentImageIndex(prev => prev === post.images.length - 1 ? 0 : prev + 1)}
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg ${darkMode ? 'bg-gray-700 bg-opacity-80' : 'bg-white bg-opacity-80'}`}>
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                          {post.images.map((_, index) => (
+                            <button key={index} onClick={() => setCurrentImageIndex(index)}
+                              className={`w-2 h-2 rounded-full ${index === currentImageIndex ? 'bg-white' : 'bg-white bg-opacity-50'}`} />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {post.images.length > 1 && (
+                    <div className="flex space-x-3 mt-4 overflow-x-auto pb-2">
+                      {post.images.map((image, index) => (
+                        <button key={index} onClick={() => setCurrentImageIndex(index)}
+                          className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${index === currentImageIndex ? 'border-green-500' : darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                          <img src={image} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Description */}
+              <div className="mb-6">
+                <h3 className={`text-lg font-medium mb-3 ${scheme.text}`}>Description</h3>
+                <p className={`leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{post.animalInfo.description}</p>
+              </div>
+
+              {/* Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                <div className="space-y-5">
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Animal Type</h4>
+                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${darkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800'}`}>
+                      {post.animalInfo.type}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Age & Sex</h4>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-700'}>{post.animalInfo.age} • {post.animalInfo.sex}</p>
+                  </div>
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Status</h4>
+                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${post.animalInfo.availability === 'available' ? (darkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800') : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800')}`}>
+                      {post.animalInfo.availability}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-5">
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Breed</h4>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-700'}>{post.animalInfo.breed}</p>
+                  </div>
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Location</h4>
+                    <div className="flex items-start space-x-2">
+                      <MapPin className={`w-4 h-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{user.location}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Price</h4>
+                    <p className="text-lg font-bold text-green-600">{post.animalInfo.price}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats */}
+              {isAuthenticated && (
+                <div className={`flex items-center justify-between p-4 rounded-lg mb-6 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                  <div className="flex items-center space-x-6">
+                    <div className="text-center">
+                      <p className={`text-2xl font-bold ${scheme.text}`}>{post.likes}</p>
+                      <p className={`text-xs ${scheme.muted}`}>Likes</p>
+                    </div>
+                    <div className="text-center">
+                      <p className={`text-2xl font-bold ${scheme.text}`}>{post.bookmarks}</p>
+                      <p className={`text-xs ${scheme.muted}`}>Bookmarks</p>
+                    </div>
+                    <div className="text-center">
+                      <p className={`text-2xl font-bold ${scheme.text}`}>{comments.length}</p>
+                      <p className={`text-xs ${scheme.muted}`}>Comments</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className={`flex items-center p-3 rounded-lg mb-6 border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} ${isAuthenticated ? 'justify-around' : 'justify-between'}`}>
+                {isAuthenticated ? (
+                  <>
+                    <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${post.isLiked ? 'text-green-600' : scheme.muted}`}>
+                      <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : ''}`} />
+                      <span className="font-medium">Like</span>
+                    </button>
+                    <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${post.isBookmarked ? 'text-yellow-600' : scheme.muted}`}>
+                      <Bookmark className={`w-5 h-5 ${post.isBookmarked ? 'fill-current' : ''}`} />
+                      <span className="font-medium">Save</span>
+                    </button>
+                    <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}>
+                      <Share className="w-5 h-5" />
+                      <span className="font-medium">Share</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}>
+                      <Share className="w-5 h-5" />
+                      <span className="font-medium">Share</span>
+                    </button>
+                    <div className={`text-center px-4 py-2 text-sm ${scheme.muted}`}>Login to like, comment & save</div>
+                  </>
+                )}
+              </div>
+
+              {/* Comments */}
+              {isAuthenticated && (
+                <div className={`border-t pt-4 ${scheme.border}`}>
+                  <h3 className={`text-lg font-semibold mb-4 ${scheme.text}`}>Comments ({comments.length})</h3>
+                  
+                  {/* Add Comment */}
+                  <div className="mb-6">
+                    <div className={`flex space-x-3 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                      <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-semibold">U</span>
+                      </div>
+                      <div className="flex-1">
+                        <textarea value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Write a comment..." rows="3"
+                          className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode ? 'bg-gray-600 text-white' : 'bg-white text-gray-900 border border-gray-200'}`} />
+                        <div className="flex justify-end mt-2">
+                          <button onClick={handleAddComment} disabled={!commentText.trim()}
+                            className={`px-4 py-2 rounded-lg font-medium ${commentText.trim() ? 'bg-green-600 hover:bg-green-700 text-white' : (darkMode ? 'bg-gray-600 text-gray-400' : 'bg-gray-200 text-gray-400')} cursor-${commentText.trim() ? 'pointer' : 'not-allowed'}`}>
+                            Post Comment
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Comments List */}
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {comments.map((comment) => (
+                      <div key={comment.id}>
+                        <div className={`flex space-x-3 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                          <img src={comment.user.avatar} alt={comment.user.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <div>
+                                <h4 className={`font-semibold text-sm ${scheme.text}`}>{comment.user.name}</h4>
+                                <p className={`text-xs ${scheme.muted}`}>{comment.timestamp}</p>
+                              </div>
+                            </div>
+                            <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{comment.text}</p>
+                            <div className="flex items-center space-x-4">
+                              <button className={`flex items-center space-x-1 text-xs ${scheme.muted}`}>
+                                <Heart className="w-4 h-4" />
+                                <span>{comment.likes > 0 ? comment.likes : 'Like'}</span>
+                              </button>
+                              <button onClick={() => setReplyingTo(comment.id)} className={`text-xs ${scheme.muted}`}>Reply</button>
+                              {comment.replies?.length > 0 && (
+                                <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                  {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Reply Input */}
+                        {replyingTo === comment.id && (
+                          <div className={`ml-12 mt-2 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                            <div className="flex space-x-3">
+                              <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                                <span className="text-white font-semibold text-xs">U</span>
+                              </div>
+                              <div className="flex-1">
+                                <textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} placeholder={`Reply to ${comment.user.name}...`} rows="2" autoFocus
+                                  className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode ? 'bg-gray-600 text-white' : 'bg-white text-gray-900 border border-gray-200'}`} />
+                                <div className="flex justify-end space-x-2 mt-2">
+                                  <button onClick={() => setReplyingTo(null)} className={`px-3 py-1.5 rounded-lg text-sm font-medium ${darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}>
+                                    Cancel
+                                  </button>
+                                  <button onClick={() => handleAddReply(comment.id)} disabled={!replyText.trim()}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${replyText.trim() ? 'bg-green-600 hover:bg-green-700 text-white' : (darkMode ? 'bg-gray-600 text-gray-400' : 'bg-gray-200 text-gray-400')} cursor-${replyText.trim() ? 'pointer' : 'not-allowed'}`}>
+                                    Reply
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Replies */}
+                        {comment.replies && comment.replies.length > 0 && (
+                          <div className="ml-12 mt-2 space-y-2">
+                            {comment.replies.map((reply) => (
+                              <div key={reply.id} className={`flex space-x-3 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                <img src={reply.user.avatar} alt={reply.user.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <div>
+                                      <h4 className={`font-semibold text-sm ${scheme.text}`}>{reply.user.name}</h4>
+                                      <p className={`text-xs ${scheme.muted}`}>{reply.timestamp}</p>
+                                    </div>
+                                  </div>
+                                  <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{reply.text}</p>
+                                  <button className={`flex items-center space-x-1 text-xs ${scheme.muted}`}>
+                                    <Heart className="w-3 h-3" />
+                                    <span>{reply.likes > 0 ? reply.likes : 'Like'}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -751,1071 +874,223 @@ const PhoneVerificationModal = ({
 };
 
 // QR Code Modal
-const QRCodeModal = ({ isOpen, onClose, user, darkMode }) => {
-  if (!isOpen) return null;
+const QRCodeModal = ({ user, darkMode, onClose }) => {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://livestock-app.com/profile/${user.username}`)}`;
 
-  const generateQRCode = () => {
-    const qrData = `https://animalapp.com/profile/${user.username}`;
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-      qrData
-    )}`;
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div
-        className={`max-w-md w-full p-6 rounded-xl text-center ${
-          darkMode ? "bg-gray-800" : "bg-white"
-        }`}
-      >
-        <h2
-          className={`text-xl font-bold mb-4 ${
-            darkMode ? "text-white" : "text-gray-900"
-          }`}
-        >
-          My QR Code
-        </h2>
-        <div className="mb-4">
-          <img
-            src={generateQRCode()}
-            alt="QR Code"
-            className="w-48 h-48 mx-auto border rounded-lg"
-          />
+  return (  
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className={`max-w-sm w-full p-6 rounded-2xl ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
+        <h3 className={`text-xl font-bold mb-4 text-center ${scheme.text}`}>Share Profile</h3>
+        <div className="w-48 h-48 mx-auto mb-4 bg-white rounded-lg flex items-center justify-center">
+          <img src={qrUrl} alt="QR Code" className="w-full h-full object-contain" />
         </div>
-        <p
-          className={`text-sm mb-4 ${
-            darkMode ? "text-gray-300" : "text-gray-600"
-          }`}
-        >
-          Scan this code to view my profile
-        </p>
-        <button
-          onClick={onClose}
-          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// Share Modal with QR Code
-const ShareModal = ({ isOpen, onClose, post, user, darkMode }) => {
-  if (!isOpen || !post) return null;
-
-  const generateShareQRCode = () => {
-    const shareData = `https://animalapp.com/post/${post.id}`;
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-      shareData
-    )}`;
-  };
-
-  const shareUrl = `https://animalapp.com/post/${post.id}`;
-
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      alert("Link copied to clipboard!");
-    } catch (err) {
-      console.error("Failed to copy: ", err);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div
-        className={`max-w-md w-full p-6 rounded-xl ${
-          darkMode ? "bg-gray-800" : "bg-white"
-        }`}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h2
-            className={`text-xl font-bold ${
-              darkMode ? "text-white" : "text-gray-900"
-            }`}
-          >
-            Share Post
-          </h2>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 ${
-              darkMode ? "text-gray-400" : "text-gray-600"
-            }`}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="text-center mb-6">
-          <div className="mb-4">
-            <img
-              src={generateShareQRCode()}
-              alt="Share QR Code"
-              className="w-48 h-48 mx-auto border rounded-lg"
-            />
-          </div>
-          <p
-            className={`text-sm mb-4 ${
-              darkMode ? "text-gray-300" : "text-gray-600"
-            }`}
-          >
-            Scan this code to view the post
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          <div
-            className={`p-3 rounded-lg border ${
-              darkMode
-                ? "bg-gray-700 border-gray-600"
-                : "bg-gray-50 border-gray-200"
-            }`}
-          >
-            <p
-              className={`text-sm font-mono break-all ${
-                darkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              {shareUrl}
-            </p>
-          </div>
-
-          <div className="flex space-x-3">
-            <button
-              onClick={copyToClipboard}
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Copy Link
-            </button>
-            <button
-              onClick={onClose}
-              className={`flex-1 px-4 py-2 border rounded-lg ${
-                darkMode
-                  ? "border-gray-600 text-gray-300 hover:bg-gray-700"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              Close
-            </button>
-          </div>
+        <p className={`text-sm text-center mb-4 ${scheme.muted}`}>Scan to view {user.name}'s profile</p>
+        <div className="flex space-x-3">
+          <button onClick={onClose} className={`flex-1 px-4 py-2 rounded-lg font-medium ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-900'}`}>Close</button>
+          <button className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium">Download</button>
         </div>
       </div>
     </div>
   );
 };
 
-const UserProfile = ({ darkMode = false }) => {
-  const [activeTab, setActiveTab] = useState("posts");
-  const [showEditProfile, setShowEditProfile] = useState(false);
+// Main Profile Component
+export default function UserViewProfile({ user, userPosts = [], darkMode = false, onBack }) {
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  const currentUser = user || DEFAULT_USER;
+  const posts = userPosts.length > 0 ? userPosts : SAMPLE_POSTS;
+
+  const [profileData, setProfileData] = useState(currentUser);
+  const [postsList, setPostsList] = useState(posts);
+  const [likedPosts, setLikedPosts] = useState(new Set([2]));
+  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set([3]));
   const [showQRCode, setShowQRCode] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const [showEditPost, setShowEditPost] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [activeTab, setActiveTab] = useState('posts');
   const [selectedPost, setSelectedPost] = useState(null);
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [averageRating] = useState(4.2);
-  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [likedPosts, setLikedPosts] = useState(new Set());
 
-  // Edit form state
-  const [editForm, setEditForm] = useState({
-    firstName: "",
-    middleName: "",
-    surname: "",
-    email: "",
-    bio: "",
-    address: "",
-    website: "",
-    phone: "",
-    age: "",
-    sex: "",
-    birthday: "",
-    role: "both",
-    animalsInterested: [],
-    profilePic: "",
-    coverPhoto: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const [userPosts, setUserPosts] = useState([
-    {
-      id: 1,
-      content:
-        "Just captured this amazing shot of a red fox in Yellowstone! The early morning light was perfect.",
-      images: [
-        "https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=600&h=400&fit=crop",
-      ],
-      likes: 234,
-      comments: 18,
-      timestamp: "2 days ago",
-      animalInfo: {
-        title: "Beautiful Red Fox Photography",
-        type: "Wildlife Photography",
-        price: "$150",
-        availability: "available",
-      },
-    },
-    {
-      id: 2,
-      content:
-        "Volunteer day at the local animal shelter. These puppies are looking for forever homes!",
-      images: [
-        "https://images.unsplash.com/photo-1552053831-71594a27632d?w=600&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=600&h=400&fit=crop",
-      ],
-      likes: 456,
-      comments: 32,
-      timestamp: "5 days ago",
-      animalInfo: {
-        title: "Adorable Rescue Puppies",
-        type: "Dog",
-        price: "Free",
-        availability: "available",
-      },
-    },
-  ]);
-
-  const { user: authUser, isAuthenticated } = useAuth();
-
-  // Initialize form with user data
-  useEffect(() => {
-    if (isAuthenticated) {
-      const userData = {
-        firstName: "Alex",
-        middleName: "",
-        surname: "Johnson",
-        email: "alex@example.com",
-        bio: "Animal lover and wildlife enthusiast. Welcome to my profile!",
-        address: "San Fernando, Central Luzon, PH",
-        website: "alexwildlife.com",
-        phone: "+63 912 345 6789",
-        age: "28",
-        sex: "male",
-        birthday: "1995-06-15",
-        role: "both",
-        animalsInterested: ["Dogs", "Cats", "Birds"],
-        profilePic:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-        coverPhoto:
-          "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=300&fit=crop",
-        password: "",
-        confirmPassword: "",
-      };
-      setEditForm(userData);
-      setProfileData(userData);
-      setPhoneVerified(true);
-    }
-  }, [isAuthenticated]);
-
-  const user =
-    isAuthenticated && profileData
-      ? {
-          name: `${profileData.firstName} ${profileData.surname}`.trim(),
-          username: `@${(profileData.firstName || "user").toLowerCase()}${(
-            profileData.surname || ""
-          ).toLowerCase()}`,
-          bio: profileData.bio,
-          location: profileData.address,
-          avatar: profileData.profilePic,
-          coverPhoto: profileData.coverPhoto,
-          phone: profileData.phone,
-          joinDate: "Joined June 2023",
-          followers: 156,
-          following: 89,
-          posts: userPosts.length,
-          rating: averageRating,
-          totalReviews: 12,
-          isVerified: phoneVerified,
-          userType: profileData.role,
-        }
-      : {
-          name: "Guest User",
-          username: "@guest",
-          bio: "Please login to view your profile",
-          avatar:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-          coverPhoto:
-            "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=300&fit=crop",
-          location: "Unknown",
-          joinDate: "Not logged in",
-          followers: 0,
-          following: 0,
-          posts: 0,
-          rating: 0,
-          totalReviews: 0,
-          isVerified: false,
-          userType: "both",
-        };
-
-  const reviews = [
-    {
-      id: 1,
-      reviewer: "Sarah Johnson",
-      reviewerAvatar:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=40&h=40&fit=crop&crop=face",
-      rating: 4.5,
-      comment:
-        "Alex is amazing with animals! Helped me find the perfect rescue dog for my family.",
-      timestamp: "1 week ago",
-    },
-    {
-      id: 2,
-      reviewer: "Mike Chen",
-      reviewerAvatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-      rating: 3.75,
-      comment:
-        "Great photographer and passionate about wildlife conservation. Highly recommend!",
-      timestamp: "2 weeks ago",
-    },
-  ];
-
-  // Post management functions
-  const handleEditPost = (postId) => {
-    const post = userPosts.find((p) => p.id === postId);
-    if (post) {
-      setSelectedPost(post);
-      setShowEditPost(true);
-    }
+  const toggleLike = (postId) => {
+    const newLiked = new Set(likedPosts);
+    newLiked.has(postId) ? newLiked.delete(postId) : newLiked.add(postId);
+    setLikedPosts(newLiked);
   };
 
-  const handleDeletePost = (postId) => {
-    setSelectedPost(userPosts.find((p) => p.id === postId));
-    setShowDeleteConfirm(true);
+  const toggleBookmark = (postId) => {
+    const newBookmarked = new Set(bookmarkedPosts);
+    newBookmarked.has(postId) ? newBookmarked.delete(postId) : newBookmarked.add(postId);
+    setBookmarkedPosts(newBookmarked);
   };
 
-  const confirmDeletePost = () => {
-    if (selectedPost) {
-      setUserPosts((prev) => prev.filter((p) => p.id !== selectedPost.id));
-    }
-    setShowDeleteConfirm(false);
+  const handleSaveProfile = (updatedData) => {
+    setProfileData({
+      ...profileData,
+      ...updatedData
+    });
+    alert('Profile updated successfully!');
+  };
+
+  const handleEditPost = (post) => {
+    setEditingPost(post);
+    setShowEditPost(true);
     setSelectedPost(null);
   };
 
-  const handleSaveEditPost = (updatedPost) => {
-    setUserPosts((prev) =>
-      prev.map((p) => (p.id === updatedPost.id ? updatedPost : p))
-    );
+  const handleSavePost = (updatedPostData) => {
+    setPostsList(postsList.map(p => 
+      p.id === editingPost.id 
+        ? { ...p, animalInfo: { ...p.animalInfo, ...updatedPostData } }
+        : p
+    ));
+    alert('Post updated successfully!');
   };
 
-  const toggleLike = (postId) => {
-    const newLikedPosts = new Set(likedPosts);
-    if (likedPosts.has(postId)) {
-      newLikedPosts.delete(postId);
-      setUserPosts((prev) =>
-        prev.map((p) => (p.id === postId ? { ...p, likes: p.likes - 1 } : p))
-      );
-    } else {
-      newLikedPosts.add(postId);
-      setUserPosts((prev) =>
-        prev.map((p) => (p.id === postId ? { ...p, likes: p.likes + 1 } : p))
-      );
-    }
-    setLikedPosts(newLikedPosts);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleImageChange = (e, type) => {
-    const file = e.target.files[0];
-    if (file) {
-      const mockImageUrl =
-        type === "profilePic"
-          ? `https://images.unsplash.com/photo-${Date.now()}?w=150&h=150&fit=crop&crop=face`
-          : `https://images.unsplash.com/photo-${Date.now()}?w=800&h=300&fit=crop`;
-
-      setEditForm((prev) => ({
-        ...prev,
-        [type]: mockImageUrl,
-      }));
-    }
-  };
-
-  const handleSaveProfile = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setProfileData(editForm);
-      setLoading(false);
-      setShowEditProfile(false);
-      alert("Profile updated successfully!");
-    }, 1000);
-  };
-
-  const handlePhoneVerification = () => {
-    if (verificationCode === "123456") {
-      setPhoneVerified(true);
-      setShowPhoneVerification(false);
-      alert("Phone number verified successfully!");
-    } else {
-      alert("Invalid verification code. Try 123456 for demo.");
-    }
-  };
-
-  const renderStars = (rating) => {
-    return [...Array(5)].map((_, index) => {
-      const starValue = index + 1;
-
-      if (starValue <= rating) {
-        return (
-          <Star key={index} className="w-5 h-5 text-yellow-400 fill-current" />
-        );
-      }
-
-      if (starValue - rating < 1) {
-        const percent = Math.round((rating - Math.floor(rating)) * 100);
-        return (
-          <div key={index} className="relative w-5 h-5">
-            <Star className="w-5 h-5 absolute text-gray-300 fill-current" />
-            <div
-              className="absolute overflow-hidden"
-              style={{ width: `${percent}%`, height: "100%" }}
-            >
-              <Star className="w-5 h-5 text-yellow-400 fill-current" />
-            </div>
-          </div>
-        );
-      }
-
-      return (
-        <Star key={index} className="w-5 h-5 text-gray-300 fill-current" />
-      );
-    });
-  };
-
-  const renderUserTypeBadge = (userType) => {
-    const badges = {
-      buyer: { icon: ShoppingCart, text: "Buyer", color: "blue" },
-      seller: { icon: Store, text: "Seller", color: "green" },
-      both: { icon: Users, text: "Buyer & Seller", color: "purple" },
-    };
-
-    const badge = badges[userType] || badges.both;
-    const Icon = badge.icon;
-
-    return (
-      <div
-        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-          badge.color === "blue"
-            ? darkMode
-              ? "bg-blue-900/50 text-blue-400"
-              : "bg-blue-100 text-blue-700"
-            : badge.color === "green"
-            ? darkMode
-              ? "bg-green-900/50 text-green-400"
-              : "bg-green-100 text-green-700"
-            : darkMode
-            ? "bg-purple-900/50 text-purple-400"
-            : "bg-purple-100 text-purple-700"
-        }`}
-      >
-        <Icon className="w-3 h-3 mr-1" />
-        {badge.text}
-      </div>
-    );
+  const handleDeletePost = (postId) => {
+    setPostsList(postsList.filter(p => p.id !== postId));
+    alert('Post deleted successfully!');
   };
 
   return (
-    <div className="w-full py-4 sm:py-6 flex justify-center min-h-screen">
-      <div className="w-full max-w-4xl px-2 sm:px-4">
-        {!isAuthenticated ? (
-          <div
-            className={`text-center py-20 ${
-              darkMode ? "bg-gray-800" : "bg-white"
-            } rounded-lg shadow-lg`}
-          >
-            <div
-              className={`mb-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}
-            >
-              <User className="w-20 h-20 mx-auto mb-4 text-gray-400" />
-              <h2
-                className={`text-2xl font-bold mb-2 ${
-                  darkMode ? "text-white" : "text-gray-900"
-                }`}
-              >
-                Profile Access Required
-              </h2>
-              <p>Please login to view your profile and manage your posts.</p>
-            </div>
-            <button
-              onClick={() => setShowLoginModal(true)}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-            >
-              Login to Continue
-            </button>
+    <div className={`min-h-screen transition-colors ${scheme.bg}`}>
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* Profile Card */}
+        <div className={`rounded-2xl overflow-hidden shadow-lg ${scheme.card}`}>
+          {/* Cover Photo */}
+          <div className="relative h-48 md:h-64 overflow-hidden">
+            <img src={profileData.coverPhoto} alt="Cover" className="w-full h-full object-cover" />
           </div>
-        ) : loading ? (
-          <div
-            className={`text-center py-20 ${
-              darkMode ? "bg-gray-800" : "bg-white"
-            } rounded-lg shadow-lg`}
-          >
-            <div
-              className={`mb-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}
-            >
-              <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <h2
-                className={`text-2xl font-bold mb-2 ${
-                  darkMode ? "text-white" : "text-gray-900"
-                }`}
-              >
-                Loading Profile
-              </h2>
-              <p>Please wait while we fetch your profile data...</p>
+          
+          <div className="px-6 pb-6">
+            {/* Avatar */}
+            <div className="flex justify-center md:justify-start -mt-16 mb-6">
+              <img src={profileData.avatar} alt={profileData.name} className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg" />
             </div>
-          </div>
-        ) : (
-          <>
-            {/* Cover Photo */}
-            <div className="relative h-48 sm:h-64 md:h-80 rounded-t-xl overflow-hidden shadow-lg">
-              <img
-                src={user.coverPhoto}
-                alt="Cover"
-                className="w-full h-full object-cover"
-              />
+            
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6 text-center md:text-left">
+              <div>
+                <div className="flex items-center justify-center md:justify-start space-x-2 mb-1">
+                  <h1 className={`text-2xl font-bold ${scheme.text}`}>{profileData.name}</h1>
+                  {profileData.isVerified && <ShieldCheck className="w-6 h-6 text-blue-500 fill-current" />}
+                </div>
+                <p className={`text-base ${scheme.muted}`}>{profileData.username}</p>
+              </div>
+              <div className="flex justify-center md:justify-end gap-2 mt-4 md:mt-0">
+                <button onClick={() => setShowQRCode(true)} className={`px-4 py-2 rounded-lg font-medium transition ${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}>
+                  <QrCode className="w-4 h-4" />
+                </button>
+                <button onClick={() => setShowEditProfile(true)} className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
+                  <Edit className="w-4 h-4" />
+                  <span>Edit Profile</span>
+                </button>
+              </div>
             </div>
 
-            {/* Profile Header */}
-            <div
-              className={`relative px-4 sm:px-6 pb-6 rounded-b-xl transition-colors duration-300 ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              } shadow-lg`}
-            >
-              {/* Avatar */}
-              <div className="flex justify-center sm:justify-start">
-                <div className="relative -mt-16 md:-mt-20">
-                  <img
-                    src={user.avatar}
-                    alt={user.name}
-                    className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full border-4 border-white object-cover shadow-lg"
+            {/* Stats */}
+            <div className="flex justify-center md:justify-start gap-8 mb-6">
+              {[
+                { label: 'Posts', value: postsList.length },
+                { label: 'Followers', value: profileData.followers.toLocaleString() },
+                { label: 'Following', value: (profileData.following || 0).toLocaleString() }
+              ].map(({ label, value }) => (
+                <div key={label} className="text-center">
+                  <div className={`text-xl font-bold ${scheme.text}`}>{value}</div>
+                  <div className={`text-sm ${scheme.muted}`}>{label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Bio */}
+            <p className={`mb-4 ${scheme.text} text-center md:text-left`}>{profileData.bio}</p>
+
+            {/* Specialties */}
+            {profileData.specialties?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4 justify-center md:justify-start">
+                {profileData.specialties.map(specialty => (
+                  <span key={specialty} className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>{specialty}</span>
+                ))}
+              </div>
+            )}
+
+            {/* Location & Join Date */}
+            <div className="flex flex-wrap gap-4 mb-4 text-sm justify-center md:justify-start">
+              <div className={`flex items-center space-x-1 ${scheme.muted}`}><MapPin className="w-4 h-4" /><span>{profileData.location}</span></div>
+              <div className={`flex items-center space-x-1 ${scheme.muted}`}><Calendar className="w-4 h-4" /><span>{profileData.joinDate}</span></div>
+            </div>
+
+            {/* Rating */}
+            <div className={`p-4 rounded-lg text-center max-w-md mx-auto ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}>
+              <div className="flex items-center justify-center space-x-1 mb-1">
+                <RatingStars rating={profileData.rating} darkMode={darkMode} />
+              </div>
+              <div className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                {profileData.rating.toFixed(1)} ({profileData.totalReviews} reviews)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className={`rounded-2xl overflow-hidden shadow-lg ${scheme.card}`}>
+          <div className={`border-b ${scheme.border}`}>
+            <div className="flex justify-between items-center px-6">
+              <nav className="flex space-x-8">
+                {['posts', 'reviews'].map((tab) => (
+                  <button key={tab} onClick={() => setActiveTab(tab)}
+                    className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab ? 'border-green-500 text-green-600' : `border-transparent ${scheme.muted}`}`}>
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </nav>
+            </div>
+          </div>
+
+          <div className="p-6">
+            {activeTab === 'posts' && (
+              <div className='space-y-4'>
+                {postsList.map((post) => (
+                  <PostListItem 
+                    key={post.id}
+                    post={post}
+                    user={profileData}
+                    darkMode={darkMode}
+                    likedPosts={likedPosts}
+                    bookmarkedPosts={bookmarkedPosts}
+                    onLike={() => toggleLike(post.id)}
+                    onBookmark={() => toggleBookmark(post.id)}
+                    onImageClick={() => setSelectedPost(post)}
                   />
-                </div>
+                ))}
               </div>
+            )}
 
-              {/* Profile Info */}
-              <div className="mt-4 text-center sm:text-left">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center justify-center sm:justify-start space-x-2 mb-1">
-                      <h1
-                        className={`text-2xl sm:text-3xl font-bold ${
-                          darkMode ? "text-white" : "text-gray-900"
-                        }`}
-                      >
-                        {user.name}
-                      </h1>
-                      {user.isVerified && (
-                        <ShieldCheck
-                          className="w-6 h-6 text-blue-500 fill-current"
-                          title="Verified Account"
-                        />
-                      )}
-                    </div>
-                    <p
-                      className={`text-lg ${
-                        darkMode ? "text-gray-400" : "text-gray-600"
-                      }`}
-                    >
-                      {user.username}
-                    </p>
-
-                    <div className="flex justify-center sm:justify-start mt-2">
-                      {renderUserTypeBadge(user.userType)}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row justify-center sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
-                    <button
-                      onClick={() => setShowQRCode(true)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md ${
-                        darkMode
-                          ? "bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
-                          : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300"
-                      }`}
-                    >
-                      <QrCode className="w-4 h-4 inline mr-2" />
-                      QR Code
-                    </button>
-                    <button
-                      onClick={() => setShowEditProfile(true)}
-                      className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                    >
-                      <Edit className="w-4 h-4 inline mr-2" />
-                      Edit Profile
-                    </button>
-                  </div>
-                </div>
-
-                {/* Bio */}
-                <div className="mt-4">
-                  <p
-                    className={`text-base leading-relaxed ${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    {user.bio}
-                  </p>
-                </div>
-
-                {/* Additional Info */}
-                <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm">
-                  <div
-                    className={`flex items-center space-x-1 ${
-                      darkMode ? "text-gray-400" : "text-gray-600"
-                    }`}
-                  >
-                    <MapPin className="w-4 h-4" />
-                    <span>{user.location}</span>
-                  </div>
-                  <div
-                    className={`flex items-center space-x-1 ${
-                      darkMode ? "text-gray-400" : "text-gray-600"
-                    }`}
-                  >
-                    <Calendar className="w-4 h-4" />
-                    <span>{user.joinDate}</span>
-                  </div>
-                  {!user.isVerified && (
-                    <button
-                      onClick={() => setShowPhoneVerification(true)}
-                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 transition-colors"
-                    >
-                      <Phone className="w-4 h-4" />
-                      <span>Verify Phone</span>
-                    </button>
-                  )}
-                </div>
-                <div className="mt-6 sm:grid-cols-2 gap-4 text-center max-w-md mx-auto">
-                  <div
-                    className={`p-4 rounded-lg ${
-                      darkMode ? "bg-gray-700" : "bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-center space-x-1 mb-1">
-                      {renderStars(user.rating)}
-                    </div>
-                    <div
-                      className={`text-sm ${
-                        darkMode ? "text-gray-400" : "text-gray-600"
-                      }`}
-                    >
-                      {user.rating.toFixed(1)} ({user.totalReviews} reviews)
-                    </div>
-                  </div>
-                </div>
+            {activeTab === 'reviews' && (
+              <div className="space-y-4">
+                {SAMPLE_REVIEWS.map((review) => (
+                  <ReviewItem key={review.id} review={review} darkMode={darkMode} />
+                ))}
               </div>
-            </div>
-
-            {/* Tabs */}
-            <div
-              className={`mt-6 ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              } rounded-lg shadow-lg`}
-            >
-              <div className="border-b border-gray-200 dark:border-gray-700">
-                <nav className="flex space-x-8 px-6">
-                  {["posts", "reviews"].map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                        activeTab === tab
-                          ? "border-green-500 text-green-600"
-                          : `border-transparent ${
-                              darkMode
-                                ? "text-gray-400 hover:text-gray-300"
-                                : "text-gray-500 hover:text-gray-700"
-                            } hover:border-gray-300`
-                      }`}
-                    >
-                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-
-              <div className="p-6">
-                {activeTab === "posts" && (
-                  <div className="space-y-4 sm:space-y-6">
-                    {userPosts.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className={`text-gray-400 mb-4`}>
-                          <Edit className="w-12 h-12 mx-auto" />
-                        </div>
-                        <h3
-                          className={`text-lg font-medium mb-2 ${
-                            darkMode ? "text-gray-300" : "text-gray-700"
-                          }`}
-                        >
-                          No posts yet
-                        </h3>
-                        <p
-                          className={`text-sm ${
-                            darkMode ? "text-gray-400" : "text-gray-500"
-                          }`}
-                        >
-                          Start sharing your animal experiences!
-                        </p>
-                      </div>
-                    ) : (
-                      userPosts.map((post) => (
-                        <div
-                          key={post.id}
-                          className={`rounded-lg border transition-colors duration-300 ${
-                            darkMode 
-                              ? 'bg-gray-800 border-gray-700' 
-                              : 'bg-white border-green-100'
-                          }`}
-                        >
-                          {/* Post Header */}
-                          <div className="p-6 pb-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <img
-                                  src={user.avatar}
-                                  alt={user.name}
-                                  className="w-10 h-10 rounded-full object-cover"
-                                />
-                                <div>
-                                  <div className="flex items-start space-x-2">
-                                    {/* Left side: name + timestamp */}
-                                    <div className="flex flex-col">
-                                      <div className="flex items-center space-x-1">
-                                        <h3
-                                          className={`font-semibold ${
-                                            darkMode ? "text-white" : "text-gray-900"
-                                          }`}
-                                        >
-                                          {user.name}
-                                        </h3>
-                                        {user.isVerified && (
-                                          <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                                            <span className="text-white text-xs">✓</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                      {/* timestamp under the name */}
-                                      <p
-                                        className={`text-sm ${
-                                          darkMode ? "text-gray-400" : "text-gray-500"
-                                        }`}
-                                      >
-                                        {post.timestamp}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <PostOptionsDropdown
-                                postId={post.id}
-                                onEdit={handleEditPost}
-                                onDelete={handleDeletePost}
-                                darkMode={darkMode}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Post Content */}
-                          <div className="px-6 pb-4">
-                            {/* Post text content */}
-                            {post.content && (
-                              <p
-                                className={`mb-4 text-base leading-relaxed ${
-                                  darkMode ? "text-gray-300" : "text-gray-700"
-                                }`}
-                              >
-                                {post.content}
-                              </p>
-                            )}
-                            
-                            {/* Animal Information Card */}
-                            {post.animalInfo && (
-                              <div className="mt-4">
-                            
-                                
-                               
-                                
-                               
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Post Images */}
-                          {post.images && post.images.length > 0 && (
-                            <div className="px-6 pb-4">
-                              <div className={`grid gap-2 rounded-lg overflow-hidden ${
-                                post.images.length === 1 ? 'grid-cols-1' :
-                                post.images.length === 2 ? 'grid-cols-2' :
-                                post.images.length === 3 ? 'grid-cols-2' :
-                                'grid-cols-2'
-                              }`}>
-                                {post.images.slice(0, 4).map((image, index) => (
-                                  <div key={index} className={`relative ${
-                                    post.images.length === 3 && index === 0 ? 'row-span-2' : ''
-                                  }`}>
-                                    <img
-                                      src={image}
-                                      alt={`Post image ${index + 1}`}
-                                      className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity duration-200"
-                                      style={{ minHeight: '200px', maxHeight: '400px' }}
-                                    />
-                                    {index === 3 && post.images.length > 4 && (
-                                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                        <span className="text-white text-xl font-semibold">
-                                          +{post.images.length - 4}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Post Stats */}
-                          <div className={`px-3 sm:px-6 py-2 sm:py-3 border-t flex items-center justify-between ${
-                            darkMode ? 'border-gray-700' : 'border-gray-100'
-                          }`}>
-                            <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
-                              <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
-                                {post.likes} likes
-                              </span>
-                              <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
-                                {post.comments || 0} comments
-                              </span>
-                              <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
-                                {post.bookmarks || 0} bookmarks
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Post Actions */}
-                          <div className={`px-2 sm:px-6 py-2 sm:py-3 border-t flex items-center justify-around ${
-                            darkMode ? 'border-gray-700' : 'border-gray-100'
-                          }`}>
-                            {/* Like Button */}
-                            <button
-                              onClick={() => toggleLike(post.id)}
-                              className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${
-                                likedPosts.has(post.id)
-                                  ? darkMode
-                                    ? 'text-green-400 bg-gray-700'
-                                    : 'text-green-600 bg-green-50'
-                                  : darkMode
-                                    ? 'text-gray-400 hover:bg-gray-700 hover:text-green-400'
-                                    : 'text-gray-600 hover:bg-gray-100 hover:text-green-600'
-                              }`}
-                            >
-                              <Heart
-                                className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                                  likedPosts.has(post.id) ? "fill-current" : ""
-                                }`}
-                              />
-                              <span className="font-medium text-xs sm:text-sm hidden sm:inline">Like</span>
-                            </button>
-
-                            {/* Chat Button */}
-                            <button className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${
-                              darkMode
-                                ? 'text-gray-400 hover:bg-gray-700 hover:text-blue-400'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600'
-                            }`}>
-                              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                              <span className="font-medium text-xs sm:text-sm hidden sm:inline">Chat</span>
-                            </button>
-
-                            {/* Bookmark Button */}
-                            <button 
-                              className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${
-                                darkMode
-                                  ? 'text-gray-400 hover:bg-gray-700 hover:text-yellow-400'
-                                  : 'text-gray-600 hover:bg-gray-100 hover:text-yellow-600'
-                              }`}
-                            >
-                              <Bookmark className="w-4 h-4 sm:w-5 sm:h-5" />
-                              <span className="font-medium text-xs sm:text-sm hidden sm:inline">Save</span>
-                            </button>
-
-                            {/* Share Button */}
-                            <button 
-                              onClick={() => {
-                                setSelectedPost(post);
-                                setShowShareModal(true);
-                              }}
-                              className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${
-                                darkMode
-                                  ? 'text-gray-400 hover:bg-gray-700 hover:text-green-400'
-                                  : 'text-gray-600 hover:bg-gray-100 hover:text-green-600'
-                              }`}
-                            >
-                              <Share className="w-4 h-4 sm:w-5 sm:h-5" />
-                              <span className="font-medium text-xs sm:text-sm hidden sm:inline">
-                                Share
-                              </span>
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-
-                {activeTab === "reviews" && (
-                  <div className="space-y-6">
-                    {reviews.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className={`text-gray-400 mb-4`}>
-                          <Star className="w-12 h-12 mx-auto" />
-                        </div>
-                        <h3
-                          className={`text-lg font-medium mb-2 ${
-                            darkMode ? "text-gray-300" : "text-gray-700"
-                          }`}
-                        >
-                          No reviews yet
-                        </h3>
-                        <p
-                          className={`text-sm ${
-                            darkMode ? "text-gray-400" : "text-gray-500"
-                          }`}
-                        >
-                          Reviews from other users will appear here.
-                        </p>
-                      </div>
-                    ) : (
-                      reviews.map((review) => (
-                        <div
-                          key={review.id}
-                          className={`border rounded-lg p-6 transition-colors duration-300 ${
-                            darkMode
-                              ? "border-gray-700 bg-gray-700/50"
-                              : "border-gray-200 bg-gray-50/50"
-                          }`}
-                        >
-                          <div className="flex items-start space-x-4">
-                            <img
-                              src={review.reviewerAvatar}
-                              alt={review.reviewer}
-                              className="w-12 h-12 rounded-full object-cover"
-                            />
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4
-                                  className={`font-medium ${
-                                    darkMode ? "text-white" : "text-gray-900"
-                                  }`}
-                                >
-                                  {review.reviewer}
-                                </h4>
-                                <span
-                                  className={`text-sm ${
-                                    darkMode ? "text-gray-400" : "text-gray-600"
-                                  }`}
-                                >
-                                  {review.timestamp}
-                                </span>
-                              </div>
-                              <div className="flex items-center space-x-1 mb-3">
-                                {renderStars(review.rating)}
-                                <span
-                                  className={`ml-2 text-sm font-medium ${
-                                    darkMode ? "text-gray-300" : "text-gray-700"
-                                  }`}
-                                >
-                                  {review.rating.toFixed(1)}
-                                </span>
-                              </div>
-                              <p
-                                className={`text-base leading-relaxed ${
-                                  darkMode ? "text-gray-300" : "text-gray-700"
-                                }`}
-                              >
-                                {review.comment}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
+            )}
+          </div>
+        </div>
 
         {/* Modals */}
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-          darkMode={darkMode}
-        />
-
-        <EditProfileModal
-          isOpen={showEditProfile}
-          onClose={() => setShowEditProfile(false)}
-          editForm={editForm}
-          setEditForm={setEditForm}
-          onSave={handleSaveProfile}
-          loading={loading}
-          darkMode={darkMode}
-        />
-
-        <QRCodeModal
-          isOpen={showQRCode}
-          onClose={() => setShowQRCode(false)}
-          user={user}
-          darkMode={darkMode}
-        />
-
-        <ShareModal
-          isOpen={showShareModal}
-          onClose={() => {
-            setShowShareModal(false);
-            setSelectedPost(null);
-          }}
-          post={selectedPost}
-          user={user}
-          darkMode={darkMode}
-        />
-
-        <PhoneVerificationModal
-          isOpen={showPhoneVerification}
-          onClose={() => setShowPhoneVerification(false)}
-          onVerify={handlePhoneVerification}
-          verificationCode={verificationCode}
-          setVerificationCode={setVerificationCode}
-          darkMode={darkMode}
-        />
-
-        <EditPostModal
-          isOpen={showEditPost}
-          onClose={() => setShowEditPost(false)}
-          post={selectedPost}
-          onSave={handleSaveEditPost}
-          darkMode={darkMode}
-        />
-
-        <DeleteConfirmModal
-          isOpen={showDeleteConfirm}
-          onClose={() => setShowDeleteConfirm(false)}
-          onConfirm={confirmDeletePost}
-          darkMode={darkMode}
-        />
+        {showQRCode && <QRCodeModal user={profileData} darkMode={darkMode} onClose={() => setShowQRCode(false)} />}
+        {showEditProfile && <EditProfileModal user={profileData} darkMode={darkMode} onClose={() => setShowEditProfile(false)} onSave={handleSaveProfile} />}
+        {showEditPost && editingPost && <EditPostModal post={editingPost} darkMode={darkMode} onClose={() => setShowEditPost(false)} onSave={handleSavePost} />}
+        {selectedPost && (
+          <PostModal 
+            post={selectedPost} 
+            user={profileData} 
+            darkMode={darkMode} 
+            onClose={() => setSelectedPost(null)}
+            onEdit={handleEditPost}
+            onDelete={handleDeletePost}
+          />
+        )}
       </div>
     </div>
   );
-};
-
-export default UserProfile;
+}
