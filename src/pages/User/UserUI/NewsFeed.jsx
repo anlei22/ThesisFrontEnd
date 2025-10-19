@@ -24,6 +24,9 @@ import useApiConnection from "../../../context/ApiConnection";
 import { apiPost } from "../../../context/utils/apiPost";
 import { apiPostFormData } from "../../../context/utils/apiFormData";
 
+
+
+
 // Get API URL from environment
 const API_URL = import.meta.env.VITE_BACKEND_URI;
 
@@ -562,7 +565,7 @@ const NewsFeed = ({
                   : `${API_URL.replace('/api', '')}/storage/feeds/${imagePath}`;
               })
               : [],
-            likes: post.count_likes || 0,
+           
             likes: post.count_likes || (Array.isArray(post.likes) ? post.likes.length : 0),
             comments: transformedComments.length,
             bookmarks: post.count_bookmarks || (Array.isArray(post.bookmarks) ? post.bookmarks.length : 0),
@@ -776,23 +779,23 @@ const NewsFeed = ({
     }
   };
 
-  const handleShare = (post = null) => {
-    if (post) {
-      setSelectedPost(post);
-      setShowShareModal(true);
+ const handleShare = (post = null) => {
+  if (post) {
+    setSelectedPost(post);
+    setShowShareModal(true);
+  } else {
+    if (isAuthenticated) {
+      onCreatePost();
     } else {
-      if (isAuthenticated) {
-        onCreatePost();
-      } else {
-        setShowLoginModal(true);
-      }
+      setShowLoginModal(true);
     }
-  };
+  }
+};
 
   const openPostModal = (post) => {
     setSelectedPost(post);
     setCurrentImageIndex(0);
-    setComments(sampleComments);
+   setComments(postComments[post.id] || []); 
     setCommentText("");
     setReplyingTo(null);
     setReplyText("");
@@ -809,25 +812,15 @@ const NewsFeed = ({
     setReplyText("");
   };
 
-  const handleAddComment = () => {
-    if (commentText.trim() === "") return;
+const handleAddComment = async () => {
+  if (commentText.trim() === "") return;
 
-    const newComment = {
-      id: comments.length + 1,
-      user: {
-        name: "You",
-        avatar:
-          "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
-      },
-      text: commentText,
-      timestamp: "Just now",
-      likes: 0,
-      replies: [],
-    };
-
-    setComments([newComment, ...comments]);
-    setCommentText("");
-  };
+  // Call the backend API function instead of just updating state
+  await handleAddPostComment(selectedPost.id, commentText);
+  
+  // Clear the input
+  setCommentText("");
+};
 
   const handleCommentLike = (commentId) => {
     setComments(
@@ -857,56 +850,29 @@ const NewsFeed = ({
     );
   };
 
-  const handleAddReply = (commentId) => {
-    if (replyText.trim() === "") return;
+const handleAddReply = async (commentId) => {
+  if (replyText.trim() === "") return;
 
-    setComments(
-      comments.map((comment) => {
-        if (comment.id === commentId) {
-          const newReply = {
-            id: Date.now(),
-            user: {
-              name: "You",
-              avatar:
-                "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
-            },
-            text: replyText,
-            timestamp: "Just now",
-            likes: 0,
-          };
-
-          return {
-            ...comment,
-            replies: [...comment.replies, newReply],
-          };
-        }
-        return comment;
-      })
-    );
-
-    setReplyText("");
-    setReplyingTo(null);
-  };
+  // Call the backend API function instead of just updating state
+  await handleAddPostReply(selectedPost.id, commentId, replyText);
+  
+  // Clear inputs
+  setReplyText("");
+  setReplyingTo(null);
+};
 
   const handleCancelReply = () => {
     setReplyingTo(null);
     setReplyText("");
   };
 
-  const toggleCommentsSection = (postId) => {
-    if (showCommentsForPost === postId) {
-      setShowCommentsForPost(null);
-    } else {
-      setShowCommentsForPost(postId);
-      // Initialize comments for this post if not exists
-      if (!postComments[postId]) {
-        setPostComments((prev) => ({
-          ...prev,
-          [postId]: sampleComments,
-        }));
-      }
-    }
-  };
+const toggleCommentsSection = (postId) => {
+  if (showCommentsForPost === postId) {
+    setShowCommentsForPost(null);
+  } else {
+    setShowCommentsForPost(postId);
+  }
+};
 
   // Add Comment to Post (send to backend)
   const handleAddPostComment = async (postId, text) => {
@@ -960,6 +926,10 @@ const NewsFeed = ({
         ...prev,
         [postId]: [newComment, ...(prev[postId] || [])],
       }));
+      // Also update comments state if modal is open with this post
+if (selectedPost?.id === postId) {
+  setComments((prev) => [newComment, ...prev]);
+}
     } catch (err) {
       alert('Failed to add comment.');
     }
@@ -1019,6 +989,20 @@ const NewsFeed = ({
           return comment;
         }),
       }));
+      // Also update comments state if modal is open with this post
+if (selectedPost?.id === postId) {
+  setComments((prev) =>
+    prev.map((comment) => {
+      if (comment.id === commentId) {
+        return {
+          ...comment,
+          replies: [...(comment.replies || []), newReply],
+        };
+      }
+      return comment;
+    })
+  );
+}
     } catch (err) {
       alert('Failed to add reply.');
     }
@@ -1543,14 +1527,13 @@ const NewsFeed = ({
         darkMode={darkMode}
       />
 
-      <ShareModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        darkMode={darkMode}
-        slug={selectedPost?.slug}
-        title={selectedPost?.animalInfo?.title}
-      />
-
+   <ShareModal
+  isOpen={showShareModal}
+  onClose={() => setShowShareModal(false)}
+  darkMode={darkMode}
+  postId={selectedPost?.id}
+  title={selectedPost?.animalInfo?.title || "Animal Post"}
+/>
       {/* Post Detail Modal */}
       {isModalOpen && selectedPost && (
         <div className="fixed inset-0 z-50 overflow-y-auto">

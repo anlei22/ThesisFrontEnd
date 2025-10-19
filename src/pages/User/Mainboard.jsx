@@ -175,12 +175,13 @@ const Mainboard = () => {
 
 
 
-  const handleViewUserProfile = (user) => {
-    setSelectedUser(user);
-    setViewingUserProfile(true);
-    setUserSearchTerm("");
-    setShowUserResults(false);
-  };
+ const handleViewUserProfile = (user) => {
+  setSelectedUser(user);
+  setViewingUserProfile(true);
+  setUserSearchTerm("");
+  setShowUserResults(false);
+  setMobileTab("home");  // ← ADD THIS LINE
+};
 
   const handleBackFromUserProfile = () => {
     setViewingUserProfile(false);

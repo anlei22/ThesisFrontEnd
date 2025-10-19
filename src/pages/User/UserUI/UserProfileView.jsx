@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, ChevronLeft, ChevronRight, Grid, List, Flag, MoreVertical  } from 'lucide-react';
-// Constants
+import { ChevronLeft, Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, Grid, List, Flag, MoreVertical } from 'lucide-react';
+
 const COLORS = {
   dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
   light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', muted: 'text-gray-600', border: 'border-gray-200' }
@@ -930,6 +930,22 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
 
   return (
     <div className={`min-h-screen transition-colors ${scheme.bg}`}>
+
+ <div className="max-w-4xl mx-auto px-4 pt-6">
+      <button
+        onClick={onBack}
+        className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+          darkMode
+            ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        }`}
+      >
+        <ChevronLeft className="w-5 h-5" />
+        <span>Back</span>
+      </button>
+    </div>
+
+      
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Card */}
         <div className={`rounded-2xl overflow-hidden shadow-lg ${scheme.card}`}>

@@ -1,11 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { XMarkIcon, ShareIcon, ClipboardIcon } from "@heroicons/react/24/outline";
 import { QRCodeCanvas } from "qrcode.react";
 
-const ShareModal = ({ isOpen, onClose, darkMode, slug, title = "Animal Post" }) => {
-  // Fix for Next.js / SSR
-  const shareUrl =
-    typeof window !== "undefined" ? `${window.location.origin}/post/${slug}` : "";
+
+const ShareModal = ({ isOpen, onClose, darkMode, postId, title = "Animal Post" }) => {
+  const [shareUrl, setShareUrl] = useState("");
+
+// In ShareModal.jsx
+useEffect(() => {
+  if (typeof window !== "undefined" && postId) {
+    // Remove trailing slashes
+    const appUrl = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/+$/, '');
+    setShareUrl(`${appUrl}/post/${postId}`);
+    console.log("📤 Share URL generated:", `${appUrl}/post/${postId}`);
+  }
+}, [postId]);
 
   const copyToClipboard = async () => {
     try {
@@ -51,28 +60,35 @@ const ShareModal = ({ isOpen, onClose, darkMode, slug, title = "Animal Post" }) 
           </button>
         </div>
 
+        {/* Title */}
+        <p className={`text-sm mb-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+          {title}
+        </p>
+
         {/* QR Code */}
-        <div className="text-center mb-6">
-          <div
-            className={`inline-block p-4 rounded-lg ${
-              darkMode ? "bg-gray-700" : "bg-gray-50"
-            }`}
-          >
-            <QRCodeCanvas
-              value={shareUrl}
-              size={200}
-              bgColor={darkMode ? "#1f2937" : "#ffffff"}
-              fgColor={darkMode ? "#10b981" : "#059669"}
-              level="H"
-              includeMargin={true}
-            />
+        {shareUrl && (
+          <div className="text-center mb-6">
+            <div
+              className={`inline-block p-4 rounded-lg ${
+                darkMode ? "bg-gray-700" : "bg-gray-50"
+              }`}
+            >
+              <QRCodeCanvas
+                value={shareUrl}
+                size={200}
+                bgColor={darkMode ? "#1f2937" : "#ffffff"}
+                fgColor={darkMode ? "#10b981" : "#059669"}
+                level="H"
+                includeMargin={true}
+              />
+            </div>
+            <p
+              className={`text-sm mt-2 ${darkMode ? "text-gray-400" : "text-gray-600"}`}
+            >
+              Scan QR code to view this post
+            </p>
           </div>
-          <p
-            className={`text-sm mt-2 ${darkMode ? "text-gray-400" : "text-gray-600"}`}
-          >
-            Scan QR code to view this post
-          </p>
-        </div>
+        )}
 
         {/* Share URL */}
         <div className="mb-6">
@@ -105,6 +121,40 @@ const ShareModal = ({ isOpen, onClose, darkMode, slug, title = "Animal Post" }) 
               <ClipboardIcon className="w-4 h-4" />
             </button>
           </div>
+        </div>
+
+        {/* Social Share Buttons */}
+        <div className="flex space-x-2">
+          <button
+            onClick={() =>
+              window.open(
+                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+                "_blank"
+              )
+            }
+            className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+              darkMode
+                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                : "bg-blue-500 hover:bg-blue-600 text-white"
+            }`}
+          >
+            Facebook
+          </button>
+          <button
+            onClick={() =>
+              window.open(
+                `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`,
+                "_blank"
+              )
+            }
+            className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+              darkMode
+                ? "bg-sky-600 hover:bg-sky-700 text-white"
+                : "bg-sky-500 hover:bg-sky-600 text-white"
+            }`}
+          >
+            Twitter
+          </button>
         </div>
       </div>
     </div>
