@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { apiPost } from './utils/apiPost';  
+import { apiPost } from './utils/apiPost';
 
 // Create the AuthContext
 export const AuthContext = createContext();
@@ -20,30 +20,62 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+
+      // Restore user_id to localStorage if it exists in the user object
+      if (parsedUser.id && !localStorage.getItem('user_id')) {
+        localStorage.setItem('user_id', parsedUser.id);
+      }
     }
     setIsLoading(false);
   }, []);
 
   // Fake credentials for testing
-  
+
 
   const login = async (email, password) => {
     try {
-     const result = await apiPost('login', { email, password });
-      
+      const result = await apiPost('login', { email, password });
+
       if (result.status !== 'success') {
         return { success: false, error: result.message || 'Login failed' };
       }
-       localStorage.setItem('login-token', result.remember_token);
-       localStorage.setItem('role', result.role);
-       localStorage.setItem('username', result.name);
-       const userData = { email, role: result.role, name: result.name };
+
+      // Log the entire result to see what fields are available
+      console.log('🔍 Full Login API Response:', JSON.stringify(result, null, 2));
+      console.log('🔍 Available fields in result:', Object.keys(result));
+
+      // Store authentication data
+      localStorage.setItem('login-token', result.remember_token);
+      localStorage.setItem('role', result.role);
+      localStorage.setItem('username', result.name);
+
+      // Try to find user ID in various possible fields
+      const userId = result.user_id || result.id || result.userId || result.user?.id;
+
+      console.log('🔍 Extracted userId:', userId);
+
+      if (userId) {
+        localStorage.setItem('user_id', userId.toString());
+        console.log('✅ user_id stored in localStorage:', userId);
+      } else {
+        console.error('❌ No user_id found in login response. Full result:', result);
+      }
+
+      const userData = {
+        email,
+        role: result.role,
+        name: result.name,
+        id: userId
+      };
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
 
+      console.log('✅ Login successful. userData:', userData);
+
       return { success: true, user: userData };
-      
+
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, error: 'Network error during login' };
@@ -74,7 +106,7 @@ export const AuthProvider = ({ children }) => {
         rating: 5.0,
         totalReviews: 0
       };
-      
+
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       return { success: true, user: userData };
@@ -89,6 +121,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('login-token');
     localStorage.removeItem('role');
     localStorage.removeItem('username');
+    localStorage.removeItem('user_id');
     localStorage.clear();
   };
 

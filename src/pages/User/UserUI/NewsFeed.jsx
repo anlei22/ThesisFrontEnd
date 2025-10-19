@@ -21,6 +21,26 @@ import { useAuth } from "../../../context/AuthContext";
 import LoginModal from "../../../components/LoginModal";
 import ShareModal from "../../../components/ShareModal";
 import useApiConnection from "../../../context/ApiConnection";
+import { apiPost } from "../../../context/utils/apiPost";
+import { apiPostFormData } from "../../../context/utils/apiFormData";
+
+// Get API URL from environment
+const API_URL = import.meta.env.VITE_BACKEND_URI;
+
+// Helper: get current logged-in user id
+const getCurrentUserId = () => {
+  let userId = localStorage.getItem('user_id');
+  if (!userId) {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        userId = parsedUser?.id;
+      } catch (e) { }
+    }
+  }
+  return userId ? parseInt(userId) : null;
+};
 
 // Comment Input Component
 const PostCommentInput = ({ postId, darkMode, onAddComment }) => {
@@ -33,14 +53,12 @@ const PostCommentInput = ({ postId, darkMode, onAddComment }) => {
 
   return (
     <div
-      className={`flex space-x-2 p-2 rounded-lg ${
-        darkMode ? "bg-gray-700" : "bg-white border border-gray-200"
-      }`}
+      className={`flex space-x-2 p-2 rounded-lg ${darkMode ? "bg-gray-700" : "bg-white border border-gray-200"
+        }`}
     >
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-          darkMode ? "bg-green-600" : "bg-green-500"
-        }`}
+        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-green-600" : "bg-green-500"
+          }`}
       >
         <span className="text-white font-semibold text-xs">U</span>
       </div>
@@ -50,25 +68,23 @@ const PostCommentInput = ({ postId, darkMode, onAddComment }) => {
           onChange={(e) => setText(e.target.value)}
           placeholder="Write a comment..."
           rows="2"
-          className={`w-full px-3 py-2 rounded-lg resize-none text-sm focus:outline-none focus:ring-2 focus:ring-green-500 ${
-            darkMode
-              ? "bg-gray-600 text-white placeholder-gray-400"
-              : "bg-gray-50 text-gray-900 placeholder-gray-500"
-          }`}
+          className={`w-full px-3 py-2 rounded-lg resize-none text-sm focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode
+            ? "bg-gray-600 text-white placeholder-gray-400"
+            : "bg-gray-50 text-gray-900 placeholder-gray-500"
+            }`}
         />
         <div className="flex justify-end mt-2">
           <button
             onClick={handleSubmit}
             disabled={!text.trim()}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              text.trim()
-                ? darkMode
-                  ? "bg-green-600 hover:bg-green-700 text-white"
-                  : "bg-green-500 hover:bg-green-600 text-white"
-                : darkMode
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${text.trim()
+              ? darkMode
+                ? "bg-green-600 hover:bg-green-700 text-white"
+                : "bg-green-500 hover:bg-green-600 text-white"
+              : darkMode
                 ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
-            }`}
+              }`}
           >
             Post
           </button>
@@ -83,8 +99,6 @@ const PostCommentItem = ({
   comment,
   postId,
   darkMode,
-  onLike,
-  onReplyLike,
   onAddReply,
 }) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
@@ -100,9 +114,8 @@ const PostCommentItem = ({
     <div>
       {/* Main Comment */}
       <div
-        className={`flex space-x-2 p-2 rounded-lg ${
-          darkMode ? "bg-gray-700" : "bg-white"
-        }`}
+        className={`flex space-x-2 p-2 rounded-lg ${darkMode ? "bg-gray-700" : "bg-white"
+          }`}
       >
         <img
           src={comment.user.avatar}
@@ -113,55 +126,39 @@ const PostCommentItem = ({
           <div className="flex items-center justify-between mb-1">
             <div>
               <h4
-                className={`font-semibold text-xs ${
-                  darkMode ? "text-white" : "text-gray-900"
-                }`}
+                className={`font-semibold text-xs ${darkMode ? "text-white" : "text-gray-900"
+                  }`}
               >
                 {comment.user.name}
               </h4>
               <p
-                className={`text-xs ${
-                  darkMode ? "text-gray-400" : "text-gray-500"
-                }`}
+                className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
               >
                 {comment.timestamp}
               </p>
             </div>
           </div>
           <p
-            className={`text-xs mb-2 ${
-              darkMode ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`text-xs mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             {comment.text}
           </p>
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => onLike(postId, comment.id)}
-              className={`flex items-center space-x-1 text-xs transition-colors ${
-                darkMode
-                  ? "text-gray-400 hover:text-green-400"
-                  : "text-gray-600 hover:text-green-600"
-              }`}
-            >
-              <HeartIcon className="w-3 h-3" />
-              <span>{comment.likes > 0 ? comment.likes : "Like"}</span>
-            </button>
-            <button
               onClick={() => setShowReplyInput(!showReplyInput)}
-              className={`text-xs transition-colors ${
-                darkMode
-                  ? "text-gray-400 hover:text-green-400"
-                  : "text-gray-600 hover:text-green-600"
-              }`}
+              className={`text-xs transition-colors ${darkMode
+                ? "text-gray-400 hover:text-green-400"
+                : "text-gray-600 hover:text-green-600"
+                }`}
             >
               Reply
             </button>
             {comment.replies && comment.replies.length > 0 && (
               <span
-                className={`text-xs ${
-                  darkMode ? "text-gray-500" : "text-gray-400"
-                }`}
+                className={`text-xs ${darkMode ? "text-gray-500" : "text-gray-400"
+                  }`}
               >
                 {comment.replies.length}{" "}
                 {comment.replies.length === 1 ? "reply" : "replies"}
@@ -174,15 +171,13 @@ const PostCommentItem = ({
       {/* Reply Input */}
       {showReplyInput && (
         <div
-          className={`ml-10 mt-2 p-2 rounded-lg ${
-            darkMode ? "bg-gray-700" : "bg-gray-50"
-          }`}
+          className={`ml-10 mt-2 p-2 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"
+            }`}
         >
           <div className="flex space-x-2">
             <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                darkMode ? "bg-green-600" : "bg-green-500"
-              }`}
+              className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-green-600" : "bg-green-500"
+                }`}
             >
               <span className="text-white font-semibold text-xs">U</span>
             </div>
@@ -193,35 +188,32 @@ const PostCommentItem = ({
                 placeholder={`Reply to ${comment.user.name}...`}
                 rows="2"
                 autoFocus
-                className={`w-full px-2 py-1.5 rounded-lg resize-none text-xs focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                  darkMode
-                    ? "bg-gray-600 text-white placeholder-gray-400"
-                    : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
-                }`}
+                className={`w-full px-2 py-1.5 rounded-lg resize-none text-xs focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode
+                  ? "bg-gray-600 text-white placeholder-gray-400"
+                  : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
+                  }`}
               />
               <div className="flex justify-end space-x-2 mt-1">
                 <button
                   onClick={() => setShowReplyInput(false)}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                    darkMode
-                      ? "bg-gray-600 hover:bg-gray-500 text-gray-300"
-                      : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                  }`}
+                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${darkMode
+                    ? "bg-gray-600 hover:bg-gray-500 text-gray-300"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                    }`}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmitReply}
                   disabled={!replyText.trim()}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                    replyText.trim()
-                      ? darkMode
-                        ? "bg-green-600 hover:bg-green-700 text-white"
-                        : "bg-green-500 hover:bg-green-600 text-white"
-                      : darkMode
+                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${replyText.trim()
+                    ? darkMode
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : "bg-green-500 hover:bg-green-600 text-white"
+                    : darkMode
                       ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  }`}
+                    }`}
                 >
                   Reply
                 </button>
@@ -237,9 +229,8 @@ const PostCommentItem = ({
           {comment.replies.map((reply) => (
             <div
               key={reply.id}
-              className={`flex space-x-2 p-2 rounded-lg ${
-                darkMode ? "bg-gray-700" : "bg-gray-50"
-              }`}
+              className={`flex space-x-2 p-2 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"
+                }`}
             >
               <img
                 src={reply.user.avatar}
@@ -250,41 +241,26 @@ const PostCommentItem = ({
                 <div className="flex items-center justify-between mb-1">
                   <div>
                     <h4
-                      className={`font-semibold text-xs ${
-                        darkMode ? "text-white" : "text-gray-900"
-                      }`}
+                      className={`font-semibold text-xs ${darkMode ? "text-white" : "text-gray-900"
+                        }`}
                     >
                       {reply.user.name}
                     </h4>
                     <p
-                      className={`text-xs ${
-                        darkMode ? "text-gray-400" : "text-gray-500"
-                      }`}
+                      className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"
+                        }`}
                     >
                       {reply.timestamp}
                     </p>
                   </div>
                 </div>
                 <p
-                  className={`text-xs mb-2 ${
-                    darkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
+                  className={`text-xs mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
                 >
                   {reply.text}
                 </p>
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => onReplyLike(postId, comment.id, reply.id)}
-                    className={`flex items-center space-x-1 text-xs transition-colors ${
-                      darkMode
-                        ? "text-gray-400 hover:text-green-400"
-                        : "text-gray-600 hover:text-green-600"
-                    }`}
-                  >
-                    <HeartIcon className="w-3 h-3" />
-                    <span>{reply.likes > 0 ? reply.likes : "Like"}</span>
-                  </button>
-                </div>
+                {/* Removed reply like button */}
               </div>
             </div>
           ))}
@@ -379,37 +355,13 @@ const NewsFeed = ({
     },
   ];
 
-  // Build API URL with query parameters
-  const buildApiUrl = () => {
-    let url = "news-feed/list";
-    const params = [];
-
-    if (postCategory && postCategory !== "all") {
-      params.push(`category=${postCategory}`);
-    }
-
-    if (postLocation && postLocation !== "all") {
-      params.push(`location=${postLocation}`);
-    }
-
-    if (searchQuery && searchQuery.trim() !== "") {
-      params.push(`search=${encodeURIComponent(searchQuery.trim())}`);
-    }
-
-    if (params.length > 0) {
-      url += "?" + params.join("&");
-    }
-
-    return url;
-  };
-
-  // Use API connection hook with dynamic URL
+  // Use API connection hook with the new endpoint
   const {
     data: apiResponse,
     error,
     loading,
     refetch,
-  } = useApiConnection(buildApiUrl());
+  } = useApiConnection("news-feed/GetAllNewsFeed");
   const [showReportModal, setShowReportModal] = useState(false);
   const [showReportMenu, setShowReportMenu] = useState(false);
   const [reportReason, setReportReason] = useState("");
@@ -515,71 +467,160 @@ const NewsFeed = ({
 
       let postsData = [];
 
-      // Handle the nested structure from getNewsFeedList API
-      if (apiResponse.status === "success" && apiResponse.NewFeed) {
-        // Flatten the nested animal_feeds from each animal type
-        postsData = apiResponse.NewFeed.flatMap((animalType) =>
-          (animalType.animal_feeds || []).map((feed) => ({
-            ...feed,
-            animal_type: { name: animalType.name, id: animalType.id },
-          }))
-        );
-      } else if (apiResponse.status === "success" && apiResponse.data) {
+      // Handle the new response format from GetAllNewsFeed
+      if (apiResponse.status === "success" && apiResponse.data) {
         postsData = apiResponse.data;
       } else if (Array.isArray(apiResponse)) {
         postsData = apiResponse;
-      } else if (apiResponse.data && Array.isArray(apiResponse.data)) {
-        postsData = apiResponse.data;
       }
 
       if (Array.isArray(postsData) && postsData.length > 0) {
-        const transformedPosts = postsData.map((post) => ({
-          id: post.id,
-          user: {
-            name: `${post.creator?.FirstName || "Unknown"} ${
-              post.creator?.LastName || "User"
-            }`,
-            avatar:
-              post.creator?.profile_picture ||
-              `https://ui-avatars.com/api/?name=${
-                post.creator?.FirstName || "U"
-              }+${post.creator?.LastName || "U"}&background=10b981&color=fff`,
-            isVerified: false,
-            username: post.creator?.username || "unknown",
-            location: post.location || post.creator?.location || "",
-          },
-          timestamp: formatTimestamp(post.created_at),
-          content: post.description || "",
-          animalInfo: {
-            type: post.animal_type?.name || "Unknown",
-            title: post.title || "Untitled",
-            description: post.description || "",
-            breed: post.breed || "N/A",
-            age: post.age ? `${post.age} years old` : "Age not specified",
-            sex: post.sex || "N/A",
-            price:
-              post.price === "0"
-                ? "Free"
-                : `₱${parseFloat(post.price || 0).toLocaleString("en-PH", {
+        const currentUserId = getCurrentUserId();
+        const transformedPosts = postsData.map((post) => {
+          // Transform comments with nested replies
+          const transformedComments = (post.comments || []).map((comment) => {
+            const commentUserId = comment.user?.id || comment.user_id;
+            const commentUserName = currentUserId && commentUserId === currentUserId
+              ? 'You'
+              : `${comment.user?.FirstName || 'Unknown'} ${comment.user?.LastName || 'User'}`;
+            return {
+              id: comment.id,
+              user: {
+                name: commentUserName,
+                avatar:
+                  comment.user?.profile_picture ||
+                  `https://ui-avatars.com/api/?name=${comment.user?.FirstName || 'U'}+${comment.user?.LastName || 'U'}&background=10b981&color=fff`,
+              },
+              text: comment.comment,
+              timestamp: formatTimestamp(comment.created_at || new Date()),
+              likes: 0,
+              replies: (comment.replies || []).map((reply) => {
+                const replyUserId = reply.user?.id || reply.user_id;
+                const replyUserName = currentUserId && replyUserId === currentUserId
+                  ? 'You'
+                  : `${reply.user?.FirstName || 'Unknown'} ${reply.user?.LastName || 'User'}`;
+                return {
+                  id: reply.id,
+                  user: {
+                    name: replyUserName,
+                    avatar:
+                      reply.user?.profile_picture ||
+                      `https://ui-avatars.com/api/?name=${reply.user?.FirstName || 'U'}+${reply.user?.LastName || 'U'}&background=f59e0b&color=fff`,
+                  },
+                  text: reply.reply,
+                  timestamp: formatTimestamp(reply.created_at || new Date()),
+                  likes: 0,
+                };
+              }),
+            };
+          });
+
+          // Check if user has liked/bookmarked this post
+          const isLiked = Array.isArray(post.likes)
+            ? post.likes.some(like => like.user_id === currentUserId)
+            : false;
+          const isBookmarked = Array.isArray(post.bookmarks)
+            ? post.bookmarks.some(bookmark => bookmark.user_id === currentUserId)
+            : false;
+          return {
+            id: post.id,
+            user: {
+              name: `${post.creator?.FirstName || "Unknown"} ${post.creator?.LastName || "User"
+                }`,
+              avatar:
+                post.creator?.profile_picture ||
+                `https://ui-avatars.com/api/?name=${post.creator?.FirstName || "U"
+                }+${post.creator?.LastName || "U"}&background=10b981&color=fff`,
+              isVerified: post.creator?.email_verified_at ? true : false,
+              username: post.creator?.Username || "unknown",
+              location: post.location || post.creator?.location || "",
+            },
+            timestamp: formatTimestamp(post.created_at),
+            content: post.description || "",
+            animalInfo: {
+              type: post.animal_type?.name || "Unknown",
+              title: post.title || "Untitled",
+              description: post.description || "",
+              breed: post.breed || "N/A",
+              age: post.age ? `${post.age} years old` : "Age not specified",
+              sex: post.sex || "N/A",
+              price:
+                post.price === "0"
+                  ? "Free"
+                  : `₱${parseFloat(post.price || 0).toLocaleString("en-PH", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}`,
-            availability: post.status || "available",
-          },
-          images: Array.isArray(post.images)
-            ? post.images.map((img) => img.image_path || img)
-            : [],
-          likes: post.likes || 0,
-          comments: 0,
-          bookmarks: post.bookmarks || 0,
-          isLiked: false,
-          isBookmarked: false,
-          slug: post.slug || "",
-        }));
+              availability: post.status || "available",
+            },
+            images: Array.isArray(post.images)
+              ? post.images.map((img) => {
+                // Construct full image URL if it's just a filename
+                const imagePath = img.image_path || img;
+                return imagePath.startsWith('http')
+                  ? imagePath
+                  : `${API_URL.replace('/api', '')}/storage/feeds/${imagePath}`;
+              })
+              : [],
+            likes: post.count_likes || 0,
+            likes: post.count_likes || (Array.isArray(post.likes) ? post.likes.length : 0),
+            comments: transformedComments.length,
+            bookmarks: post.count_bookmarks || (Array.isArray(post.bookmarks) ? post.bookmarks.length : 0),
+            isLiked,
+            isBookmarked,
+          };
+        });
 
         setPosts(transformedPosts);
 
-        // Apply client-side filters as backup
+        // Initialize comments for all posts
+        const initialComments = {};
+        transformedPosts.forEach((post) => {
+          // Find the original post data to get comments
+          const originalPost = postsData.find(p => p.id === post.id);
+          if (originalPost && originalPost.comments) {
+            const transformedComments = originalPost.comments.map((comment) => {
+              const commentUserId = comment.user?.id || comment.user_id;
+              const commentUserName = currentUserId && commentUserId === currentUserId
+                ? 'You'
+                : `${comment.user?.FirstName || 'Unknown'} ${comment.user?.LastName || 'User'}`;
+              return {
+                id: comment.id,
+                user: {
+                  name: commentUserName,
+                  avatar:
+                    comment.user?.profile_picture ||
+                    `https://ui-avatars.com/api/?name=${comment.user?.FirstName || 'U'}+${comment.user?.LastName || 'U'}&background=10b981&color=fff`,
+                },
+                text: comment.comment,
+                timestamp: formatTimestamp(comment.created_at || new Date()),
+                likes: 0,
+                replies: (comment.replies || []).map((reply) => {
+                  const replyUserId = reply.user?.id || reply.user_id;
+                  const replyUserName = currentUserId && replyUserId === currentUserId
+                    ? 'You'
+                    : `${reply.user?.FirstName || 'Unknown'} ${reply.user?.LastName || 'User'}`;
+                  return {
+                    id: reply.id,
+                    user: {
+                      name: replyUserName,
+                      avatar:
+                        reply.user?.profile_picture ||
+                        `https://ui-avatars.com/api/?name=${reply.user?.FirstName || 'U'}+${reply.user?.LastName || 'U'}&background=f59e0b&color=fff`,
+                    },
+                    text: reply.reply,
+                    timestamp: formatTimestamp(reply.created_at || new Date()),
+                    likes: 0,
+                  };
+                }),
+              };
+            });
+            initialComments[post.id] = transformedComments;
+          }
+        });
+        setPostComments(initialComments);
+
+        // Apply client-side filters
         const filtered = applyClientSideFilters(transformedPosts);
         setFilteredPosts(filtered);
       } else {
@@ -597,38 +638,142 @@ const NewsFeed = ({
     }
   }, [postCategory, postLocation, searchQuery, posts]);
 
-  const handleLike = (postId) => {
-    const updatePosts = (postsArray) =>
-      postsArray.map((post) =>
-        post.id === postId
-          ? {
+  const handleLike = async (postId) => {
+    try {
+      // Get user_id from localStorage or from user context
+      let userId = localStorage.getItem('user_id');
+
+      // Fallback: try to get from stored user object
+      if (!userId) {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            userId = parsedUser.id;
+            if (userId) {
+              localStorage.setItem('user_id', userId.toString());
+            }
+          } catch (e) {
+            console.error('Error parsing stored user:', e);
+          }
+        }
+      }
+
+      if (!userId) {
+        console.error('User ID not found. Please log in again.');
+        console.log('Available localStorage keys:', Object.keys(localStorage));
+        return;
+      }
+
+      // Optimistically update UI
+      const updatePosts = (postsArray) =>
+        postsArray.map((post) =>
+          post.id === postId
+            ? {
               ...post,
               isLiked: !post.isLiked,
               likes: post.isLiked ? post.likes - 1 : post.likes + 1,
             }
-          : post
+            : post
+        );
+
+      setPosts(updatePosts);
+      setFilteredPosts(updatePosts);
+
+      // Call API
+      const response = await apiPost(
+        'news-feed/unlike-or-like',
+        {
+          feed_id: postId,
+          user_id: parseInt(userId)
+        },
+        true // Include token
       );
 
-    setPosts(updatePosts);
-    setFilteredPosts(updatePosts);
+      console.log('Like/Unlike response:', response);
+
+      // If API call fails, revert the optimistic update
+      if (response.status !== 'success') {
+        // Revert the update
+        setPosts(posts);
+        setFilteredPosts(filteredPosts);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      // Revert the optimistic update
+      setPosts(posts);
+      setFilteredPosts(filteredPosts);
+    }
   };
 
-  const handleBookmark = (postId) => {
-    const updatePosts = (postsArray) =>
-      postsArray.map((post) =>
-        post.id === postId
-          ? {
+  const handleBookmark = async (postId) => {
+    try {
+      // Get user_id from localStorage or from user context
+      let userId = localStorage.getItem('user_id');
+
+      // Fallback: try to get from stored user object
+      if (!userId) {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            userId = parsedUser.id;
+            if (userId) {
+              localStorage.setItem('user_id', userId.toString());
+            }
+          } catch (e) {
+            console.error('Error parsing stored user:', e);
+          }
+        }
+      }
+
+      if (!userId) {
+        console.error('User ID not found. Please log in again.');
+        console.log('Available localStorage keys:', Object.keys(localStorage));
+        return;
+      }
+
+      // Optimistically update UI
+      const updatePosts = (postsArray) =>
+        postsArray.map((post) =>
+          post.id === postId
+            ? {
               ...post,
               isBookmarked: !post.isBookmarked,
               bookmarks: post.isBookmarked
                 ? post.bookmarks - 1
                 : post.bookmarks + 1,
             }
-          : post
+            : post
+        );
+
+      setPosts(updatePosts);
+      setFilteredPosts(updatePosts);
+
+      // Call API
+      const response = await apiPost(
+        'news-feed/unbookmark-or-bookmark',
+        {
+          feed_id: postId,
+          user_id: parseInt(userId)
+        },
+        true // Include token
       );
 
-    setPosts(updatePosts);
-    setFilteredPosts(updatePosts);
+      console.log('Bookmark/Unbookmark response:', response);
+
+      // If API call fails, revert the optimistic update
+      if (response.status !== 'success') {
+        // Revert the update
+        setPosts(posts);
+        setFilteredPosts(filteredPosts);
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      // Revert the optimistic update
+      setPosts(posts);
+      setFilteredPosts(filteredPosts);
+    }
   };
 
   const handleShare = (post = null) => {
@@ -763,126 +908,154 @@ const NewsFeed = ({
     }
   };
 
-  const handleAddPostComment = (postId, text) => {
+  // Add Comment to Post (send to backend)
+  const handleAddPostComment = async (postId, text) => {
     if (!text.trim()) return;
 
-    const newComment = {
-      id: Date.now(),
-      user: {
-        name: "You",
-        avatar:
-          "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
-      },
-      text: text,
-      timestamp: "Just now",
-      likes: 0,
-      replies: [],
-    };
+    // Find the feed_id and post_id for this post
+    const post = posts.find((p) => p.id === postId);
+    if (!post) return;
 
-    setPostComments((prev) => ({
-      ...prev,
-      [postId]: [newComment, ...(prev[postId] || [])],
-    }));
+    // Get user_id
+    let userId = localStorage.getItem('user_id');
+    if (!userId) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          userId = parsedUser.id;
+        } catch (e) { }
+      }
+    }
+    if (!userId) {
+      alert('User not found. Please log in again.');
+      return;
+    }
+
+    // Prepare FormData
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('feed_id', postId);
+    if (post.animalInfo && post.animalInfo.post_id) {
+      formData.append('post_id', post.animalInfo.post_id);
+    }
+    formData.append('comments', text);
+
+    try {
+      const response = await apiPostFormData('add/add-comment', formData, true);
+      // Add new comment to UI
+      const newComment = {
+        id: response.data?.id || Date.now(),
+        user: {
+          name: "You",
+          avatar:
+            "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
+        },
+        text: text,
+        timestamp: "Just now",
+        likes: 0,
+        replies: [],
+      };
+      setPostComments((prev) => ({
+        ...prev,
+        [postId]: [newComment, ...(prev[postId] || [])],
+      }));
+    } catch (err) {
+      alert('Failed to add comment.');
+    }
   };
 
-  const handlePostCommentLike = (postId, commentId) => {
-    setPostComments((prev) => ({
-      ...prev,
-      [postId]: prev[postId].map((comment) =>
-        comment.id === commentId
-          ? { ...comment, likes: comment.likes + 1 }
-          : comment
-      ),
-    }));
-  };
+  // Removed comment/reply like handlers
 
-  const handlePostReplyLike = (postId, commentId, replyId) => {
-    setPostComments((prev) => ({
-      ...prev,
-      [postId]: prev[postId].map((comment) => {
-        if (comment.id === commentId) {
-          return {
-            ...comment,
-            replies: comment.replies.map((reply) =>
-              reply.id === replyId
-                ? { ...reply, likes: reply.likes + 1 }
-                : reply
-            ),
-          };
-        }
-        return comment;
-      }),
-    }));
-  };
-
-  const handleAddPostReply = (postId, commentId, text) => {
+  // Add Reply to Comment (send to backend)
+  const handleAddPostReply = async (postId, commentId, text) => {
     if (!text.trim()) return;
 
-    setPostComments((prev) => ({
-      ...prev,
-      [postId]: prev[postId].map((comment) => {
-        if (comment.id === commentId) {
-          const newReply = {
-            id: Date.now(),
-            user: {
-              name: "You",
-              avatar:
-                "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
-            },
-            text: text,
-            timestamp: "Just now",
-            likes: 0,
-          };
+    // Get user_id
+    let userId = localStorage.getItem('user_id');
+    if (!userId) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          userId = parsedUser.id;
+        } catch (e) { }
+      }
+    }
+    if (!userId) {
+      alert('User not found. Please log in again.');
+      return;
+    }
 
-          return {
-            ...comment,
-            replies: [...comment.replies, newReply],
-          };
-        }
-        return comment;
-      }),
-    }));
+    // Prepare FormData
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('reply', text);
+    formData.append('comment_section_id', commentId);
+
+    try {
+      const response = await apiPostFormData(`comments/reply/${commentId}`, formData, true);
+      // Add new reply to UI
+      setPostComments((prev) => ({
+        ...prev,
+        [postId]: prev[postId].map((comment) => {
+          if (comment.id === commentId) {
+            const newReply = {
+              id: response.data?.id || Date.now(),
+              user: {
+                name: "You",
+                avatar:
+                  "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
+              },
+              text: text,
+              timestamp: "Just now",
+              likes: 0,
+            };
+            return {
+              ...comment,
+              replies: [...comment.replies, newReply],
+            };
+          }
+          return comment;
+        }),
+      }));
+    } catch (err) {
+      alert('Failed to add reply.');
+    }
   };
 
   const PostSkeleton = () => (
     <div
-      className={`rounded-lg p-3 sm:p-6 mb-4 sm:mb-6 animate-pulse ${
-        darkMode ? "bg-gray-800" : "bg-white"
-      }`}
+      className={`rounded-lg p-3 sm:p-6 mb-4 sm:mb-6 animate-pulse ${darkMode ? "bg-gray-800" : "bg-white"
+        }`}
     >
       <div className="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
         <div
-          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${
-            darkMode ? "bg-gray-700" : "bg-gray-300"
-          }`}
+          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${darkMode ? "bg-gray-700" : "bg-gray-300"
+            }`}
         ></div>
         <div className="flex-1">
           <div
-            className={`h-3 sm:h-4 rounded w-24 sm:w-32 mb-1 sm:mb-2 ${
-              darkMode ? "bg-gray-700" : "bg-gray-300"
-            }`}
+            className={`h-3 sm:h-4 rounded w-24 sm:w-32 mb-1 sm:mb-2 ${darkMode ? "bg-gray-700" : "bg-gray-300"
+              }`}
           ></div>
           <div
-            className={`h-2 sm:h-3 rounded w-16 sm:w-20 ${
-              darkMode ? "bg-gray-700" : "bg-gray-300"
-            }`}
+            className={`h-2 sm:h-3 rounded w-16 sm:w-20 ${darkMode ? "bg-gray-700" : "bg-gray-300"
+              }`}
           ></div>
         </div>
       </div>
       <div
-        className={`h-3 sm:h-4 rounded w-full mb-1 sm:mb-2 ${
-          darkMode ? "bg-gray-700" : "bg-gray-300"
-        }`}
+        className={`h-3 sm:h-4 rounded w-full mb-1 sm:mb-2 ${darkMode ? "bg-gray-700" : "bg-gray-300"
+          }`}
       ></div>
       <div
-        className={`h-3 sm:h-4 rounded w-3/4 mb-3 sm:mb-4 ${
-          darkMode ? "bg-gray-700" : "bg-gray-300"
-        }`}
+        className={`h-3 sm:h-4 rounded w-3/4 mb-3 sm:mb-4 ${darkMode ? "bg-gray-700" : "bg-gray-300"
+          }`}
       ></div>
       <div
-        className={`h-48 sm:h-64 rounded-lg ${
-          darkMode ? "bg-gray-700" : "bg-gray-300"
-        }`}
+        className={`h-48 sm:h-64 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-300"
+          }`}
       ></div>
     </div>
   );
@@ -908,11 +1081,10 @@ const NewsFeed = ({
         {/* Filter Info Banner */}
         {showBanner && (
           <div
-            className={`rounded-lg p-3 mb-4 border transition-opacity duration-500 ${
-              darkMode
-                ? "bg-gray-800 border-gray-700 text-gray-300"
-                : "bg-blue-50 border-blue-200 text-blue-800"
-            }`}
+            className={`rounded-lg p-3 mb-4 border transition-opacity duration-500 ${darkMode
+              ? "bg-gray-800 border-gray-700 text-gray-300"
+              : "bg-blue-50 border-blue-200 text-blue-800"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-sm">
@@ -931,17 +1103,15 @@ const NewsFeed = ({
 
         {/* Create Post Card - Fixed */}
         <div
-          className={`rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 border transition-colors duration-300 ${
-            darkMode
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-green-100"
-          }`}
+          className={`rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 border transition-colors duration-300 ${darkMode
+            ? "bg-gray-800 border-gray-700"
+            : "bg-white border-green-100"
+            }`}
         >
           <div className="flex items-center space-x-2 sm:space-x-3">
             <div
-              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${
-                darkMode ? "bg-green-600" : "bg-green-500"
-              }`}
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${darkMode ? "bg-green-600" : "bg-green-500"
+                }`}
             >
               <span className="text-white font-semibold text-sm sm:text-base">
                 U
@@ -950,22 +1120,20 @@ const NewsFeed = ({
             <div className="flex-1">
               <button
                 onClick={() => handleShare()}
-                className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-full text-sm sm:text-base transition-colors duration-300 ${
-                  darkMode
-                    ? "bg-gray-700 hover:bg-gray-600 text-gray-300 placeholder-gray-400"
-                    : "bg-green-50 hover:bg-green-100 text-gray-600 placeholder-gray-500"
-                }`}
+                className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-full text-sm sm:text-base transition-colors duration-300 ${darkMode
+                  ? "bg-gray-700 hover:bg-gray-600 text-gray-300 placeholder-gray-400"
+                  : "bg-green-50 hover:bg-green-100 text-gray-600 placeholder-gray-500"
+                  }`}
               >
                 Share an animal for sale or adoption...
               </button>
             </div>
             <button
               onClick={() => handleShare()}
-              className={`p-1.5 sm:p-2 rounded-full transition-colors duration-300 ${
-                darkMode
-                  ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
-                  : "text-gray-500 hover:bg-green-100 hover:text-green-600"
-              }`}
+              className={`p-1.5 sm:p-2 rounded-full transition-colors duration-300 ${darkMode
+                ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
+                : "text-gray-500 hover:bg-green-100 hover:text-green-600"
+                }`}
             >
               <PhotoIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
@@ -982,29 +1150,27 @@ const NewsFeed = ({
               {displayPosts.map((post) => (
                 <div
                   key={post.id}
-                  className={`rounded-lg border transition-colors duration-300 relative overflow-hidden ${
-                    darkMode
-                      ? "bg-gray-800 border-gray-700"
-                      : "bg-white border-green-100"
-                  }`}
+                  className={`rounded-lg border transition-colors duration-300 relative overflow-hidden ${darkMode
+                    ? "bg-gray-800 border-gray-700"
+                    : "bg-white border-green-100"
+                    }`}
                 >
                   {/* Diagonal Ribbon */}
                   {post.animalInfo && (
                     <div className="absolute top-0 right-0 w-32 h-35 overflow-hidden z-10">
                       <div
-                        className={`absolute top-4 right-[-32px] w-40 h-8 transform rotate-45 text-center text-white text-xs font-bold leading-8 shadow-lg ${
-                          post.animalInfo.availability === "available"
-                            ? "bg-green-500"
-                            : post.animalInfo.availability === "sold"
+                        className={`absolute top-4 right-[-32px] w-40 h-8 transform rotate-45 text-center text-white text-xs font-bold leading-8 shadow-lg ${post.animalInfo.availability === "available"
+                          ? "bg-green-500"
+                          : post.animalInfo.availability === "sold"
                             ? "bg-red-500"
                             : "bg-gray-500"
-                        }`}
+                          }`}
                       >
                         {post.animalInfo.availability === "available"
                           ? "AVAILABLE"
                           : post.animalInfo.availability === "sold"
-                          ? "SOLD OUT"
-                          : post.animalInfo.availability.toUpperCase()}
+                            ? "SOLD OUT"
+                            : post.animalInfo.availability.toUpperCase()}
                       </div>
                     </div>
                   )}
@@ -1022,9 +1188,8 @@ const NewsFeed = ({
                           <div className="flex flex-col">
                             <div className="flex items-center space-x-1">
                               <h3
-                                className={`font-semibold ${
-                                  darkMode ? "text-white" : "text-gray-900"
-                                }`}
+                                className={`font-semibold ${darkMode ? "text-white" : "text-gray-900"
+                                  }`}
                               >
                                 {post.user.name}
                               </h3>
@@ -1035,9 +1200,8 @@ const NewsFeed = ({
                               )}
                             </div>
                             <p
-                              className={`text-sm ${
-                                darkMode ? "text-gray-400" : "text-gray-500"
-                              }`}
+                              className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"
+                                }`}
                             >
                               {post.timestamp}
                             </p>
@@ -1045,11 +1209,10 @@ const NewsFeed = ({
                         </div>
                       </div>
                       <button
-                        className={`p-2 rounded-full transition-colors duration-300 ${
-                          darkMode
-                            ? "text-gray-400 hover:bg-gray-700"
-                            : "text-gray-500 hover:bg-gray-100"
-                        }`}
+                        className={`p-2 rounded-full transition-colors duration-300 ${darkMode
+                          ? "text-gray-400 hover:bg-gray-700"
+                          : "text-gray-500 hover:bg-gray-100"
+                          }`}
                       >
                         <EllipsisHorizontalIcon className="w-5 h-5" />
                       </button>
@@ -1061,9 +1224,8 @@ const NewsFeed = ({
                     {post.animalInfo && (
                       <div className="mt-4">
                         <h3
-                          className={`text-lg font-semibold mb-1 text-center ${
-                            darkMode ? "text-green-200" : "text-green-800"
-                          }`}
+                          className={`text-lg font-semibold mb-1 text-center ${darkMode ? "text-green-200" : "text-green-800"
+                            }`}
                         >
                           {post.animalInfo.title}
                         </h3>
@@ -1071,9 +1233,8 @@ const NewsFeed = ({
                         {post.animalInfo.description && (
                           <div className="mb-2 text-center">
                             <p
-                              className={`text-sm leading-relaxed ${
-                                darkMode ? "text-gray-200" : "text-gray-800"
-                              }`}
+                              className={`text-sm leading-relaxed ${darkMode ? "text-gray-200" : "text-gray-800"
+                                }`}
                             >
                               {post.animalInfo.description}
                             </p>
@@ -1082,9 +1243,8 @@ const NewsFeed = ({
 
                         <div className="flex justify-center items-center">
                           <span
-                            className={`text-lg font-bold ${
-                              darkMode ? "text-green-400" : "text-green-600"
-                            }`}
+                            className={`text-lg font-bold ${darkMode ? "text-green-400" : "text-green-600"
+                              }`}
                           >
                             {post.animalInfo.price}
                           </span>
@@ -1098,24 +1258,22 @@ const NewsFeed = ({
                     <div className="px-6 pb-4">
                       <div
                         onClick={() => openPostModal(post)}
-                        className={`grid gap-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition-opacity ${
-                          post.images.length === 1
-                            ? "grid-cols-1"
-                            : post.images.length === 2
+                        className={`grid gap-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition-opacity ${post.images.length === 1
+                          ? "grid-cols-1"
+                          : post.images.length === 2
                             ? "grid-cols-2"
                             : post.images.length === 3
-                            ? "grid-cols-2"
-                            : "grid-cols-2"
-                        }`}
+                              ? "grid-cols-2"
+                              : "grid-cols-2"
+                          }`}
                       >
                         {post.images.slice(0, 4).map((image, index) => (
                           <div
                             key={index}
-                            className={`relative ${
-                              post.images.length === 3 && index === 0
-                                ? "row-span-2"
-                                : ""
-                            }`}
+                            className={`relative ${post.images.length === 3 && index === 0
+                              ? "row-span-2"
+                              : ""
+                              }`}
                           >
                             <img
                               src={image}
@@ -1138,9 +1296,8 @@ const NewsFeed = ({
 
                   {/* Post Stats */}
                   <div
-                    className={`px-3 sm:px-6 py-2 sm:py-3 border-t flex items-center justify-between ${
-                      darkMode ? "border-gray-700" : "border-gray-100"
-                    }`}
+                    className={`px-3 sm:px-6 py-2 sm:py-3 border-t flex items-center justify-between ${darkMode ? "border-gray-700" : "border-gray-100"
+                      }`}
                   >
                     <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
                       <span
@@ -1158,23 +1315,21 @@ const NewsFeed = ({
 
                   {/* Post Actions */}
                   <div
-                    className={`px-2 sm:px-6 py-2 sm:py-3 border-t flex items-center ${
-                      isAuthenticated ? "justify-around" : "justify-between"
-                    } ${darkMode ? "border-gray-700" : "border-gray-100"}`}
+                    className={`px-2 sm:px-6 py-2 sm:py-3 border-t flex items-center ${isAuthenticated ? "justify-around" : "justify-between"
+                      } ${darkMode ? "border-gray-700" : "border-gray-100"}`}
                   >
                     {isAuthenticated ? (
                       <>
                         <button
                           onClick={() => handleLike(post.id)}
-                          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${
-                            post.isLiked
-                              ? darkMode
-                                ? "text-green-400 bg-gray-700"
-                                : "text-green-600 bg-green-50"
-                              : darkMode
+                          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${post.isLiked
+                            ? darkMode
+                              ? "text-green-400 bg-gray-700"
+                              : "text-green-600 bg-green-50"
+                            : darkMode
                               ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
                               : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
-                          }`}
+                            }`}
                         >
                           {post.isLiked ? (
                             <HeartIconSolid className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1188,15 +1343,14 @@ const NewsFeed = ({
 
                         <button
                           onClick={() => toggleCommentsSection(post.id)}
-                          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${
-                            showCommentsForPost === post.id
-                              ? darkMode
-                                ? "text-blue-400 bg-gray-700"
-                                : "text-blue-600 bg-blue-50"
-                              : darkMode
+                          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${showCommentsForPost === post.id
+                            ? darkMode
+                              ? "text-blue-400 bg-gray-700"
+                              : "text-blue-600 bg-blue-50"
+                            : darkMode
                               ? "text-gray-400 hover:bg-gray-700 hover:text-blue-400"
                               : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
-                          }`}
+                            }`}
                         >
                           <ChatBubbleOvalLeftIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                           <span className="font-medium text-xs sm:text-sm hidden xs:inline">
@@ -1208,15 +1362,14 @@ const NewsFeed = ({
 
                         <button
                           onClick={() => handleBookmark(post.id)}
-                          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${
-                            post.isBookmarked
-                              ? darkMode
-                                ? "text-yellow-400 bg-gray-700"
-                                : "text-yellow-600 bg-yellow-50"
-                              : darkMode
+                          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${post.isBookmarked
+                            ? darkMode
+                              ? "text-yellow-400 bg-gray-700"
+                              : "text-yellow-600 bg-yellow-50"
+                            : darkMode
                               ? "text-gray-400 hover:bg-gray-700 hover:text-yellow-400"
                               : "text-gray-600 hover:bg-gray-100 hover:text-yellow-600"
-                          }`}
+                            }`}
                         >
                           {post.isBookmarked ? (
                             <BookmarkIconSolid className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1230,11 +1383,10 @@ const NewsFeed = ({
 
                         <button
                           onClick={() => handleShare(post)}
-                          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${
-                            darkMode
-                              ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
-                              : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
-                          }`}
+                          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors duration-200 ${darkMode
+                            ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
+                            }`}
                         >
                           <ShareIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                           <span className="font-medium text-xs sm:text-sm hidden xs:inline">
@@ -1247,11 +1399,10 @@ const NewsFeed = ({
                         {/* Share button - available for everyone */}
                         <button
                           onClick={() => handleShare(post)}
-                          className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 ml-6 rounded-lg transition-colors duration-200 ${
-                            darkMode
-                              ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
-                              : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
-                          }`}
+                          className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 ml-6 rounded-lg transition-colors duration-200 ${darkMode
+                            ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
+                            }`}
                         >
                           <ShareIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                           <span className="font-medium text-xs sm:text-sm hidden xs:inline">
@@ -1261,9 +1412,8 @@ const NewsFeed = ({
 
                         {/* Message for non-logged in users */}
                         <div
-                          className={`flex-1 text-center px-4 py-2 text-sm ${
-                            darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
+                          className={`flex-1 text-center px-4 py-2 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"
+                            }`}
                         >
                           Login to like, comment & save
                         </div>
@@ -1274,16 +1424,14 @@ const NewsFeed = ({
                   {/* Comments Section for Post */}
                   {showCommentsForPost === post.id && isAuthenticated && (
                     <div
-                      className={`px-6 py-4 border-t ${
-                        darkMode
-                          ? "border-gray-700 bg-gray-750"
-                          : "border-gray-100 bg-gray-50"
-                      }`}
+                      className={`px-6 py-4 border-t ${darkMode
+                        ? "border-gray-700 bg-gray-750"
+                        : "border-gray-100 bg-gray-50"
+                        }`}
                     >
                       <h4
-                        className={`text-sm font-semibold mb-3 ${
-                          darkMode ? "text-white" : "text-gray-900"
-                        }`}
+                        className={`text-sm font-semibold mb-3 ${darkMode ? "text-white" : "text-gray-900"
+                          }`}
                       >
                         Comments ({postComments[post.id]?.length || 0})
                       </h4>
@@ -1298,36 +1446,32 @@ const NewsFeed = ({
                       </div>
 
                       {/* Comments List */}
-<div
-  className="space-y-3 max-h-96 overflow-y-auto"
-  style={{
-    scrollbarWidth: "none", // Firefox
-    msOverflowStyle: "none", // IE & Edge
-  }}
->
+                      <div
+                        className="space-y-3 max-h-96 overflow-y-auto"
+                        style={{
+                          scrollbarWidth: "none", // Firefox
+                          msOverflowStyle: "none", // IE & Edge
+                        }}
+                      >
                         {postComments[post.id] &&
-                        postComments[post.id].length > 0 ? (
+                          postComments[post.id].length > 0 ? (
                           postComments[post.id].map((comment) => (
                             <PostCommentItem
                               key={comment.id}
                               comment={comment}
                               postId={post.id}
                               darkMode={darkMode}
-                              onLike={handlePostCommentLike}
-                              onReplyLike={handlePostReplyLike}
                               onAddReply={handleAddPostReply}
                             />
                           ))
                         ) : (
                           <div
-                            className={`text-center py-6 ${
-                              darkMode ? "text-gray-400" : "text-gray-500"
-                            }`}
+                            className={`text-center py-6 ${darkMode ? "text-gray-400" : "text-gray-500"
+                              }`}
                           >
                             <ChatBubbleOvalLeftIcon
-                              className={`w-10 h-10 mx-auto mb-2 ${
-                                darkMode ? "text-gray-600" : "text-gray-300"
-                              }`}
+                              className={`w-10 h-10 mx-auto mb-2 ${darkMode ? "text-gray-600" : "text-gray-300"
+                                }`}
                             />
                             <p className="text-sm">
                               No comments yet. Be the first to comment!
@@ -1343,11 +1487,10 @@ const NewsFeed = ({
               {/* Load More - Inside scroll */}
               <div className="text-center py-8">
                 <button
-                  className={`px-6 py-3 rounded-lg font-medium transition-colors duration-300 ${
-                    darkMode
-                      ? "bg-green-600 hover:bg-green-700 text-white"
-                      : "bg-green-500 hover:bg-green-600 text-white"
-                  }`}
+                  className={`px-6 py-3 rounded-lg font-medium transition-colors duration-300 ${darkMode
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-green-500 hover:bg-green-600 text-white"
+                    }`}
                 >
                   Load More Posts
                 </button>
@@ -1355,21 +1498,18 @@ const NewsFeed = ({
             </>
           ) : (
             <div
-              className={`text-center py-12 ${
-                darkMode ? "text-gray-400" : "text-gray-600"
-              }`}
+              className={`text-center py-12 ${darkMode ? "text-gray-400" : "text-gray-600"
+                }`}
             >
               <div className="mb-4">
                 <PhotoIcon
-                  className={`w-16 h-16 mx-auto ${
-                    darkMode ? "text-gray-500" : "text-gray-400"
-                  }`}
+                  className={`w-16 h-16 mx-auto ${darkMode ? "text-gray-500" : "text-gray-400"
+                    }`}
                 />
               </div>
               <h3
-                className={`text-lg font-medium mb-2 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
+                className={`text-lg font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
               >
                 No Posts Found
               </h3>
@@ -1383,11 +1523,10 @@ const NewsFeed = ({
                 !searchQuery && (
                   <button
                     onClick={onCreatePost}
-                    className={`px-6 py-2 rounded-lg font-medium transition-colors duration-300 ${
-                      darkMode
-                        ? "bg-green-600 hover:bg-green-700 text-white"
-                        : "bg-green-500 hover:bg-green-600 text-white"
-                    }`}
+                    className={`px-6 py-2 rounded-lg font-medium transition-colors duration-300 ${darkMode
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : "bg-green-500 hover:bg-green-600 text-white"
+                      }`}
                   >
                     Share Your First Animal
                   </button>
@@ -1416,22 +1555,20 @@ const NewsFeed = ({
       {isModalOpen && selectedPost && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-      <div
-  className="fixed inset-0 bg-transparent backdrop-blur-md transition-opacity"
-  onClick={closeModal}
-/>
+            <div
+              className="fixed inset-0 bg-transparent backdrop-blur-md transition-opacity"
+              onClick={closeModal}
+            />
 
 
             <div
-              className={`relative rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              }`}
+              className={`relative rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden ${darkMode ? "bg-gray-800" : "bg-white"
+                }`}
             >
               {/* Modal Header */}
               <div
-                className={`flex items-center justify-between p-6 border-b ${
-                  darkMode ? "border-gray-700" : "border-gray-200"
-                }`}
+                className={`flex items-center justify-between p-6 border-b ${darkMode ? "border-gray-700" : "border-gray-200"
+                  }`}
               >
                 <div className="flex items-center space-x-4">
                   <img
@@ -1441,9 +1578,8 @@ const NewsFeed = ({
                   />
                   <div>
                     <h2
-                      className={`text-xl font-semibold ${
-                        darkMode ? "text-white" : "text-gray-900"
-                      }`}
+                      className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-900"
+                        }`}
                     >
                       {selectedPost.animalInfo.title}
                     </h2>
@@ -1459,9 +1595,8 @@ const NewsFeed = ({
                         •
                       </span>
                       <p
-                        className={`text-sm ${
-                          darkMode ? "text-gray-500" : "text-gray-500"
-                        }`}
+                        className={`text-sm ${darkMode ? "text-gray-500" : "text-gray-500"
+                          }`}
                       >
                         {selectedPost.timestamp}
                       </p>
@@ -1475,11 +1610,10 @@ const NewsFeed = ({
                     <div className="relative">
                       <button
                         onClick={() => setShowReportMenu(!showReportMenu)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          darkMode
-                            ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-                            : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                        }`}
+                        className={`p-2 rounded-lg transition-colors ${darkMode
+                          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                          : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                          }`}
                       >
                         <EllipsisVerticalIcon className="w-6 h-6" />
                       </button>
@@ -1487,22 +1621,20 @@ const NewsFeed = ({
                       {/* Dropdown Menu */}
                       {showReportMenu && (
                         <div
-                          className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 ${
-                            darkMode
-                              ? "bg-gray-700 border border-gray-600"
-                              : "bg-white border border-gray-200"
-                          }`}
+                          className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 ${darkMode
+                            ? "bg-gray-700 border border-gray-600"
+                            : "bg-white border border-gray-200"
+                            }`}
                         >
                           <button
                             onClick={() => {
                               setShowReportModal(true);
                               setShowReportMenu(false);
                             }}
-                            className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors ${
-                              darkMode
-                                ? "text-gray-300 hover:bg-gray-600"
-                                : "text-gray-700 hover:bg-gray-100"
-                            }`}
+                            className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors ${darkMode
+                              ? "text-gray-300 hover:bg-gray-600"
+                              : "text-gray-700 hover:bg-gray-100"
+                              }`}
                           >
                             <FlagIcon className="w-5 h-5 text-red-500" />
                             <span>Report Post</span>
@@ -1515,24 +1647,23 @@ const NewsFeed = ({
                   {/* Close Button */}
                   <button
                     onClick={closeModal}
-                    className={`p-2 rounded-lg transition-colors ${
-                      darkMode
-                        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-                        : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                    }`}
+                    className={`p-2 rounded-lg transition-colors ${darkMode
+                      ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                      }`}
                   >
                     <XMarkIcon className="w-6 h-6" />
                   </button>
                 </div>
               </div>
               {/* Modal Content */}
-<div
-  className="overflow-y-auto max-h-[calc(90vh-120px)]"
-  style={{
-    scrollbarWidth: "none", // Firefox
-    msOverflowStyle: "none", // Internet Explorer & Edge
-  }}
->
+              <div
+                className="overflow-y-auto max-h-[calc(90vh-120px)]"
+                style={{
+                  scrollbarWidth: "none", // Firefox
+                  msOverflowStyle: "none", // Internet Explorer & Edge
+                }}
+              >
                 <div className="p-6">
                   {/* Image Gallery */}
                   {selectedPost.images && selectedPost.images.length > 0 && (
@@ -1553,11 +1684,10 @@ const NewsFeed = ({
                                   : prev - 1
                               )
                             }
-                            className={`absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg transition-all ${
-                              darkMode
-                                ? "bg-gray-700 bg-opacity-80 hover:bg-opacity-100 text-white"
-                                : "bg-white bg-opacity-80 hover:bg-opacity-100"
-                            }`}
+                            className={`absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg transition-all ${darkMode
+                              ? "bg-gray-700 bg-opacity-80 hover:bg-opacity-100 text-white"
+                              : "bg-white bg-opacity-80 hover:bg-opacity-100"
+                              }`}
                           >
                             <ChevronLeftIcon className="w-5 h-5" />
                           </button>
@@ -1569,11 +1699,10 @@ const NewsFeed = ({
                                   : prev + 1
                               )
                             }
-                            className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg transition-all ${
-                              darkMode
-                                ? "bg-gray-700 bg-opacity-80 hover:bg-opacity-100 text-white"
-                                : "bg-white bg-opacity-80 hover:bg-opacity-100"
-                            }`}
+                            className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg transition-all ${darkMode
+                              ? "bg-gray-700 bg-opacity-80 hover:bg-opacity-100 text-white"
+                              : "bg-white bg-opacity-80 hover:bg-opacity-100"
+                              }`}
                           >
                             <ChevronRightIcon className="w-5 h-5" />
                           </button>
@@ -1584,11 +1713,10 @@ const NewsFeed = ({
                               <button
                                 key={index}
                                 onClick={() => setCurrentImageIndex(index)}
-                                className={`w-2 h-2 rounded-full transition-all ${
-                                  index === currentImageIndex
-                                    ? "bg-white"
-                                    : "bg-white bg-opacity-50"
-                                }`}
+                                className={`w-2 h-2 rounded-full transition-all ${index === currentImageIndex
+                                  ? "bg-white"
+                                  : "bg-white bg-opacity-50"
+                                  }`}
                               />
                             ))}
                           </div>
@@ -1604,15 +1732,14 @@ const NewsFeed = ({
                         <button
                           key={index}
                           onClick={() => setCurrentImageIndex(index)}
-                          className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                            index === currentImageIndex
-                              ? darkMode
-                                ? "border-green-500 ring-2 ring-green-400"
-                                : "border-green-500 ring-2 ring-green-200"
-                              : darkMode
+                          className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${index === currentImageIndex
+                            ? darkMode
+                              ? "border-green-500 ring-2 ring-green-400"
+                              : "border-green-500 ring-2 ring-green-200"
+                            : darkMode
                               ? "border-gray-600 hover:border-gray-500"
                               : "border-gray-200 hover:border-gray-300"
-                          }`}
+                            }`}
                         >
                           <img
                             src={image}
@@ -1627,16 +1754,14 @@ const NewsFeed = ({
                   {/* Description */}
                   <div className="mb-6">
                     <h3
-                      className={`text-lg font-medium mb-3 ${
-                        darkMode ? "text-white" : "text-gray-900"
-                      }`}
+                      className={`text-lg font-medium mb-3 ${darkMode ? "text-white" : "text-gray-900"
+                        }`}
                     >
                       Description
                     </h3>
                     <p
-                      className={`leading-relaxed ${
-                        darkMode ? "text-gray-300" : "text-gray-700"
-                      }`}
+                      className={`leading-relaxed ${darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
                     >
                       {selectedPost.animalInfo.description}
                     </p>
@@ -1649,18 +1774,16 @@ const NewsFeed = ({
                       {/* Animal Type */}
                       <div>
                         <h4
-                          className={`text-sm font-semibold mb-1 ${
-                            darkMode ? "text-gray-200" : "text-gray-800"
-                          }`}
+                          className={`text-sm font-semibold mb-1 ${darkMode ? "text-gray-200" : "text-gray-800"
+                            }`}
                         >
                           Animal Type
                         </h4>
                         <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium capitalize ${
-                            darkMode
-                              ? "bg-green-900 text-green-200"
-                              : "bg-green-100 text-green-800"
-                          }`}
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium capitalize ${darkMode
+                            ? "bg-green-900 text-green-200"
+                            : "bg-green-100 text-green-800"
+                            }`}
                         >
                           {selectedPost.animalInfo.type}
                         </span>
@@ -1669,9 +1792,8 @@ const NewsFeed = ({
                       {/* Age & Sex */}
                       <div>
                         <h4
-                          className={`text-sm font-semibold mb-1 ${
-                            darkMode ? "text-gray-200" : "text-gray-800"
-                          }`}
+                          className={`text-sm font-semibold mb-1 ${darkMode ? "text-gray-200" : "text-gray-800"
+                            }`}
                         >
                           Age & Sex
                         </h4>
@@ -1688,22 +1810,20 @@ const NewsFeed = ({
                       {/* Status */}
                       <div>
                         <h4
-                          className={`text-sm font-semibold mb-1 ${
-                            darkMode ? "text-gray-200" : "text-gray-800"
-                          }`}
+                          className={`text-sm font-semibold mb-1 ${darkMode ? "text-gray-200" : "text-gray-800"
+                            }`}
                         >
                           Status
                         </h4>
                         <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium capitalize ${
-                            selectedPost.animalInfo.availability === "available"
-                              ? darkMode
-                                ? "bg-green-900 text-green-200"
-                                : "bg-green-100 text-green-800"
-                              : darkMode
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium capitalize ${selectedPost.animalInfo.availability === "available"
+                            ? darkMode
+                              ? "bg-green-900 text-green-200"
+                              : "bg-green-100 text-green-800"
+                            : darkMode
                               ? "bg-gray-700 text-gray-300"
                               : "bg-gray-100 text-gray-800"
-                          }`}
+                            }`}
                         >
                           {selectedPost.animalInfo.availability}
                         </span>
@@ -1715,9 +1835,8 @@ const NewsFeed = ({
                       {/* Breed */}
                       <div>
                         <h4
-                          className={`text-sm font-semibold mb-1 ${
-                            darkMode ? "text-gray-200" : "text-gray-800"
-                          }`}
+                          className={`text-sm font-semibold mb-1 ${darkMode ? "text-gray-200" : "text-gray-800"
+                            }`}
                         >
                           Breed
                         </h4>
@@ -1733,22 +1852,19 @@ const NewsFeed = ({
                       {/* Location */}
                       <div>
                         <h4
-                          className={`text-sm font-semibold mb-1 ${
-                            darkMode ? "text-gray-200" : "text-gray-800"
-                          }`}
+                          className={`text-sm font-semibold mb-1 ${darkMode ? "text-gray-200" : "text-gray-800"
+                            }`}
                         >
                           Location
                         </h4>
                         <div className="flex items-start space-x-2">
                           <MapPinIcon
-                            className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
-                              darkMode ? "text-gray-500" : "text-gray-400"
-                            }`}
+                            className={`w-4 h-4 flex-shrink-0 mt-0.5 ${darkMode ? "text-gray-500" : "text-gray-400"
+                              }`}
                           />
                           <span
-                            className={`text-sm leading-relaxed ${
-                              darkMode ? "text-gray-400" : "text-gray-600"
-                            }`}
+                            className={`text-sm leading-relaxed ${darkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
                           >
                             {selectedPost.user.location ||
                               "Location not specified"}
@@ -1758,16 +1874,14 @@ const NewsFeed = ({
 
                       <div>
                         <h4
-                          className={`text-sm font-semibold mb-1 ${
-                            darkMode ? "text-gray-200" : "text-gray-800"
-                          }`}
+                          className={`text-sm font-semibold mb-1 ${darkMode ? "text-gray-200" : "text-gray-800"
+                            }`}
                         >
                           Price
                         </h4>
                         <p
-                          className={`text-lg font-bold ${
-                            darkMode ? "text-green-400" : "text-green-600"
-                          }`}
+                          className={`text-lg font-bold ${darkMode ? "text-green-400" : "text-green-600"
+                            }`}
                         >
                           {selectedPost.animalInfo.price}
                         </p>
@@ -1777,55 +1891,48 @@ const NewsFeed = ({
                   {/* Interaction Stats - Only show when logged in */}
                   {isAuthenticated && (
                     <div
-                      className={`flex items-center justify-between p-4 rounded-lg mb-6 ${
-                        darkMode ? "bg-gray-700" : "bg-gray-50"
-                      }`}
+                      className={`flex items-center justify-between p-4 rounded-lg mb-6 ${darkMode ? "bg-gray-700" : "bg-gray-50"
+                        }`}
                     >
                       <div className="flex items-center space-x-6">
                         <div className="text-center">
                           <p
-                            className={`text-2xl font-bold ${
-                              darkMode ? "text-white" : "text-gray-900"
-                            }`}
+                            className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"
+                              }`}
                           >
                             {selectedPost.likes}
                           </p>
                           <p
-                            className={`text-xs ${
-                              darkMode ? "text-gray-400" : "text-gray-600"
-                            }`}
+                            className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
                           >
                             Likes
                           </p>
                         </div>
                         <div className="text-center">
                           <p
-                            className={`text-2xl font-bold ${
-                              darkMode ? "text-white" : "text-gray-900"
-                            }`}
+                            className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"
+                              }`}
                           >
                             {selectedPost.bookmarks}
                           </p>
                           <p
-                            className={`text-xs ${
-                              darkMode ? "text-gray-400" : "text-gray-600"
-                            }`}
+                            className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
                           >
                             Bookmarks
                           </p>
                         </div>
                         <div className="text-center">
                           <p
-                            className={`text-2xl font-bold ${
-                              darkMode ? "text-white" : "text-gray-900"
-                            }`}
+                            className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"
+                              }`}
                           >
                             {comments.length}
                           </p>
                           <p
-                            className={`text-xs ${
-                              darkMode ? "text-gray-400" : "text-gray-600"
-                            }`}
+                            className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
                           >
                             Comments
                           </p>
@@ -1836,27 +1943,24 @@ const NewsFeed = ({
 
                   {/* Action Buttons */}
                   <div
-                    className={`flex items-center p-3 rounded-lg mb-6 border ${
-                      darkMode
-                        ? "bg-gray-700 border-gray-600"
-                        : "bg-gray-50 border-gray-200"
-                    } ${
-                      isAuthenticated ? "justify-around" : "justify-between"
-                    }`}
+                    className={`flex items-center p-3 rounded-lg mb-6 border ${darkMode
+                      ? "bg-gray-700 border-gray-600"
+                      : "bg-gray-50 border-gray-200"
+                      } ${isAuthenticated ? "justify-around" : "justify-between"
+                      }`}
                   >
                     {isAuthenticated ? (
                       <>
                         <button
                           onClick={() => handleLike(selectedPost.id)}
-                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                            selectedPost.isLiked
-                              ? darkMode
-                                ? "text-green-400 bg-gray-600"
-                                : "text-green-600 bg-green-100"
-                              : darkMode
+                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${selectedPost.isLiked
+                            ? darkMode
+                              ? "text-green-400 bg-gray-600"
+                              : "text-green-600 bg-green-100"
+                            : darkMode
                               ? "text-gray-300 hover:bg-gray-600 hover:text-green-400"
                               : "text-gray-700 hover:bg-gray-100 hover:text-green-600"
-                          }`}
+                            }`}
                         >
                           {selectedPost.isLiked ? (
                             <HeartIconSolid className="w-5 h-5" />
@@ -1868,15 +1972,14 @@ const NewsFeed = ({
 
                         <button
                           onClick={() => handleBookmark(selectedPost.id)}
-                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                            selectedPost.isBookmarked
-                              ? darkMode
-                                ? "text-yellow-400 bg-gray-600"
-                                : "text-yellow-600 bg-yellow-100"
-                              : darkMode
+                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${selectedPost.isBookmarked
+                            ? darkMode
+                              ? "text-yellow-400 bg-gray-600"
+                              : "text-yellow-600 bg-yellow-100"
+                            : darkMode
                               ? "text-gray-300 hover:bg-gray-600 hover:text-yellow-400"
                               : "text-gray-700 hover:bg-gray-100 hover:text-yellow-600"
-                          }`}
+                            }`}
                         >
                           {selectedPost.isBookmarked ? (
                             <BookmarkIconSolid className="w-5 h-5" />
@@ -1891,11 +1994,10 @@ const NewsFeed = ({
                             closeModal();
                             handleShare(selectedPost);
                           }}
-                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                            darkMode
-                              ? "text-gray-300 hover:bg-gray-600 hover:text-green-400"
-                              : "text-gray-700 hover:bg-gray-100 hover:text-green-600"
-                          }`}
+                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${darkMode
+                            ? "text-gray-300 hover:bg-gray-600 hover:text-green-400"
+                            : "text-gray-700 hover:bg-gray-100 hover:text-green-600"
+                            }`}
                         >
                           <ShareIcon className="w-5 h-5" />
                           <span className="font-medium">Share</span>
@@ -1909,11 +2011,10 @@ const NewsFeed = ({
                             closeModal();
                             handleShare(selectedPost);
                           }}
-                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                            darkMode
-                              ? "text-gray-300 hover:bg-gray-600 hover:text-green-400"
-                              : "text-gray-700 hover:bg-gray-100 hover:text-green-600"
-                          }`}
+                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${darkMode
+                            ? "text-gray-300 hover:bg-gray-600 hover:text-green-400"
+                            : "text-gray-700 hover:bg-gray-100 hover:text-green-600"
+                            }`}
                         >
                           <ShareIcon className="w-5 h-5" />
                           <span className="font-medium">Share</span>
@@ -1921,9 +2022,8 @@ const NewsFeed = ({
 
                         {/* Message for non-logged in users */}
                         <div
-                          className={`flex-1 text-center px-4 py-2 text-sm ${
-                            darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
+                          className={`flex-1 text-center px-4 py-2 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"
+                            }`}
                         >
                           Login to like, comment & save
                         </div>
@@ -1934,14 +2034,12 @@ const NewsFeed = ({
                   {/* Comments Section - Only show when logged in */}
                   {isAuthenticated && (
                     <div
-                      className={`border-t pt-4 ${
-                        darkMode ? "border-gray-700" : "border-gray-200"
-                      }`}
+                      className={`border-t pt-4 ${darkMode ? "border-gray-700" : "border-gray-200"
+                        }`}
                     >
                       <h3
-                        className={`text-lg font-semibold mb-4 ${
-                          darkMode ? "text-white" : "text-gray-900"
-                        }`}
+                        className={`text-lg font-semibold mb-4 ${darkMode ? "text-white" : "text-gray-900"
+                          }`}
                       >
                         Comments ({comments.length})
                       </h3>
@@ -1950,14 +2048,12 @@ const NewsFeed = ({
                       {isAuthenticated && (
                         <div className="mb-6">
                           <div
-                            className={`flex space-x-3 p-3 rounded-lg ${
-                              darkMode ? "bg-gray-700" : "bg-gray-50"
-                            }`}
+                            className={`flex space-x-3 p-3 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"
+                              }`}
                           >
                             <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                darkMode ? "bg-green-600" : "bg-green-500"
-                              }`}
+                              className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-green-600" : "bg-green-500"
+                                }`}
                             >
                               <span className="text-white font-semibold">
                                 U
@@ -1969,25 +2065,23 @@ const NewsFeed = ({
                                 onChange={(e) => setCommentText(e.target.value)}
                                 placeholder="Write a comment..."
                                 rows="3"
-                                className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                                  darkMode
-                                    ? "bg-gray-600 text-white placeholder-gray-400"
-                                    : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
-                                }`}
+                                className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode
+                                  ? "bg-gray-600 text-white placeholder-gray-400"
+                                  : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
+                                  }`}
                               />
                               <div className="flex justify-end mt-2">
                                 <button
                                   onClick={handleAddComment}
                                   disabled={!commentText.trim()}
-                                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                                    commentText.trim()
-                                      ? darkMode
-                                        ? "bg-green-600 hover:bg-green-700 text-white"
-                                        : "bg-green-500 hover:bg-green-600 text-white"
-                                      : darkMode
+                                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${commentText.trim()
+                                    ? darkMode
+                                      ? "bg-green-600 hover:bg-green-700 text-white"
+                                      : "bg-green-500 hover:bg-green-600 text-white"
+                                    : darkMode
                                       ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                  }`}
+                                    }`}
                                 >
                                   Post Comment
                                 </button>
@@ -1998,21 +2092,20 @@ const NewsFeed = ({
                       )}
 
                       {/* Comments List */}
-<div
-  className="space-y-4 max-h-96 overflow-y-auto"
-  style={{
-    scrollbarWidth: "none", // Firefox
-    msOverflowStyle: "none", // IE & Edge
-  }}
->
+                      <div
+                        className="space-y-4 max-h-96 overflow-y-auto"
+                        style={{
+                          scrollbarWidth: "none", // Firefox
+                          msOverflowStyle: "none", // IE & Edge
+                        }}
+                      >
                         {comments.length > 0 ? (
                           comments.map((comment) => (
                             <div key={comment.id}>
                               {/* Main Comment */}
                               <div
-                                className={`flex space-x-3 p-3 rounded-lg ${
-                                  darkMode ? "bg-gray-700" : "bg-gray-50"
-                                }`}
+                                className={`flex space-x-3 p-3 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"
+                                  }`}
                               >
                                 <img
                                   src={comment.user.avatar}
@@ -2023,31 +2116,28 @@ const NewsFeed = ({
                                   <div className="flex items-center justify-between mb-1">
                                     <div>
                                       <h4
-                                        className={`font-semibold text-sm ${
-                                          darkMode
-                                            ? "text-white"
-                                            : "text-gray-900"
-                                        }`}
+                                        className={`font-semibold text-sm ${darkMode
+                                          ? "text-white"
+                                          : "text-gray-900"
+                                          }`}
                                       >
                                         {comment.user.name}
                                       </h4>
                                       <p
-                                        className={`text-xs ${
-                                          darkMode
-                                            ? "text-gray-400"
-                                            : "text-gray-500"
-                                        }`}
+                                        className={`text-xs ${darkMode
+                                          ? "text-gray-400"
+                                          : "text-gray-500"
+                                          }`}
                                       >
                                         {comment.timestamp}
                                       </p>
                                     </div>
                                   </div>
                                   <p
-                                    className={`text-sm mb-2 ${
-                                      darkMode
-                                        ? "text-gray-300"
-                                        : "text-gray-700"
-                                    }`}
+                                    className={`text-sm mb-2 ${darkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-700"
+                                      }`}
                                   >
                                     {comment.text}
                                   </p>
@@ -2056,11 +2146,10 @@ const NewsFeed = ({
                                       onClick={() =>
                                         handleCommentLike(comment.id)
                                       }
-                                      className={`flex items-center space-x-1 text-xs transition-colors ${
-                                        darkMode
-                                          ? "text-gray-400 hover:text-green-400"
-                                          : "text-gray-600 hover:text-green-600"
-                                      }`}
+                                      className={`flex items-center space-x-1 text-xs transition-colors ${darkMode
+                                        ? "text-gray-400 hover:text-green-400"
+                                        : "text-gray-600 hover:text-green-600"
+                                        }`}
                                     >
                                       <HeartIcon className="w-4 h-4" />
                                       <span>
@@ -2071,22 +2160,20 @@ const NewsFeed = ({
                                     </button>
                                     <button
                                       onClick={() => setReplyingTo(comment.id)}
-                                      className={`text-xs transition-colors ${
-                                        darkMode
-                                          ? "text-gray-400 hover:text-green-400"
-                                          : "text-gray-600 hover:text-green-600"
-                                      }`}
+                                      className={`text-xs transition-colors ${darkMode
+                                        ? "text-gray-400 hover:text-green-400"
+                                        : "text-gray-600 hover:text-green-600"
+                                        }`}
                                     >
                                       Reply
                                     </button>
                                     {comment.replies &&
                                       comment.replies.length > 0 && (
                                         <span
-                                          className={`text-xs ${
-                                            darkMode
-                                              ? "text-gray-500"
-                                              : "text-gray-400"
-                                          }`}
+                                          className={`text-xs ${darkMode
+                                            ? "text-gray-500"
+                                            : "text-gray-400"
+                                            }`}
                                         >
                                           {comment.replies.length}{" "}
                                           {comment.replies.length === 1
@@ -2101,17 +2188,15 @@ const NewsFeed = ({
                               {/* Reply Input */}
                               {replyingTo === comment.id && isAuthenticated && (
                                 <div
-                                  className={`ml-12 mt-2 p-3 rounded-lg ${
-                                    darkMode ? "bg-gray-700" : "bg-gray-50"
-                                  }`}
+                                  className={`ml-12 mt-2 p-3 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"
+                                    }`}
                                 >
                                   <div className="flex space-x-3">
                                     <div
-                                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                        darkMode
-                                          ? "bg-green-600"
-                                          : "bg-green-500"
-                                      }`}
+                                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode
+                                        ? "bg-green-600"
+                                        : "bg-green-500"
+                                        }`}
                                     >
                                       <span className="text-white font-semibold text-xs">
                                         U
@@ -2126,20 +2211,18 @@ const NewsFeed = ({
                                         placeholder={`Reply to ${comment.user.name}...`}
                                         rows="2"
                                         autoFocus
-                                        className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                                          darkMode
-                                            ? "bg-gray-600 text-white placeholder-gray-400"
-                                            : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
-                                        }`}
+                                        className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode
+                                          ? "bg-gray-600 text-white placeholder-gray-400"
+                                          : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
+                                          }`}
                                       />
                                       <div className="flex justify-end space-x-2 mt-2">
                                         <button
                                           onClick={handleCancelReply}
-                                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                            darkMode
-                                              ? "bg-gray-600 hover:bg-gray-500 text-gray-300"
-                                              : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                                          }`}
+                                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${darkMode
+                                            ? "bg-gray-600 hover:bg-gray-500 text-gray-300"
+                                            : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                                            }`}
                                         >
                                           Cancel
                                         </button>
@@ -2148,15 +2231,14 @@ const NewsFeed = ({
                                             handleAddReply(comment.id)
                                           }
                                           disabled={!replyText.trim()}
-                                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                            replyText.trim()
-                                              ? darkMode
-                                                ? "bg-green-600 hover:bg-green-700 text-white"
-                                                : "bg-green-500 hover:bg-green-600 text-white"
-                                              : darkMode
+                                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${replyText.trim()
+                                            ? darkMode
+                                              ? "bg-green-600 hover:bg-green-700 text-white"
+                                              : "bg-green-500 hover:bg-green-600 text-white"
+                                            : darkMode
                                               ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                                               : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                          }`}
+                                            }`}
                                         >
                                           Reply
                                         </button>
@@ -2173,11 +2255,10 @@ const NewsFeed = ({
                                     {comment.replies.map((reply) => (
                                       <div
                                         key={reply.id}
-                                        className={`flex space-x-3 p-3 rounded-lg ${
-                                          darkMode
-                                            ? "bg-gray-700"
-                                            : "bg-gray-50"
-                                        }`}
+                                        className={`flex space-x-3 p-3 rounded-lg ${darkMode
+                                          ? "bg-gray-700"
+                                          : "bg-gray-50"
+                                          }`}
                                       >
                                         <img
                                           src={reply.user.avatar}
@@ -2188,31 +2269,28 @@ const NewsFeed = ({
                                           <div className="flex items-center justify-between mb-1">
                                             <div>
                                               <h4
-                                                className={`font-semibold text-sm ${
-                                                  darkMode
-                                                    ? "text-white"
-                                                    : "text-gray-900"
-                                                }`}
+                                                className={`font-semibold text-sm ${darkMode
+                                                  ? "text-white"
+                                                  : "text-gray-900"
+                                                  }`}
                                               >
                                                 {reply.user.name}
                                               </h4>
                                               <p
-                                                className={`text-xs ${
-                                                  darkMode
-                                                    ? "text-gray-400"
-                                                    : "text-gray-500"
-                                                }`}
+                                                className={`text-xs ${darkMode
+                                                  ? "text-gray-400"
+                                                  : "text-gray-500"
+                                                  }`}
                                               >
                                                 {reply.timestamp}
                                               </p>
                                             </div>
                                           </div>
                                           <p
-                                            className={`text-sm mb-2 ${
-                                              darkMode
-                                                ? "text-gray-300"
-                                                : "text-gray-700"
-                                            }`}
+                                            className={`text-sm mb-2 ${darkMode
+                                              ? "text-gray-300"
+                                              : "text-gray-700"
+                                              }`}
                                           >
                                             {reply.text}
                                           </p>
@@ -2224,11 +2302,10 @@ const NewsFeed = ({
                                                   reply.id
                                                 )
                                               }
-                                              className={`flex items-center space-x-1 text-xs transition-colors ${
-                                                darkMode
-                                                  ? "text-gray-400 hover:text-green-400"
-                                                  : "text-gray-600 hover:text-green-600"
-                                              }`}
+                                              className={`flex items-center space-x-1 text-xs transition-colors ${darkMode
+                                                ? "text-gray-400 hover:text-green-400"
+                                                : "text-gray-600 hover:text-green-600"
+                                                }`}
                                             >
                                               <HeartIcon className="w-3 h-3" />
                                               <span>
@@ -2247,14 +2324,12 @@ const NewsFeed = ({
                           ))
                         ) : (
                           <div
-                            className={`text-center py-8 ${
-                              darkMode ? "text-gray-400" : "text-gray-500"
-                            }`}
+                            className={`text-center py-8 ${darkMode ? "text-gray-400" : "text-gray-500"
+                              }`}
                           >
                             <ChatBubbleOvalLeftIcon
-                              className={`w-12 h-12 mx-auto mb-2 ${
-                                darkMode ? "text-gray-600" : "text-gray-300"
-                              }`}
+                              className={`w-12 h-12 mx-auto mb-2 ${darkMode ? "text-gray-600" : "text-gray-300"
+                                }`}
                             />
                             <p>No comments yet. Be the first to comment!</p>
                           </div>
@@ -2273,37 +2348,33 @@ const NewsFeed = ({
       {showReportModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-           <div
-  className="fixed inset-0 bg-transparent backdrop-blur-md transition-opacity"
-  onClick={() => setShowReportModal(false)}
-/>
+            <div
+              className="fixed inset-0 bg-transparent backdrop-blur-md transition-opacity"
+              onClick={() => setShowReportModal(false)}
+            />
 
 
             <div
-              className={`relative rounded-2xl shadow-xl max-w-md w-full ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              }`}
+              className={`relative rounded-2xl shadow-xl max-w-md w-full ${darkMode ? "bg-gray-800" : "bg-white"
+                }`}
             >
               {/* Modal Header */}
               <div
-                className={`flex items-center justify-between p-6 border-b ${
-                  darkMode ? "border-gray-700" : "border-gray-200"
-                }`}
+                className={`flex items-center justify-between p-6 border-b ${darkMode ? "border-gray-700" : "border-gray-200"
+                  }`}
               >
                 <h2
-                  className={`text-xl font-semibold ${
-                    darkMode ? "text-white" : "text-gray-900"
-                  }`}
+                  className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-900"
+                    }`}
                 >
                   Report Post
                 </h2>
                 <button
                   onClick={() => setShowReportModal(false)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    darkMode
-                      ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                  }`}
+                  className={`p-2 rounded-lg transition-colors ${darkMode
+                    ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                    : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                    }`}
                 >
                   <XMarkIcon className="w-6 h-6" />
                 </button>
@@ -2312,9 +2383,8 @@ const NewsFeed = ({
               {/* Modal Content */}
               <div className="p-6">
                 <p
-                  className={`text-sm mb-4 ${
-                    darkMode ? "text-gray-300" : "text-gray-600"
-                  }`}
+                  className={`text-sm mb-4 ${darkMode ? "text-gray-300" : "text-gray-600"
+                    }`}
                 >
                   Help us understand what's wrong with this post. Your report
                   will be reviewed by our team.
@@ -2323,9 +2393,8 @@ const NewsFeed = ({
                 {/* Reason Selection */}
                 <div className="mb-4">
                   <label
-                    className={`block text-sm font-medium mb-2 ${
-                      darkMode ? "text-gray-200" : "text-gray-700"
-                    }`}
+                    className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-200" : "text-gray-700"
+                      }`}
                   >
                     Reason for reporting <span className="text-red-500">*</span>
                   </label>
@@ -2333,15 +2402,14 @@ const NewsFeed = ({
                     {reportReasons.map((reason) => (
                       <label
                         key={reason}
-                        className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${
-                          reportReason === reason
-                            ? darkMode
-                              ? "bg-red-900 bg-opacity-30 border-2 border-red-500"
-                              : "bg-red-50 border-2 border-red-500"
-                            : darkMode
+                        className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${reportReason === reason
+                          ? darkMode
+                            ? "bg-red-900 bg-opacity-30 border-2 border-red-500"
+                            : "bg-red-50 border-2 border-red-500"
+                          : darkMode
                             ? "bg-gray-700 hover:bg-gray-600 border-2 border-gray-600"
                             : "bg-gray-50 hover:bg-gray-100 border-2 border-gray-200"
-                        }`}
+                          }`}
                       >
                         <input
                           type="radio"
@@ -2352,9 +2420,8 @@ const NewsFeed = ({
                           className="mr-3 text-red-500 focus:ring-red-500"
                         />
                         <span
-                          className={`text-sm ${
-                            darkMode ? "text-gray-200" : "text-gray-700"
-                          }`}
+                          className={`text-sm ${darkMode ? "text-gray-200" : "text-gray-700"
+                            }`}
                         >
                           {reason}
                         </span>
@@ -2366,9 +2433,8 @@ const NewsFeed = ({
                 {/* Additional Comments */}
                 <div className="mb-6">
                   <label
-                    className={`block text-sm font-medium mb-2 ${
-                      darkMode ? "text-gray-200" : "text-gray-700"
-                    }`}
+                    className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-200" : "text-gray-700"
+                      }`}
                   >
                     Additional details (optional)
                   </label>
@@ -2377,11 +2443,10 @@ const NewsFeed = ({
                     onChange={(e) => setReportComment(e.target.value)}
                     placeholder="Provide any additional information that might help us understand the issue..."
                     rows="4"
-                    className={`w-full px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-red-500 ${
-                      darkMode
-                        ? "bg-gray-700 text-white placeholder-gray-400 border border-gray-600"
-                        : "bg-gray-50 text-gray-900 placeholder-gray-500 border border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-red-500 ${darkMode
+                      ? "bg-gray-700 text-white placeholder-gray-400 border border-gray-600"
+                      : "bg-gray-50 text-gray-900 placeholder-gray-500 border border-gray-300"
+                      }`}
                   />
                 </div>
 
@@ -2393,24 +2458,22 @@ const NewsFeed = ({
                       setReportReason("");
                       setReportComment("");
                     }}
-                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
-                      darkMode
-                        ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                        : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                    }`}
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${darkMode
+                      ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                      : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      }`}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleReportSubmit}
                     disabled={!reportReason}
-                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
-                      reportReason
-                        ? "bg-red-500 hover:bg-red-600 text-white"
-                        : darkMode
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${reportReason
+                      ? "bg-red-500 hover:bg-red-600 text-white"
+                      : darkMode
                         ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     Report Post
                   </button>
