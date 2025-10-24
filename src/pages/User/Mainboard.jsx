@@ -162,6 +162,7 @@ const Mainboard = () => {
           location: performer.location || "Unknown Location",
           type: performer.Role === "Super" ? "admin" : (performer.Role || "User").toLowerCase(),
           username: performer.Username || "unknown",
+          user_type: performer.user_type || "user",
           email: performer.Email || "",
           isVerified: !!performer.email_verified_at,
           ratings: performer.ratings || []
@@ -175,12 +176,35 @@ const Mainboard = () => {
 
 
 
- const handleViewUserProfile = (user) => {
-  setSelectedUser(user);
+const handleViewUserProfile = (user) => {
+  // Transform the user data to match the expected format
+  const transformedUser = {
+    id: user.id,
+    name: user.name,
+    username: user.username || `@${(user.name || '').toLowerCase().replace(/\s+/g, '')}`,
+    avatar: user.avatar,
+    coverPhoto: user.cover_photo || user.coverPhoto || 
+      'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
+    bio: user.bio || `${user.user_type || 'User'} on AgriConnect`,
+    location: user.location || 'Philippines',
+    joinDate: user.created_at ? 
+      `Joined ${new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` : 
+      'Member',
+    rating: user.rating || 0,
+    totalReviews: user.totalReviews || 0,
+    followers: user.followers || 0,
+    following: user.following || 0,
+    isVerified: user.isVerified || false,
+    specialties: user.specialties || [],
+    user_type: user.user_type || user.type || 'user',
+    email: user.email || ''
+  };
+  
+  setSelectedUser(transformedUser);
   setViewingUserProfile(true);
   setUserSearchTerm("");
   setShowUserResults(false);
-  setMobileTab("home");  // ← ADD THIS LINE
+  setMobileTab("home");
 };
 
   const handleBackFromUserProfile = () => {
@@ -751,18 +775,16 @@ const Mainboard = () => {
                                         >
                                           {user.name}
                                         </h4>
-                                        <span
-                                          className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${user.type === "seller"
-                                              ? darkMode
-                                                ? "bg-blue-600 text-blue-100"
-                                                : "bg-blue-100 text-blue-600"
-                                              : darkMode
-                                                ? "bg-purple-600 text-purple-100"
-                                                : "bg-purple-100 text-purple-600"
-                                            }`}
-                                        >
-                                          {user.type}
-                                        </span>
+
+<span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+  (user.user_type || user.type) === "seller"
+    ? darkMode ? "bg-blue-600 text-blue-100" : "bg-blue-100 text-blue-600"
+    : (user.user_type || user.type) === "buyer"
+    ? darkMode ? "bg-purple-600 text-purple-100" : "bg-purple-100 text-purple-600"
+    : darkMode ? "bg-green-600 text-green-100" : "bg-green-100 text-green-600"
+}`}>
+  {user.user_type || user.type}
+</span>
                                       </div>
                                       <div
                                         className={`flex items-center gap-1 text-xs ${darkMode ? "text-gray-400" : "text-gray-500"
@@ -1011,13 +1033,7 @@ const Mainboard = () => {
                               return (
                                 <div
                                   key={`performer-${performer.id}`}
-                                  onClick={() => {
-                                    if (!isAuthenticated) {
-                                      setShowLoginModal(true);
-                                      return;
-                                    }
-                                    handleViewUserProfile(performer);
-                                  }}
+                                  
                                   className={`${darkMode
                                       ? "bg-gray-700 hover:bg-gray-650"
                                       : "bg-gray-50 hover:bg-gray-100"
@@ -1089,17 +1105,18 @@ const Mainboard = () => {
                                         </div>
 
                                         {/* Location */}
-                                        <div
-                                          className={`flex items-center gap-1 text-xs mb-2 ${darkMode
-                                              ? "text-gray-400"
-                                              : "text-gray-500"
-                                            }`}
-                                        >
-                                          <MapPin className="w-3 h-3 flex-shrink-0" />
-                                          <span className="truncate">
-                                            {performer.location}
-                                          </span>
-                                        </div>
+   {/* Location - ✅ FIXED */}
+<div
+  className={`flex items-center gap-1 text-xs mb-2 ${darkMode
+      ? "text-gray-400"
+      : "text-gray-500"
+    }`}
+>
+  <MapPin className="w-3 h-3 flex-shrink-0" />
+  <span className="truncate">
+    {performer.location || "No location set"}  {/* ✅ USE performer.location */}
+  </span>
+</div>
 
                                         {/* Rating */}
                                         <div className="flex items-center gap-1">

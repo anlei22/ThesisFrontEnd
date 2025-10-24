@@ -3,12 +3,9 @@ import {
   Search,
   Check,
   X,
-  Eye,
   Clock,
   UserCheck,
   UserX,
-  Filter,
-  ChevronDown,
   Phone,
   Mail,
   MapPin,
@@ -19,10 +16,10 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Edit,
   Save,
-  Camera,
-  Loader
+  Loader,
+  Ban,
+  Trash2
 } from "lucide-react";
 
 const User = () => {
@@ -33,24 +30,23 @@ const User = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingUser, setEditingUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [users, setUsers] = useState([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [apiError, setApiError] = useState(null);
 
-  // API Configuration - Update these values with your actual backend details
+  // Success Modal State
+  const [successModal, setSuccessModal] = useState({
+    show: false,
+    type: '', // 'approve', 'ban', 'admin', 'delete', 'forapproval'
+    user: null,
+  });
+
+  // API Configuration
   const API_BASE_URL = 'http://localhost:8000/api';
   const API_KEY = 'gY7uVz2QeTXB1oLkwA@mJ5fPR9dNshv03tKMiC!bznqESGUlxyWcHmZ86OFD4rja';
   
-  // Helper function to get auth token
   const getAuthToken = () => {
-    const token = localStorage.getItem('login-token');
-    console.log('🔑 Token Debug:', {
-      tokenExists: !!token,
-      tokenLength: token?.length,
-      tokenPreview: token ? `${token.substring(0, 20)}...${token.substring(token.length - 5)}` : 'NULL'
-    });
-    return token;
+    return localStorage.getItem('login-token');
   };
 
   const [confirmModal, setConfirmModal] = useState({
@@ -60,7 +56,6 @@ const User = () => {
     user: null,
   });
 
-  // Fetch users from backend on component mount
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -72,14 +67,6 @@ const User = () => {
       
       const token = getAuthToken();
       
-      console.log('🔄 Fetching users from backend...');
-      console.log('📡 API Request:', {
-        url: `${API_BASE_URL}/admin/user-listings`,
-        method: 'GET',
-        hasToken: !!token,
-        hasApiKey: !!API_KEY
-      });
-      
       const response = await fetch(`${API_BASE_URL}/admin/user-listings`, {
         method: 'GET',
         headers: {
@@ -89,40 +76,48 @@ const User = () => {
         }
       });
 
-      console.log('📥 Response Status:', response.status, response.statusText);
-
       if (!response.ok) {
         throw new Error(`Failed to fetch users: ${response.status}`);
       }
 
       const data = await response.json();
       
-      // Transform backend data to match frontend structure
-      const transformedUsers = data.map(user => ({
-        id: user.id,
-        firstName: user.FirstName || user.name?.split(' ')[0] || '',
-        middleName: user.middle_name || '',
-        surname: user.last_name || user.surname || user.name?.split(' ').slice(1).join(' ') || '',
-        email: user.email,
-        role: user.role || 'User',
-        joinDate: user.created_at || user.join_date,
-        phone: user.phone || user.contact_number || '',
-        address: user.address || '',
-        birthday: user.birthday || user.date_of_birth || '',
-        age: user.age || '',
-        sex: user.sex || user.gender || '',
-        password: '********',
-        confirmPassword: '********',
-        bio: user.bio || user.description || '',
-        profileImage: user.profile_image || user.profile_picture || `https://i.pravatar.cc/100?img=${user.id}`,
-        idPhoto: user.id_photo || user.government_id || 'https://via.placeholder.com/400x250?text=ID+Photo',
-        selfiePhoto: user.selfie_photo || user.selfie || 'https://via.placeholder.com/400x250?text=Selfie',
-        status: user.status === 'banned' ? 'disapproved' : user.status || 'approved',
-      }));
+      const transformedUsers = data.map(user => {
+        let mappedStatus = 'approved';
+        const dbStatus = (user.status || user.Status || 'Approved').toLowerCase();
+        
+        if (dbStatus === 'approved') {
+          mappedStatus = 'approved';
+        } else if (dbStatus === 'banned') {
+          mappedStatus = 'banned';
+        } else if (dbStatus === 'pending' || dbStatus === 'for verification') {
+          mappedStatus = 'for verification';
+        }
+        
+        return {
+          id: user.id,
+          firstName: user.FirstName || '',
+          middleName: user.MiddleName || user.middle_name || '',
+          surname: user.LastName || user.last_name || user.surname || '',
+          email: user.Email || user.email || '',
+          role: user.Role || user.role || 'User',
+          joinDate: user.created_at || user.join_date || new Date().toISOString(),
+          phone: user.Phone || user.phone || user.contact_number || '',
+          address: user.Address || user.address || '',
+          birthday: user.Birthday || user.birthday || user.date_of_birth || '',
+          age: user.Age || user.age || '',
+          sex: user.Sex || user.sex || user.gender || '',
+          bio: user.Bio || user.bio || user.description || '',
+          profileImage: user.ProfileImage || user.profile_image || user.profile_picture || `https://i.pravatar.cc/100?img=${user.id}`,
+          idPhoto: user.IDPhoto || user.id_photo || user.government_id || 'https://via.placeholder.com/400x250?text=ID+Photo',
+          selfiePhoto: user.SelfiePhoto || user.selfie_photo || user.selfie || 'https://via.placeholder.com/400x250?text=Selfie',
+          status: mappedStatus,
+        };
+      });
 
       setUsers(transformedUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('❌ Error fetching users:', error);
       setApiError('Failed to load users. Please check your connection and try again.');
       setUsers([]);
     } finally {
@@ -130,7 +125,6 @@ const User = () => {
     }
   };
 
-  // Tab configuration
   const tabs = [
     { 
       id: 'all-users', 
@@ -138,20 +132,6 @@ const User = () => {
       icon: Users, 
       filter: (user) => true,
       color: 'blue'
-    },
-    { 
-      id: 'users', 
-      name: 'Users', 
-      icon: UserIcon, 
-      filter: (user) => user.role === 'User',
-      color: 'indigo'
-    },
-    { 
-      id: 'admin', 
-      name: 'Admin', 
-      icon: Shield, 
-      filter: (user) => user.role === 'Admin',
-      color: 'purple'
     },
     { 
       id: 'approved', 
@@ -168,10 +148,10 @@ const User = () => {
       color: 'yellow'
     },
     { 
-      id: 'disapproved', 
-      name: 'Disapproved', 
+      id: 'banned', 
+      name: 'Banned', 
       icon: XCircle, 
-      filter: (user) => user.status === 'disapproved',
+      filter: (user) => user.status === 'banned',
       color: 'red'
     }
   ];
@@ -219,7 +199,7 @@ const User = () => {
         return "bg-green-100 text-green-800 border-green-200";
       case "for verification":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "disapproved":
+      case "banned":
         return "bg-red-100 text-red-800 border-red-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -232,7 +212,7 @@ const User = () => {
         return <Check className="w-3 h-3" />;
       case "for verification":
         return <Clock className="w-3 h-3" />;
-      case "disapproved":
+      case "banned":
         return <X className="w-3 h-3" />;
       default:
         return null;
@@ -243,24 +223,27 @@ const User = () => {
     if (isActive) {
       return {
         blue: 'bg-blue-600 text-white border-blue-600',
-        indigo: 'bg-indigo-600 text-white border-indigo-600',
-        purple: 'bg-purple-600 text-white border-purple-600',
         green: 'bg-green-600 text-white border-green-600',
         yellow: 'bg-yellow-500 text-white border-yellow-500',
         red: 'bg-red-600 text-white border-red-600',
-        gray: 'bg-gray-600 text-white border-gray-600'
       }[color];
     }
     return 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50';
   };
 
-  // Confirmation Modal Handlers
   const openConfirmModal = (user, action, message) => {
     setConfirmModal({ show: true, user, action, message });
   };
   
   const closeConfirm = () => setConfirmModal({ ...confirmModal, show: false });
   
+  const showSuccessMessage = (type, user) => {
+    setSuccessModal({ show: true, type, user });
+    setTimeout(() => {
+      setSuccessModal({ show: false, type: '', user: null });
+    }, 3000);
+  };
+
   const handleConfirm = async () => {
     if (!confirmModal.user) return;
     const { user, action } = confirmModal;
@@ -286,9 +269,11 @@ const User = () => {
           }
 
           setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "approved" } : u)));
+          closeAllModals();
+          showSuccessMessage('approve', user);
           break;
           
-        case "disapprove":
+        case "ban":
           const banResponse = await fetch(`${API_BASE_URL}/admin/user-listings/ban/${user.id}`, {
             method: 'POST',
             headers: {
@@ -304,12 +289,14 @@ const User = () => {
 
           const banResult = await banResponse.json();
           if (banResult.status === 'success') {
-            setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "disapproved" } : u)));
+            setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "banned" } : u)));
+            closeAllModals();
+            showSuccessMessage('ban', user);
           }
           break;
-          
-        case "mark-review":
-          const reviewResponse = await fetch(`${API_BASE_URL}/admin/user-listings/update/${user.id}`, {
+
+        case "forapproval":
+          const forApprovalResponse = await fetch(`${API_BASE_URL}/admin/user-listings/update/${user.id}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -319,18 +306,37 @@ const User = () => {
             body: JSON.stringify({ status: 'for verification' })
           });
 
-          if (!reviewResponse.ok) {
-            throw new Error('Failed to update user status');
+          if (!forApprovalResponse.ok) {
+            throw new Error('Failed to move user to for approval');
           }
 
           setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "for verification" } : u)));
+          closeAllModals();
+          showSuccessMessage('forapproval', user);
+          break;
+
+        case "delete":
+          const deleteResponse = await fetch(`${API_BASE_URL}/admin/user-listings/delete/${user.id}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-KEY': API_KEY,
+              'login-token': getAuthToken(),
+            }
+          });
+
+          if (!deleteResponse.ok) {
+            throw new Error('Failed to delete user');
+          }
+
+          setUsers(users.filter((u) => u.id !== user.id));
+          closeAllModals();
+          showSuccessMessage('delete', user);
           break;
           
         default:
           break;
       }
-      
-      closeAllModals();
     } catch (error) {
       console.error('Error updating user status:', error);
       setApiError('Failed to update user status. Please try again.');
@@ -345,24 +351,7 @@ const User = () => {
       
       try {
         const userData = {
-          first_name: editingUser.firstName,
-          middle_name: editingUser.middleName,
-          last_name: editingUser.surname,
-          email: editingUser.email,
-          phone: editingUser.phone,
-          address: editingUser.address,
-          birthday: editingUser.birthday,
-          age: editingUser.age,
-          sex: editingUser.sex,
-          role: editingUser.role,
-          bio: editingUser.bio,
-          profile_image: editingUser.profileImage,
-          id_photo: editingUser.idPhoto,
-          selfie_photo: editingUser.selfiePhoto,
-          ...(editingUser.password && editingUser.password !== '********' && {
-            password: editingUser.password,
-            password_confirmation: editingUser.confirmPassword
-          })
+          Role: 'Admin'
         };
 
         const response = await fetch(`${API_BASE_URL}/admin/user-listings/update/${editingUser.id}`, {
@@ -379,22 +368,18 @@ const User = () => {
           throw new Error('Failed to update user');
         }
 
-        const result = await response.json();
-        
+        const updatedUser = { ...editingUser, role: 'Admin' };
         setUsers(users.map(user => 
-          user.id === editingUser.id ? editingUser : user
+          user.id === editingUser.id ? updatedUser : user
         ));
         
         if (selectedUser && selectedUser.id === editingUser.id) {
-          setSelectedUser(editingUser);
+          setSelectedUser(updatedUser);
         }
         
-        setShowSuccessMessage(true);
-        
-        setTimeout(() => {
-          setShowSuccessMessage(false);
-          closeEditModal();
-        }, 3000);
+        closeEditModal();
+        closeModal();
+        showSuccessMessage('admin', editingUser);
       } catch (error) {
         console.error('Error updating user:', error);
         setApiError('Failed to save changes. Please try again.');
@@ -404,108 +389,111 @@ const User = () => {
     }
   };
 
-  const handleProfileImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setEditingUser({
-          ...editingUser,
-          profileImage: event.target.result
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleIdPhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setEditingUser({
-          ...editingUser,
-          idPhoto: event.target.result
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSelfiePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setEditingUser({
-          ...editingUser,
-          selfiePhoto: event.target.result
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const getUserCount = (tabFilter) => {
-    const count = users.filter(tabFilter).length;
-    return count;
+    return users.filter(tabFilter).length;
   };
 
-  // Token Status Checker - for debugging
-  const TokenDebugger = () => {
-    const token = getAuthToken();
-    const [showDebug, setShowDebug] = useState(false);
-
-    if (!showDebug) {
-      return (
-        <button
-          onClick={() => setShowDebug(true)}
-          className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-700 text-sm"
-        >
-          Debug Token
-        </button>
-      );
+  const getSuccessConfig = (type) => {
+    switch(type) {
+      case 'approve':
+        return {
+          icon: CheckCircle,
+          title: 'User Approved Successfully!',
+          description: 'The user account has been approved and activated.',
+          bgColor: 'bg-green-50',
+          borderColor: 'border-green-200',
+          iconColor: 'text-green-600',
+          iconBg: 'bg-green-100'
+        };
+      case 'ban':
+        return {
+          icon: Ban,
+          title: 'User Banned Successfully!',
+          description: 'The user account has been banned and deactivated.',
+          bgColor: 'bg-red-50',
+          borderColor: 'border-red-200',
+          iconColor: 'text-red-600',
+          iconBg: 'bg-red-100'
+        };
+      case 'admin':
+        return {
+          icon: Shield,
+          title: 'Admin Role Granted!',
+          description: 'The user has been successfully promoted to administrator.',
+          bgColor: 'bg-purple-50',
+          borderColor: 'border-purple-200',
+          iconColor: 'text-purple-600',
+          iconBg: 'bg-purple-100'
+        };
+      case 'delete':
+        return {
+          icon: Trash2,
+          title: 'User Deleted Successfully!',
+          description: 'The user account has been permanently removed from the system.',
+          bgColor: 'bg-red-50',
+          borderColor: 'border-red-200',
+          iconColor: 'text-red-600',
+          iconBg: 'bg-red-100'
+        };
+      case 'forapproval':
+        return {
+          icon: Clock,
+          title: 'Moved to For Approval!',
+          description: 'The user has been moved back to pending approval status.',
+          bgColor: 'bg-yellow-50',
+          borderColor: 'border-yellow-200',
+          iconColor: 'text-yellow-600',
+          iconBg: 'bg-yellow-100'
+        };
+      default:
+        return {
+          icon: CheckCircle,
+          title: 'Action Completed!',
+          description: 'The operation was successful.',
+          bgColor: 'bg-blue-50',
+          borderColor: 'border-blue-200',
+          iconColor: 'text-blue-600',
+          iconBg: 'bg-blue-100'
+        };
     }
+  };
 
+  if (isLoadingUsers) {
     return (
-      <div className="fixed bottom-4 right-4 bg-white border border-gray-300 rounded-lg shadow-xl p-4 max-w-md">
-        <div className="flex justify-between items-start mb-3">
-          <h3 className="font-semibold text-gray-900">Token Debug Info</h3>
-          <button onClick={() => setShowDebug(false)} className="text-gray-400 hover:text-gray-600">
-            <X className="w-4 h-4" />
-          </button>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading users...</p>
         </div>
-        <div className="space-y-2 text-sm">
-          <div>
-            <span className="font-medium text-gray-700">Status: </span>
-            <span className={token ? 'text-green-600' : 'text-red-600'}>
-              {token ? '✓ Token Found' : '✗ No Token'}
-            </span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Length: </span>
-            <span className="text-gray-900">{token?.length || 0} characters</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Preview: </span>
-            <code className="text-xs bg-gray-100 px-2 py-1 rounded block mt-1 break-all">
-              {token ? `${token.substring(0, 30)}...` : 'N/A'}
-            </code>
-          </div>
-          <div className="pt-2 border-t border-gray-200">
-            <span className="font-medium text-gray-700">API URL: </span>
-            <code className="text-xs bg-gray-100 px-2 py-1 rounded block mt-1 break-all">
-              {API_BASE_URL}
-            </code>
+      </div>
+    );
+  }
+
+  if (apiError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-red-900 mb-2">Error Loading Users</h3>
+              <p className="text-red-700 text-sm mb-4">{apiError}</p>
+              <button
+                onClick={fetchUsers}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         </div>
       </div>
     );
-  };
+  }
+
   return (
     <>
       <div className="max-w-7xl mx-auto bg-gray-50 min-h-screen">
-        {/* Header */}
         <header className="bg-white sticky top-0 shadow-sm z-30 border-b">
           <div className="px-4 sm:px-6 py-4 sm:py-6">
             <div className="mb-6">
@@ -515,8 +503,7 @@ const User = () => {
               </p>
             </div>
 
-            {/* Search Bar */}
-            <div className="relative mb-6">
+            <div className="relative max-w-md mb-6">
               <input
                 type="text"
                 placeholder="Search users..."
@@ -529,7 +516,6 @@ const User = () => {
               </div>
             </div>
 
-            {/* Tab Navigation */}
             <div className="overflow-x-auto">
               <div className="flex gap-2 min-w-max pb-2">
                 {tabs.map((tab) => {
@@ -560,9 +546,7 @@ const User = () => {
           </div>
         </header>
 
-        {/* Main Content */}
         <main className="px-4 sm:px-6 py-6">
-          {/* Results Info */}
           <div className="flex items-center justify-between mb-6">
             <div className="text-sm text-gray-600">
               Showing <span className="font-medium">{filteredUsers.length}</span> user{filteredUsers.length !== 1 ? 's' : ''} 
@@ -572,88 +556,79 @@ const User = () => {
             </div>
           </div>
 
-          {/* User Cards - Clean Design */}
-    <div className="grid gap-4">
-        {filteredUsers.map((user) => (
-          <div
-            key={user.id}
-            onClick={() => handleViewProfile(user)}
-            className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 cursor-pointer"
-          >
-            <div className="p-6">
-              {/* Mobile Layout */}
-              <div className="sm:hidden">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <img
-                      src={user.profileImage}
-                      alt={`${user.firstName} ${user.surname}`}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-base font-semibold text-gray-900 truncate">
-                        {user.firstName} {user.surname}
-                      </h4>
-                      <p className="text-sm text-gray-600 truncate">{user.email}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border ${getStatusStyling(user.status)}`}>
-                          {getStatusIcon(user.status)}
-                          {user.status}
-                        </span>
-                        <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                          user.role === "Admin" ? "bg-purple-100 text-purple-800 border-purple-200" : "bg-blue-100 text-blue-800 border-blue-200"
-                        } border`}>
-                          {user.role}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                 
-                </div>
-              </div>
-
-              {/* Desktop Layout */}
-              <div className="hidden sm:block">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 flex-1">
-                    <img
-                      src={user.profileImage}
-                      alt={`${user.firstName} ${user.surname}`}
-                      className="w-16 h-16 rounded-xl object-cover border-2 border-gray-200"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h4 className="text-lg font-semibold text-gray-900">
-                          {user.firstName} {user.surname}
-                        </h4>
-                        <span className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border ${getStatusStyling(user.status)}`}>
-                          {getStatusIcon(user.status)}
-                          {user.status}
-                        </span>
-                        <span className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
-                          user.role === "Admin" ? "bg-purple-100 text-purple-800 border-purple-200" : "bg-blue-100 text-blue-800 border-blue-200"
-                        }`}>
-                          {user.role}
-                        </span>
-                      </div>
-                      <p className="text-gray-600 mb-1">{user.email}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span>Joined: {new Date(user.joinDate).toLocaleDateString()}</span>
+          <div className="grid gap-4">
+            {filteredUsers.map((user) => (
+              <div
+                key={user.id}
+                onClick={() => handleViewProfile(user)}
+                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 cursor-pointer"
+              >
+                <div className="p-6">
+                  <div className="sm:hidden">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <img
+                          src={user.profileImage}
+                          alt={`${user.firstName} ${user.surname}`}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-base font-semibold text-gray-900 truncate">
+                            {user.firstName} {user.surname}
+                          </h4>
+                          <p className="text-sm text-gray-600 truncate">{user.email}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border ${getStatusStyling(user.status)}`}>
+                              {getStatusIcon(user.status)}
+                              {user.status}
+                            </span>
+                            <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
+                              user.role === "Admin" ? "bg-purple-100 text-purple-800 border-purple-200" : "bg-blue-100 text-blue-800 border-blue-200"
+                            } border`}>
+                              {user.role}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center">
-                   
+                  <div className="hidden sm:block">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4 flex-1">
+                        <img
+                          src={user.profileImage}
+                          alt={`${user.firstName} ${user.surname}`}
+                          className="w-16 h-16 rounded-xl object-cover border-2 border-gray-200"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="text-lg font-semibold text-gray-900">
+                              {user.firstName} {user.surname}
+                            </h4>
+                            <span className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border ${getStatusStyling(user.status)}`}>
+                              {getStatusIcon(user.status)}
+                              {user.status}
+                            </span>
+                            <span className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
+                              user.role === "Admin" ? "bg-purple-100 text-purple-800 border-purple-200" : "bg-blue-100 text-blue-800 border-blue-200"
+                            }`}>
+                              {user.role}
+                            </span>
+                          </div>
+                          <p className="text-gray-600 mb-1">{user.email}</p>
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <span>Joined: {new Date(user.joinDate).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-          {/* Empty State */}
           {filteredUsers.length === 0 && (
             <div className="text-center py-12">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -679,17 +654,64 @@ const User = () => {
         </main>
       </div>
 
+      {/* Success Modal */}
+      {successModal.show && successModal.user && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform animate-scaleIn">
+            <div className="p-8">
+              <div className="text-center">
+                {(() => {
+                  const config = getSuccessConfig(successModal.type);
+                  const IconComponent = config.icon;
+                  return (
+                    <>
+                      <div className={`w-20 h-20 ${config.iconBg} rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce`}>
+                        <IconComponent className={`w-10 h-10 ${config.iconColor}`} />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                        {config.title}
+                      </h3>
+                      <p className="text-gray-600 mb-6">
+                        {config.description}
+                      </p>
+                      <div className={`${config.bgColor} border ${config.borderColor} rounded-xl p-4 mb-6`}>
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={successModal.user.profileImage}
+                            alt={`${successModal.user.firstName} ${successModal.user.surname}`}
+                            className="w-12 h-12 rounded-full border-2 border-white shadow object-cover"
+                          />
+                          <div className="text-left">
+                            <p className="font-semibold text-gray-900">
+                              {successModal.user.firstName} {successModal.user.surname}
+                            </p>
+                            <p className="text-sm text-gray-600">{successModal.user.email}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span>Changes saved successfully</span>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* User Profile Modal */}
       {showModal && selectedUser && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl">
-            {/* Modal Header */}
             <header className="flex items-center justify-between p-6 border-b bg-gray-50">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <img 
                   src={selectedUser.profileImage} 
                   alt={`${selectedUser.firstName} ${selectedUser.surname}`}
-                  className="w-10 h-10 rounded-full flex-shrink-0 border-2 border-gray-200" 
+                  className="w-10 h-10 rounded-full flex-shrink-0 border-2 border-gray-200 object-cover" 
                 />
                 <div className="min-w-0 flex-1">
                   <h3 className="font-semibold text-gray-900 truncate">
@@ -698,25 +720,26 @@ const User = () => {
                   <p className="text-sm text-gray-500">User Profile Details</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-               
-                <button
-                  onClick={closeModal}
-                  className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0"
-                >
-                  <X size={20} />
-                </button>
-              </div>
+              <button
+                onClick={closeModal}
+                className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0"
+              >
+                <X size={20} />
+              </button>
             </header>
 
-            {/* Modal Content */}
-            <div className="overflow-y-auto max-h-[calc(90vh-200px)] p-6">
-              {/* Profile Header */}
+<div  
+  className="overflow-y-auto max-h-[calc(90vh-200px)] p-6 [&::-webkit-scrollbar]:hidden"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // IE and Edge
+  }}
+>
               <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 mb-6">
                 <img
                   src={selectedUser.profileImage}
                   alt={`${selectedUser.firstName} ${selectedUser.surname}`}
-                  className="w-24 h-24 rounded-xl border-4 border-gray-200"
+                  className="w-24 h-24 rounded-xl border-4 border-gray-200 object-cover"
                 />
                 <div className="text-center sm:text-left flex-1 min-w-0">
                   <h3 className="text-2xl font-bold text-gray-800 mb-1">
@@ -737,7 +760,6 @@ const User = () => {
                 </div>
               </div>
 
-              {/* Personal Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="bg-gray-50 p-4 rounded-xl">
                   <h4 className="font-semibold text-gray-800 mb-3">Personal Information</h4>
@@ -751,35 +773,41 @@ const User = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <Calendar className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-xs text-gray-500">Birthday & Age</p>
-                        <p className="text-sm text-gray-700">
-                          {new Date(selectedUser.birthday).toLocaleDateString()} ({selectedUser.age} years old)
-                        </p>
+                    {selectedUser.birthday && (
+                      <div className="flex items-start gap-2">
+                        <Calendar className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs text-gray-500">Birthday & Age</p>
+                          <p className="text-sm text-gray-700">
+                            {new Date(selectedUser.birthday).toLocaleDateString()} ({selectedUser.age} years old)
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <UserIcon className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-xs text-gray-500">Sex</p>
-                        <p className="text-sm text-gray-700">{selectedUser.sex}</p>
+                    )}
+                    {selectedUser.sex && (
+                      <div className="flex items-start gap-2">
+                        <UserIcon className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs text-gray-500">Sex</p>
+                          <p className="text-sm text-gray-700">{selectedUser.sex}</p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-xl">
                   <h4 className="font-semibold text-gray-800 mb-3">Contact Information</h4>
                   <div className="space-y-3">
-                    <div className="flex items-start gap-2">
-                      <Phone className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-xs text-gray-500">Phone</p>
-                        <p className="text-sm text-gray-700 break-all">{selectedUser.phone}</p>
+                    {selectedUser.phone && (
+                      <div className="flex items-start gap-2">
+                        <Phone className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs text-gray-500">Phone</p>
+                          <p className="text-sm text-gray-700 break-all">{selectedUser.phone}</p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                     <div className="flex items-start gap-2">
                       <Mail className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
                       <div>
@@ -787,18 +815,19 @@ const User = () => {
                         <p className="text-sm text-gray-700 break-all">{selectedUser.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-xs text-gray-500">Address</p>
-                        <p className="text-sm text-gray-700">{selectedUser.address}</p>
+                    {selectedUser.address && (
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs text-gray-500">Address</p>
+                          <p className="text-sm text-gray-700">{selectedUser.address}</p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Account Details */}
               <div className="bg-gray-50 p-4 rounded-xl mb-6">
                 <h4 className="font-semibold text-gray-800 mb-3">Account Details</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -821,7 +850,6 @@ const User = () => {
                 </div>
               </div>
 
-              {/* Bio */}
               {selectedUser.bio && (
                 <div className="mb-6">
                   <h4 className="font-semibold text-gray-800 mb-3">About</h4>
@@ -831,15 +859,14 @@ const User = () => {
                 </div>
               )}
 
-              {/* ID and Selfie Photos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {selectedUser.idPhoto && (
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-3">ID Photo</h4>
                     <img 
                       src={selectedUser.idPhoto} 
-                      alt={`${selectedUser.firstName}'s ID Photo`} 
-                      className="w-full max-w-md border rounded-xl shadow-md"
+                      alt="ID Photo" 
+                      className="w-full border rounded-xl shadow-md object-cover"
                     />
                   </div>
                 )}
@@ -849,40 +876,70 @@ const User = () => {
                     <h4 className="font-semibold text-gray-800 mb-3">Selfie Photo</h4>
                     <img 
                       src={selectedUser.selfiePhoto} 
-                      alt={`${selectedUser.firstName}'s Selfie`} 
-                      className="w-full max-w-md border rounded-xl shadow-md"
+                      alt="Selfie Photo" 
+                      className="w-full border rounded-xl shadow-md object-cover"
                     />
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Modal Footer */}
             <footer className="p-6 border-t bg-gray-50">
               <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
-                <button
-                  onClick={() => handleEditProfile(selectedUser)}
-                  className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                >
-                  <Edit size={16} /> Edit Profile
-                </button>
-
-                {selectedUser.status !== "approved" && (
-                  <button
-                    onClick={() => openConfirmModal(selectedUser, "approve", "Set this account as Approved?")}
-                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
-                  >
-                    <UserCheck size={16} /> Approve
-                  </button>
+                {/* APPROVED STATUS - Can make admin or ban */}
+                {selectedUser.status === "approved" && (
+                  <>
+                    {selectedUser.role !== "Admin" && (
+                      <button
+                        onClick={() => handleEditProfile(selectedUser)}
+                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition-colors"
+                      >
+                        <Shield size={16} /> Make Admin
+                      </button>
+                    )}
+                    <button
+                      onClick={() => openConfirmModal(selectedUser, "ban", "Ban this account? The user will no longer be able to access the system.")}
+                      className="flex items-center justify-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors"
+                    >
+                      <UserX size={16} /> Ban User
+                    </button>
+                  </>
                 )}
 
-                {selectedUser.status !== "disapproved" && (
-                  <button
-                    onClick={() => openConfirmModal(selectedUser, "disapprove", "Set this account as Disapproved?")}
-                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
-                  >
-                    <UserX size={16} /> Disapprove
-                  </button>
+                {/* FOR VERIFICATION STATUS - Can only approve or ban */}
+                {selectedUser.status === "for verification" && (
+                  <>
+                    <button
+                      onClick={() => openConfirmModal(selectedUser, "approve", "Approve this account? The user will be able to access all features.")}
+                      className="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors"
+                    >
+                      <UserCheck size={16} /> Approve User
+                    </button>
+                    <button
+                      onClick={() => openConfirmModal(selectedUser, "ban", "Ban this account? The user will be rejected and unable to access the system.")}
+                      className="flex items-center justify-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors"
+                    >
+                      <UserX size={16} /> Ban User
+                    </button>
+                  </>
+                )}
+
+                {/* BANNED STATUS - Can move to for approval or delete */}
+                {selectedUser.status === "banned" && (
+                  <>
+                    <button
+                      onClick={() => openConfirmModal(selectedUser, "forapproval", "Move this account back to For Approval status?")}
+                      className="flex items-center justify-center gap-2 px-6 py-2.5 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium transition-colors"
+                    >
+                      <Clock size={16} /> Move to For Approval
+                    </button>
+                    <button
+                      onClick={() => openConfirmModal(selectedUser, "delete", "Permanently delete this account? This action cannot be undone and will remove all user data from the database.")}
+                      className="flex items-center justify-center gap-2 px-6 py-2.5 bg-red-700 text-white rounded-lg hover:bg-red-800 font-medium transition-colors"
+                    >
+                      <Trash2 size={16} /> Delete Permanently
+                    </button>
+                  </>
                 )}
               </div>
             </footer>
@@ -890,16 +947,15 @@ const User = () => {
         </div>
       )}
 
-      {/* Edit Profile Modal */}
+      {/* Make Admin Modal */}
       {showEditModal && editingUser && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl">
-            {/* Edit Modal Header */}
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
             <header className="flex items-center justify-between p-6 border-b bg-gray-50">
               <div className="flex items-center gap-3">
-                <Edit className="w-6 h-6 text-blue-600" />
+                <Shield className="w-6 h-6 text-purple-600" />
                 <div>
-                  <h3 className="font-semibold text-gray-900">Edit User Profile</h3>
+                  <h3 className="font-semibold text-gray-900">Grant Admin Privileges</h3>
                   <p className="text-sm text-gray-500">{editingUser.firstName} {editingUser.surname}</p>
                 </div>
               </div>
@@ -913,283 +969,59 @@ const User = () => {
               )}
             </header>
 
-            {/* Success Message */}
-            {showSuccessMessage && (
-              <div className="bg-green-50 border-l-4 border-green-400 p-4 m-6 rounded-lg">
-                <div className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-400 mr-2" />
-                  <p className="text-green-700 font-medium">Profile changes saved successfully!</p>
+            <div className="overflow-y-auto max-h-[calc(90vh-200px)] p-6">
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg mb-6">
+                <div className="flex items-start">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-sm font-semibold text-yellow-800 mb-1">Admin Role Assignment</h4>
+                    <p className="text-sm text-yellow-700">
+                      You are about to grant administrator privileges to this user. Admins have full access to manage users, content, and system settings.
+                    </p>
+                  </div>
                 </div>
               </div>
-            )}
 
-            {/* Edit Modal Content */}
-            <div className="overflow-y-auto max-h-[calc(90vh-200px)] p-6">
-              <form className="space-y-6">
-                {/* Profile Picture Section */}
-                <div className="bg-gray-50 p-6 rounded-xl">
-                  <h4 className="font-semibold text-gray-800 mb-4">Profile Picture</h4>
-                  <div className="flex flex-col items-center">
-                    <div className="relative mb-4">
-                      <img
-                        src={editingUser.profileImage}
-                        alt="Profile"
-                        className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
-                      />
-                      <label className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full cursor-pointer transition-colors">
-                        <Camera size={16} />
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleProfileImageChange}
-                          className="hidden"
-                          disabled={isLoading}
-                        />
-                      </label>
-                    </div>
-                    <p className="text-sm text-gray-600">Click the camera icon to change profile picture</p>
-                  </div>
-                </div>
-
-                {/* Personal Information */}
-                <div className="bg-gray-50 p-6 rounded-xl">
-                  <h4 className="font-semibold text-gray-800 mb-4">Personal Information</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                      <input
-                        type="text"
-                        value={editingUser.firstName}
-                        readOnly
-                        onChange={(e) => setEditingUser({...editingUser, firstName: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
-                      <input
-                        type="text"
-                        value={editingUser.middleName}
-                        readOnly
-                        onChange={(e) => setEditingUser({...editingUser, middleName: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Surname</label>
-                      <input
-                        type="text"
-                        value={editingUser.surname}
-                        readOnly
-                        onChange={(e) => setEditingUser({...editingUser, surname: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Birthday</label>
-                      <input
-                        type="date"
-                        value={editingUser.birthday}
-                        readOnly
-                        onChange={(e) => setEditingUser({...editingUser, birthday: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
-                      <input
-                        type="number"
-                        value={editingUser.age}
-                        readOnly
-                        onChange={(e) => setEditingUser({...editingUser, age: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Sex</label>
-                      <select
-                        value={editingUser.sex}
-                        
-                        onChange={(e) => setEditingUser({...editingUser, sex: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                        readOnly
-                      >
-                        <option value="">Select Sex</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contact Information */}
-                <div className="bg-gray-50 p-6 rounded-xl">
-                  
-                  <h4 className="font-semibold text-gray-800 mb-4">Contact Information</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                      <input
-                        type="tel"
-                        value={editingUser.phone}
-                        
-                        readOnly
-                        onChange={(e) => setEditingUser({...editingUser, phone: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <input
-                        type="email"
-                        value={editingUser.email}
-                        readOnly
-                        onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                    <textarea
-                      value={editingUser.address}
-                      readOnly
-                      onChange={(e) => setEditingUser({...editingUser, address: e.target.value})}
-                      rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      disabled={isLoading}
+              <div className="bg-gray-50 p-6 rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4">User Information</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={editingUser.profileImage}
+                      alt={`${editingUser.firstName} ${editingUser.surname}`}
+                      className="w-16 h-16 rounded-full border-2 border-gray-200 object-cover"
                     />
-                  </div>
-                </div>
-
-                {/* Account Settings */}
-                <div className="bg-gray-50 p-6 rounded-xl">
-                  <h4 className="font-semibold text-gray-800 mb-4">Account Settings</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                      <select
-                        value={editingUser.role}
-                        
-                        onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                      >
-                        <option value="User">User</option>
-                        <option value="Admin">Admin</option>
-                      </select>
+                      <p className="font-semibold text-gray-900">
+                        {editingUser.firstName} {editingUser.middleName} {editingUser.surname}
+                      </p>
+                      <p className="text-sm text-gray-600">{editingUser.email}</p>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                      <input
-                        type="password"
-                        value={editingUser.password}
-                        onChange={(e) => setEditingUser({...editingUser, password: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                      <input
-                        type="password"
-                        value={editingUser.confirmPassword}
-                        onChange={(e) => setEditingUser({...editingUser, confirmPassword: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={isLoading}
-                      />
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Current Role</p>
+                        <p className="font-medium text-gray-900">{editingUser.role}</p>
+                      </div>
+                      <div className="text-gray-400">→</div>
+                      <div>
+                        <p className="text-sm text-gray-600">New Role</p>
+                        <p className="font-medium text-purple-600">Admin</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Bio */}
-                <div className="bg-gray-50 p-6 rounded-xl">
-                  <h4 className="font-semibold text-gray-800 mb-4">About</h4>
-                  <textarea
-                    value={editingUser.bio}
-                    onChange={(e) => setEditingUser({...editingUser, bio: e.target.value})}
-                    rows={3}
-                    readOnly
-                    placeholder="Tell us about yourself..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                {/* Photo Upload Sections */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-gray-50 p-6 rounded-xl">
-                    <h4 className="font-semibold text-gray-800 mb-4">ID Photo</h4>
-                    {editingUser.idPhoto && (
-                      <img 
-                        src={editingUser.idPhoto}
-                   
-                        alt="ID Photo" 
-                        className="w-full max-w-xs mb-4 border rounded-lg shadow-sm"
-                      />
-                    )}
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                      <Camera className="w-4 h-4" />
-                      <span>Upload ID Photo</span>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"readOnly
-                      onChange={handleIdPhotoChange}
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  <div className="bg-gray-50 p-6 rounded-xl">
-                    <h4 className="font-semibold text-gray-800 mb-4">Selfie Photo</h4>
-                    {editingUser.selfiePhoto && (
-                      <img 
-                        src={editingUser.selfiePhoto} 
-                        alt="Selfie Photo" 
-                        className="w-full max-w-xs mb-4 border rounded-lg shadow-sm"
-                      />
-                    )}
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                      <Camera className="w-4 h-4" />
-                      <span>Upload Selfie Photo</span>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      
-                      onChange={handleSelfiePhotoChange}
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-              </form>
+              </div>
             </div>
 
-            {/* Edit Modal Footer */}
             <footer className="p-6 border-t bg-gray-50">
               <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
                 {!isLoading && (
                   <button
                     onClick={closeEditModal}
-                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium"
+                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium transition-colors"
                   >
                     <X size={16} /> Cancel
                   </button>
@@ -1197,16 +1029,16 @@ const User = () => {
                 <button
                   onClick={handleSaveEdit}
                   disabled={isLoading}
-                  className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isLoading ? (
                     <>
                       <Loader className="w-4 h-4 animate-spin" />
-                      Saving...
+                      Granting Access...
                     </>
                   ) : (
                     <>
-                      <Save size={16} /> Save Changes
+                      <Save size={16} /> Confirm Admin Role
                     </>
                   )}
                 </button>
@@ -1218,16 +1050,30 @@ const User = () => {
 
       {/* Confirmation Modal */}
       {confirmModal.show && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-blue-600" />
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                  confirmModal.action === 'delete' ? 'bg-red-100' :
+                  confirmModal.action === 'ban' ? 'bg-red-100' :
+                  confirmModal.action === 'approve' ? 'bg-green-100' :
+                  confirmModal.action === 'forapproval' ? 'bg-yellow-100' :
+                  'bg-blue-100'
+                }`}>
+                  <AlertTriangle className={`w-6 h-6 ${
+                    confirmModal.action === 'delete' ? 'text-red-600' :
+                    confirmModal.action === 'ban' ? 'text-red-600' :
+                    confirmModal.action === 'approve' ? 'text-green-600' :
+                    confirmModal.action === 'forapproval' ? 'text-yellow-600' :
+                    'text-blue-600'
+                  }`} />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Confirm Action</h3>
-                  <p className="text-sm text-gray-600">This action cannot be undone</p>
+                  <p className="text-sm text-gray-600">
+                    {confirmModal.action === 'delete' ? 'This action is permanent' : 'Please review before proceeding'}
+                  </p>
                 </div>
               </div>
               <p className="text-gray-700 mb-6">{confirmModal.message}</p>
@@ -1236,20 +1082,67 @@ const User = () => {
             <div className="flex gap-3 p-6 border-t bg-gray-50">
               <button
                 onClick={closeConfirm}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition-colors"
+                disabled={isLoading}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition-colors disabled:opacity-50"
               >
                 <X size={16} /> Cancel
               </button>
               <button
                 onClick={handleConfirm}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium transition-colors"
+                disabled={isLoading}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 ${
+                  confirmModal.action === 'delete' ? 'bg-red-700 hover:bg-red-800 text-white' :
+                  confirmModal.action === 'ban' ? 'bg-red-600 hover:bg-red-700 text-white' :
+                  confirmModal.action === 'approve' ? 'bg-green-600 hover:bg-green-700 text-white' :
+                  confirmModal.action === 'forapproval' ? 'bg-yellow-600 hover:bg-yellow-700 text-white' :
+                  'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
               >
-                <Check size={16} /> Confirm
+                {isLoading ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} /> Confirm
+                  </>
+                )}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        .animate-scaleIn {
+          animation: scaleIn 0.3s ease-out;
+        }
+      `}</style>
     </>
   );  
 };

@@ -343,7 +343,13 @@
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
+<div
+  className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // IE and Edge
+  }}
+>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
           {/* Loading State */}
@@ -486,7 +492,13 @@
                 </div>
 
                 {/* Modal Content */}
-                <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+           <div
+  className="overflow-y-auto max-h-[calc(90vh-120px)] [&::-webkit-scrollbar]:hidden"
+  style={{
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // IE and Edge
+  }}
+>
                   <div className="p-6">
                     {/* Image Gallery */}
                     <div className="relative mb-6">

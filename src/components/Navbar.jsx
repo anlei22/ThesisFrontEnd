@@ -60,7 +60,6 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
     ...(isAuthenticated ? [
       { id: 'chat', icon: ChatBubbleLeftRightIcon, iconSolid: ChatIconSolid, label: 'Chat' },
       { id: 'bookmarks', icon: BookmarkIcon, iconSolid: BookmarkIconSolid, label: 'Bookmarks' },
-      { id: 'notifications', icon: BellIcon, iconSolid: BellIconSolid, label: 'Notifications' }
     ] : []),
     { id: 'profile', icon: UserCircleIcon, iconSolid: UserIconSolid, label: 'Profile' },
   ];

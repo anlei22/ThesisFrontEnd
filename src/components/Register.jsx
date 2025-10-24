@@ -62,7 +62,7 @@
     formDataToSend.append('birthdate', formData.birthdate);
     formDataToSend.append('age', formData.age);
     formDataToSend.append('sex', formData.sex);
-    formDataToSend.append('role', formData.role);
+  formDataToSend.append('user_type', formData.role); // ✅ Changed to user_type
     
     // Add files properly
     if (formData.valid_id_picture) {

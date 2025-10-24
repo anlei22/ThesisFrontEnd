@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, Grid, List, Flag, MoreVertical } from 'lucide-react';
+import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, ChevronLeft, ChevronRight, Grid, List, Flag, MoreVertical, Edit, Trash2  } from 'lucide-react';
+import ShareModal from '../../../components/ShareModal'; // Adjust path if needed
+
+
 
 const COLORS = {
   dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
@@ -151,6 +154,310 @@ const PostGridItem = ({ post, onClick }) => (
     </div>
   </button>
 );
+
+// Profile Card Preview Component (shown when QR is scanned)
+const ProfileCardPreview = ({ user, darkMode, onViewProfile }) => {
+  const COLORS = {
+    dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
+    light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', muted: 'text-gray-600', border: 'border-gray-200' }
+  };
+  
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  
+  return (
+    <div className={`w-full max-w-sm rounded-2xl overflow-hidden shadow-xl ${scheme.card}`}>
+      {/* Cover Photo */}
+      <div className="relative h-32 overflow-hidden">
+        <img src={user.coverPhoto} alt="Cover" className="w-full h-full object-cover" />
+      </div>
+      
+      {/* Profile Picture */}
+      <div className="flex justify-center -mt-16 mb-4 px-6">
+        <div className="relative">
+          <img 
+            src={user.avatar} 
+            alt={user.name} 
+            className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg" 
+          />
+          {user.isVerified && (
+            <div className="absolute bottom-2 right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white">
+              <ShieldCheck className="w-5 h-5 text-white" />
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* User Info */}
+      <div className="px-6 pb-6 text-center">
+        <h2 className={`text-xl font-bold mb-1 ${scheme.text}`}>{user.name}</h2>
+        <p className={`text-sm mb-2 ${scheme.muted}`}>{user.username}</p>
+        
+        {/* Seller/Buyer Badge */}
+        <div className="flex justify-center mb-3">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Verified Seller
+          </span>
+        </div>
+        
+        {/* Location */}
+        <div className={`flex items-center justify-center space-x-1 mb-4 ${scheme.muted}`}>
+          <MapPin className="w-4 h-4" />
+          <span className="text-sm">{user.location}</span>
+        </div>
+        
+        {/* Rating */}
+        <div className={`flex items-center justify-center space-x-2 mb-6 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+          <RatingStars rating={user.rating} darkMode={darkMode} />
+          <span className={`text-sm font-medium ${scheme.text}`}>
+            {user.rating.toFixed(1)} ({user.totalReviews} reviews)
+          </span>
+        </div>
+        
+        {/* Contact Button */}
+        <button 
+          onClick={onViewProfile}
+          className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+        >
+          <UserPlus className="w-5 h-5" />
+          <span>View Full Profile</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// QR Code Modal Component
+// QR Code Modal Component
+const QRCodeModal = ({ user, darkMode, onClose }) => {
+  const COLORS = {
+    dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
+    light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', muted: 'text-gray-600', border: 'border-gray-200' }
+  };
+  
+  const scheme = darkMode ? COLORS.dark : COLORS.light;
+  const [showPreview, setShowPreview] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const qrRef = useRef(null);
+  
+  // Generate profile URL for QR code
+  const profileUrl = `${window.location.origin}/profile/${user.username.replace('@', '')}`;
+  
+  // Generate QR code as data URL
+  useEffect(() => {
+    const generateQR = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const size = 256;
+      const moduleSize = 8;
+      const modules = Math.floor(size / moduleSize);
+      
+      canvas.width = size;
+      canvas.height = size;
+      
+      // White background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Simple QR-like pattern (for demo)
+      ctx.fillStyle = '#000000';
+      
+      // Corner squares (position markers)
+      const cornerSize = moduleSize * 7;
+      [0, size - cornerSize].forEach(x => {
+        [0, size - cornerSize].forEach(y => {
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = moduleSize;
+          ctx.strokeRect(x + moduleSize, y + moduleSize, cornerSize - 2 * moduleSize, cornerSize - 2 * moduleSize);
+          ctx.fillRect(x + 2 * moduleSize, y + 2 * moduleSize, cornerSize - 4 * moduleSize, cornerSize - 4 * moduleSize);
+        });
+      });
+      
+      // Random pattern for data
+      for (let i = 0; i < modules; i++) {
+        for (let j = 0; j < modules; j++) {
+          if (Math.random() > 0.5) {
+            ctx.fillRect(i * moduleSize, j * moduleSize, moduleSize - 1, moduleSize - 1);
+          }
+        }
+      }
+      
+      setQrDataUrl(canvas.toDataURL());
+    };
+    
+    generateQR();
+  }, [profileUrl]);
+  
+  const handleSimulateScan = () => {
+    setShowPreview(true);
+  };
+  
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(profileUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      alert('Failed to copy link');
+    });
+  };
+  
+  const handleDownload = () => {
+    if (!qrDataUrl) {
+      alert('QR code is still generating, please wait...');
+      return;
+    }
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 300;
+    canvas.height = 380;
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const qrImage = new Image();
+    qrImage.onload = () => {
+      ctx.drawImage(qrImage, 20, 20, 260, 260);
+      
+      ctx.fillStyle = '#111827';
+      ctx.font = 'bold 18px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(user.name, 150, 310);
+      
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '14px Arial';
+      ctx.fillText(user.username, 150, 335);
+      
+      ctx.font = '12px Arial';
+      ctx.fillText('Scan to view profile', 150, 360);
+      
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${user.username.replace('@', '')}-qrcode.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      });
+    };
+    qrImage.src = qrDataUrl;
+  };
+  
+  return (
+ <div
+  className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  onClick={onClose}
+>
+     <div className={`w-full max-w-md rounded-2xl overflow-hidden ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
+        <div className={`flex items-center justify-between p-4 border-b ${scheme.border}`}>
+          <h3 className={`text-lg font-semibold ${scheme.text}`}>Share Profile QR Code</h3>
+          <button onClick={onClose} className={`p-2 rounded-full hover:opacity-80 ${scheme.muted}`}>
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {!showPreview ? (
+          <div className="p-6">
+            <div className="text-center mb-6">
+              <div ref={qrRef} className="bg-white p-4 rounded-lg inline-block mb-4">
+                <div className="w-64 h-64 flex items-center justify-center bg-gray-100 rounded relative">
+                  {qrDataUrl ? (
+                    <img src={qrDataUrl} alt="QR Code" className="w-full h-full" />
+                  ) : (
+                    <QrCode className="w-32 h-32 text-gray-400 animate-pulse" />
+                  )}
+                </div>
+              </div>
+              
+         
+              <p className={`text-sm mt-4 ${scheme.muted}`}>Scan this code to view profile</p>
+            </div>
+            
+            <div className={`mb-4 p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+              <p className={`text-xs font-medium mb-2 ${scheme.muted}`}>Profile Link</p>
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="text" 
+                  value={profileUrl} 
+                  readOnly
+                  className={`flex-1 px-3 py-2 text-sm rounded-lg border-none focus:outline-none ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-white text-gray-700'}`}
+                />
+                <button
+                  onClick={handleCopyLink}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
+                    copied 
+                      ? 'bg-green-600 text-white' 
+                      : darkMode 
+                        ? 'bg-gray-600 hover:bg-gray-500 text-gray-200' 
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                  }`}
+                >
+                  {copied ? (
+                    <>
+                      <span className="text-sm">✓</span>
+                      <span className="text-sm">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Share className="w-4 h-4" />
+                      <span className="text-sm">Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mb-3">
+              <button
+                onClick={handleDownload}
+                className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+              >
+                <Camera className="w-5 h-5" />
+                <span>Download QR</span>
+              </button>
+              
+              <button
+                onClick={handleSimulateScan}
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+              >
+                Preview Card
+              </button>
+            </div>
+            
+            <button
+              onClick={onClose}
+              className={`w-full px-4 py-3 rounded-lg font-medium transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          <div className="p-6">
+            <ProfileCardPreview 
+              user={user} 
+              darkMode={darkMode}
+              onViewProfile={() => {
+                setShowPreview(false);
+                onClose();
+                window.open(profileUrl, '_blank');
+              }}
+            />
+            <button
+              onClick={() => setShowPreview(false)}
+              className={`w-full mt-4 px-4 py-2 rounded-lg text-sm font-medium ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+            >
+              Back to QR Code
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Post List Item
 const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLike, onBookmark, onImageClick }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
@@ -237,16 +544,16 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
       )}
       {/* Stats */}
 <div className={`px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-sm ${scheme.muted}`}>
-       <span>{post.likes} likes</span> • <span>{post.bookmarks} saves</span>
+       <span>{post.likes} likes</span> &nbsp;  <span>{post.comments} comments</span>  &nbsp; <span>{post.bookmarks} bookmarks</span> 
       </div>
 
       {/* Actions */}
       <div className={`flex items-center justify-around border-t py-2 ${scheme.border}`}>
         {[
-          { icon: Heart, label: 'Like', action: onLike, active: likedPosts.has(post.id), color: 'text-green-600' },
-          { icon: MessageCircle, label: 'Comment', action: onImageClick, color: 'text-blue-600' },
-          { icon: Bookmark, label: 'Save', action: onBookmark, active: bookmarkedPosts.has(post.id), color: 'text-yellow-600' },
-          { icon: Share, label: 'Share', action: () => {}, color: 'text-green-600' }
+          { icon: Heart, label: '', action: onLike, active: likedPosts.has(post.id), color: 'text-green-600' },
+          { icon: MessageCircle, label: '', action: onImageClick, color: 'text-blue-600' },
+          { icon: Bookmark, label: '', action: onBookmark, active: bookmarkedPosts.has(post.id), color: 'text-yellow-600' },
+          { icon: Share, label: '', action: () => {}, color: 'text-green-600' }
         ].map(({ icon: Icon, label, action, active, color }) => (
           <button key={label} onClick={action} className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${active ? color : scheme.muted}`}>
             <Icon className={`w-5 h-5 ${active ? 'fill-current' : ''}`} />
@@ -292,6 +599,7 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportComment, setReportComment] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const reportReasons = [
     'Spam or misleading',
@@ -546,10 +854,12 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                       <Bookmark className={`w-5 h-5 ${post.isBookmarked ? 'fill-current' : ''}`} />
                       <span className="font-medium">Save</span>
                     </button>
-                    <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}>
-                      <Share className="w-5 h-5" />
-                      <span className="font-medium">Share</span>
-                    </button>
+                   <button 
+  onClick={() => setShowShareModal(true)}
+  className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}>
+  <Share className="w-5 h-5" />
+  <span className="font-medium">Share</span>
+</button>
                   </>
                 ) : (
                   <>
@@ -671,6 +981,17 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
           </div>
         </div>
       </div>
+
+     {/* Share Modal - THIS SHOULD BE HERE */}
+    {showShareModal && (
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        darkMode={darkMode}
+        postId={post.id}
+        title={post.animalInfo.title}
+      />
+    )}
       {/* Report Modal */}
       {showReportModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -821,31 +1142,15 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
           </div>
         </div>
       )}
+
+  
     </div>
+
+    
   );
 };
 
-// QR Code Modal
-const QRCodeModal = ({ user, darkMode, onClose }) => {
-  const scheme = darkMode ? COLORS.dark : COLORS.light;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://livestock-app.com/profile/${user.username}`)}`;
 
-  return (  
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className={`max-w-sm w-full p-6 rounded-2xl ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
-        <h3 className={`text-xl font-bold mb-4 text-center ${scheme.text}`}>Share Profile</h3>
-        <div className="w-48 h-48 mx-auto mb-4 bg-white rounded-lg flex items-center justify-center">
-          <img src={qrUrl} alt="QR Code" className="w-full h-full object-contain" />
-        </div>
-        <p className={`text-sm text-center mb-4 ${scheme.muted}`}>Scan to view {user.name}'s profile</p>
-        <div className="flex space-x-3">
-          <button onClick={onClose} className={`flex-1 px-4 py-2 rounded-lg font-medium ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-900'}`}>Close</button>
-          <button className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium">Download</button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Message Modal
 const MessageModal = ({ user, darkMode, onClose }) => {
@@ -893,6 +1198,7 @@ const MessageModal = ({ user, darkMode, onClose }) => {
       </div>
     </div>
   );
+  
 };
 
 // Main Profile Component
@@ -908,7 +1214,7 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
   const [showQRCode, setShowQRCode] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('list');
   const [selectedPost, setSelectedPost] = useState(null);
 
   const handleFollow = () => {
@@ -1049,18 +1355,7 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
                 ))}
               </nav>
               
-              {activeTab === 'posts' && (
-                <div className="flex space-x-2">
-                  <button onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded transition-colors ${viewMode === 'grid' ? 'bg-green-600 text-white' : scheme.muted}`}>
-                    <Grid className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => setViewMode('list')}
-                    className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-green-600 text-white' : scheme.muted}`}>
-                    <List className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+          
             </div>
           </div>
 

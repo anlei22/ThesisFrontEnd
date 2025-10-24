@@ -15,7 +15,7 @@ const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState('');
-  const [selectedBreed, setSelectedBreed] = useState('');
+
   const [age, setAge] = useState('');
   const [sex, setSex] = useState('');
   const [price, setPrice] = useState('');
@@ -23,7 +23,7 @@ const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
   const fileInputRef = useRef(null);
 
   const steps = [
-    { id: 1, name: 'Animal', description: 'Select animal & breed' },
+    { id: 1, name: 'Animal', description: 'Select animal' },
     { id: 2, name: 'Details', description: 'Add information' },
     { id: 3, name: 'Review', description: 'Review & publish' }
   ];
@@ -33,67 +33,56 @@ const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
       id: "baboy", 
       name: "Baboy", 
       displayName: "Baboy (Pig)",
-      breeds: ["Duroc", "Yorkshire", "Landrace", "Berkshire", "Hampshire", "Native", "Pietrain", "Large White"]
     },
     { 
       id: "baka", 
       name: "Baka",
       displayName: "Baka (Cow)", 
-      breeds: ["Brahman", "Holstein", "Angus", "Native", "Simmental", "Jersey", "Hereford"]
     },
     { 
       id: "bangus", 
       name: "Bangus",
       displayName: "Bangus (Milkfish)", 
-      breeds: ["Standard Bangus", "Boneless Bangus"]
     },
     { 
       id: "galunggong", 
       name: "Galunggong",
       displayName: "Galunggong (Round Scad)", 
-      breeds: ["Fresh Galunggong", "Dried Galunggong"]
     },
     { 
       id: "kambing", 
       name: "Kambing",
       displayName: "Kambing (Goat)", 
-      breeds: ["Boer", "Native", "Anglo-Nubian", "Saanen", "Alpine"]
     },
     { 
       id: "kalabaw", 
       name: "Kalabaw",
       displayName: "Kalabaw (Carabao)", 
-      breeds: ["Philippine Carabao", "Swamp Buffalo", "River Buffalo", "Murrah"]
     },
     { 
       id: "kalapati", 
       name: "Kalapati",
       displayName: "Kalapati (Pigeon)", 
-      breeds: ["Racing Homer", "Fantail", "Native", "King Pigeon"]
     },
     { 
       id: "manok", 
       name: "Manok",
       displayName: "Manok (Chicken)", 
-      breeds: ["Broiler", "Layer", "Native", "Rhode Island Red", "Leghorn", "Plymouth Rock"]
     },
     { 
       id: "rabbit", 
       name: "Rabbit",
       displayName: "Rabbit", 
-      breeds: ["New Zealand White", "Californian", "Flemish Giant", "Dutch", "Rex"]
     },
     { 
       id: "tilapia", 
       name: "Tilapia",
       displayName: "Tilapia", 
-      breeds: ["Nile Tilapia", "Red Tilapia", "Mozambique Tilapia", "Blue Tilapia"]
     },
     { 
       id: "tulingan", 
       name: "Tulingan",
       displayName: "Tulingan (Skipjack Tuna)", 
-      breeds: ["Fresh Tulingan", "Frozen Tulingan"]
     }
   ];
 
@@ -124,11 +113,7 @@ const handleSubmit = async () => {
       return;
     }
     
-    if (!selectedBreed) {
-      alert('Please select a breed');
-      return;
-    }
-
+  
     if (!description.trim()) {
       alert('Please add a description');
       return;
@@ -164,7 +149,7 @@ const handleSubmit = async () => {
     console.log('📤 Submitting new animal listing...');
     console.log('📋 Listing details:', {
       animal: selectedAnimal,
-      breed: selectedBreed,
+
       age,
       sex,
       price,
@@ -181,10 +166,9 @@ const handleSubmit = async () => {
       const typeId = categories.findIndex(cat => cat.id === selectedAnimal) + 1; // Assuming IDs start from 1
       
       const formData = new FormData();
-      formData.append('title', `${selectedCategory?.displayName} - ${selectedBreed}`);
+      formData.append('title', `${selectedCategory?.displayName} `);
       formData.append('type_id', typeId.toString());
       formData.append('description', description);
-      formData.append('breed', selectedBreed);
       formData.append('age', age);
       formData.append('sex', sex);
       formData.append('location', location);
@@ -234,7 +218,7 @@ const handleSubmit = async () => {
           setShowSuccessModal(false);
           // Reset all states
           setSelectedAnimal('');
-          setSelectedBreed('');
+       
           setDescription('');
           setAge('');
           setSex('');
@@ -262,10 +246,7 @@ const handleSubmit = async () => {
       alert('Please select an animal type');
       return;
     }
-    if (currentStep === 1 && !selectedBreed) {
-      alert('Please select a breed');
-      return;
-    }
+  
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
       // 
@@ -280,7 +261,7 @@ const handleSubmit = async () => {
 
   const canPublish = () => {
     return selectedAnimal && 
-           selectedBreed && 
+     
            description.trim() && 
            age &&
            sex &&
@@ -315,7 +296,7 @@ const handleSubmit = async () => {
 
   const handleAnimalChange = (animalId) => {
     setSelectedAnimal(animalId);
-    setSelectedBreed('');
+ 
   };
 
   const getSelectedCategory = () => {
@@ -420,31 +401,7 @@ const handleSubmit = async () => {
         </div>
       </div>
 
-      {selectedAnimal && (
-        <div className="animate-fadeIn">
-          <label className={`block text-sm font-medium mb-3 ${
-            darkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            Select Breed *
-          </label>
-          <select
-            value={selectedBreed}
-            onChange={(e) => setSelectedBreed(e.target.value)}
-            className={`w-full p-3 rounded-lg border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-900'
-            }`}
-          >
-            <option value="">Choose a breed</option>
-            {getSelectedCategory()?.breeds.map((breed) => (
-              <option key={breed} value={breed}>
-                {breed}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+
     </div>
   );
 
@@ -716,13 +673,7 @@ const handleSubmit = async () => {
                 }`}>
                   {selectedCategory?.displayName}
                 </span>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  darkMode 
-                    ? 'bg-blue-900 text-blue-300 border border-blue-700'
-                    : 'bg-blue-100 text-blue-800 border border-blue-200'
-                }`}>
-                  {selectedBreed}
-                </span>
+         
               </div>
             </div>
 

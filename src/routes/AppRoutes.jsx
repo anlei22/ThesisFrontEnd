@@ -10,9 +10,10 @@ import Dashboard from '../pages/Admin//AdminDashboard'
 import Register from "../components/Register"; // ✅ adjust path
 import MainBoard from '../pages/User/Mainboard';
 import SharedPostView from '../pages/User/UserUI/SharedPostView'; // ✅ ADD THIS LINE
+import ProfileViewPage from '../pages/User/UserUI/ProfileViewPage';
 
 
-// Add this route
+
 
 function App() {
   const [darkMode, setDarkMode] = useState(false); // Add darkMode state at App level
@@ -23,6 +24,8 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/Admin/Dashboard" element={<Dashboard />} />
       <Route path="/post/:id" element={<SharedPostView darkMode={darkMode} />} />
+      <Route path="/profile/:username" element={<ProfileViewPage darkMode={darkMode} />} /> {/* ✅ NEW ROUTE */}
+   
     </Routes>
   );
 }
