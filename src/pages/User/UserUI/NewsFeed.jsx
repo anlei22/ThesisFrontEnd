@@ -369,25 +369,52 @@ const NewsFeed = ({
   const [showReportMenu, setShowReportMenu] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportComment, setReportComment] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
 
-  const handleReportSubmit = () => {
+  const handleReportSubmit = async () => {
     if (!reportReason) {
       alert("Please select a reason for reporting");
       return;
     }
 
-    console.log("Report submitted:", {
-      postId: selectedPost?.id,
-      reason: reportReason,
-      comment: reportComment,
-    });
+    const userId = getCurrentUserId();
+    if (!userId) {
+      alert('You must be logged in to report a post.');
+      setShowLoginModal(true);
+      return;
+    }
 
-    alert("Thank you for your report. We will review it shortly.");
+    setIsReporting(true);
 
-    setShowReportModal(false);
-    setShowReportMenu(false);
-    setReportReason("");
-    setReportComment("");
+    try {
+      const fd = new FormData();
+      fd.append('post_id', selectedPost?.id ?? '');
+      fd.append('reason', reportReason);
+      fd.append('description', reportComment || '');
+      fd.append('report_by', userId);
+
+      console.log(fd);
+      for (const [key, value] of fd.entries()) {
+
+        console.log(`"${key}": "${value}"`);
+      }
+
+      const res = await apiPostFormData('reports/create', fd, true);
+      console.debug('[NewsFeed] report response', res);
+
+
+      alert('Thank you for your report. We will review it shortly.');
+
+    } catch (err) {
+      console.error('Error submitting report:', err);
+      alert('An error occurred while sending the report. See console for details.');
+    } finally {
+      setIsReporting(false);
+      setShowReportModal(false);
+      setShowReportMenu(false);
+      setReportReason("");
+      setReportComment("");
+    }
   };
 
   useEffect(() => {
@@ -565,7 +592,7 @@ const NewsFeed = ({
                   : `${API_URL.replace('/api', '')}/storage/feeds/${imagePath}`;
               })
               : [],
-           
+
             likes: post.count_likes || (Array.isArray(post.likes) ? post.likes.length : 0),
             comments: transformedComments.length,
             bookmarks: post.count_bookmarks || (Array.isArray(post.bookmarks) ? post.bookmarks.length : 0),
@@ -779,23 +806,23 @@ const NewsFeed = ({
     }
   };
 
- const handleShare = (post = null) => {
-  if (post) {
-    setSelectedPost(post);
-    setShowShareModal(true);
-  } else {
-    if (isAuthenticated) {
-      onCreatePost();
+  const handleShare = (post = null) => {
+    if (post) {
+      setSelectedPost(post);
+      setShowShareModal(true);
     } else {
-      setShowLoginModal(true);
+      if (isAuthenticated) {
+        onCreatePost();
+      } else {
+        setShowLoginModal(true);
+      }
     }
-  }
-};
+  };
 
   const openPostModal = (post) => {
     setSelectedPost(post);
     setCurrentImageIndex(0);
-   setComments(postComments[post.id] || []); 
+    setComments(postComments[post.id] || []);
     setCommentText("");
     setReplyingTo(null);
     setReplyText("");
@@ -812,15 +839,15 @@ const NewsFeed = ({
     setReplyText("");
   };
 
-const handleAddComment = async () => {
-  if (commentText.trim() === "") return;
+  const handleAddComment = async () => {
+    if (commentText.trim() === "") return;
 
-  // Call the backend API function instead of just updating state
-  await handleAddPostComment(selectedPost.id, commentText);
-  
-  // Clear the input
-  setCommentText("");
-};
+    // Call the backend API function instead of just updating state
+    await handleAddPostComment(selectedPost.id, commentText);
+
+    // Clear the input
+    setCommentText("");
+  };
 
   const handleCommentLike = (commentId) => {
     setComments(
@@ -850,29 +877,29 @@ const handleAddComment = async () => {
     );
   };
 
-const handleAddReply = async (commentId) => {
-  if (replyText.trim() === "") return;
+  const handleAddReply = async (commentId) => {
+    if (replyText.trim() === "") return;
 
-  // Call the backend API function instead of just updating state
-  await handleAddPostReply(selectedPost.id, commentId, replyText);
-  
-  // Clear inputs
-  setReplyText("");
-  setReplyingTo(null);
-};
+    // Call the backend API function instead of just updating state
+    await handleAddPostReply(selectedPost.id, commentId, replyText);
+
+    // Clear inputs
+    setReplyText("");
+    setReplyingTo(null);
+  };
 
   const handleCancelReply = () => {
     setReplyingTo(null);
     setReplyText("");
   };
 
-const toggleCommentsSection = (postId) => {
-  if (showCommentsForPost === postId) {
-    setShowCommentsForPost(null);
-  } else {
-    setShowCommentsForPost(postId);
-  }
-};
+  const toggleCommentsSection = (postId) => {
+    if (showCommentsForPost === postId) {
+      setShowCommentsForPost(null);
+    } else {
+      setShowCommentsForPost(postId);
+    }
+  };
 
   // Add Comment to Post (send to backend)
   const handleAddPostComment = async (postId, text) => {
@@ -927,9 +954,9 @@ const toggleCommentsSection = (postId) => {
         [postId]: [newComment, ...(prev[postId] || [])],
       }));
       // Also update comments state if modal is open with this post
-if (selectedPost?.id === postId) {
-  setComments((prev) => [newComment, ...prev]);
-}
+      if (selectedPost?.id === postId) {
+        setComments((prev) => [newComment, ...prev]);
+      }
     } catch (err) {
       alert('Failed to add comment.');
     }
@@ -990,19 +1017,19 @@ if (selectedPost?.id === postId) {
         }),
       }));
       // Also update comments state if modal is open with this post
-if (selectedPost?.id === postId) {
-  setComments((prev) =>
-    prev.map((comment) => {
-      if (comment.id === commentId) {
-        return {
-          ...comment,
-          replies: [...(comment.replies || []), newReply],
-        };
+      if (selectedPost?.id === postId) {
+        setComments((prev) =>
+          prev.map((comment) => {
+            if (comment.id === commentId) {
+              return {
+                ...comment,
+                replies: [...(comment.replies || []), newReply],
+              };
+            }
+            return comment;
+          })
+        );
       }
-      return comment;
-    })
-  );
-}
     } catch (err) {
       alert('Failed to add reply.');
     }
@@ -1527,13 +1554,13 @@ if (selectedPost?.id === postId) {
         darkMode={darkMode}
       />
 
-   <ShareModal
-  isOpen={showShareModal}
-  onClose={() => setShowShareModal(false)}
-  darkMode={darkMode}
-  postId={selectedPost?.id}
-  title={selectedPost?.animalInfo?.title || "Animal Post"}
-/>
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        darkMode={darkMode}
+        postId={selectedPost?.id}
+        title={selectedPost?.animalInfo?.title || "Animal Post"}
+      />
       {/* Post Detail Modal */}
       {isModalOpen && selectedPost && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -2450,15 +2477,15 @@ if (selectedPost?.id === postId) {
                   </button>
                   <button
                     onClick={handleReportSubmit}
-                    disabled={!reportReason}
-                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${reportReason
+                    disabled={!reportReason || isReporting}
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${reportReason && !isReporting
                       ? "bg-red-500 hover:bg-red-600 text-white"
                       : darkMode
                         ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                       }`}
                   >
-                    Report Post
+                    {isReporting ? 'Reporting...' : 'Report Post'}
                   </button>
                 </div>
               </div>
