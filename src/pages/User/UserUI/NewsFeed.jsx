@@ -477,7 +477,7 @@ const NewsFeed = ({
         (post) =>
           post.animalInfo?.title?.toLowerCase().includes(query) ||
           post.animalInfo?.description?.toLowerCase().includes(query) ||
-          post.animalInfo?.breed?.toLowerCase().includes(query) ||
+
           post.user?.name?.toLowerCase().includes(query)
       );
     }
@@ -571,7 +571,6 @@ const NewsFeed = ({
               type: post.animal_type?.name || "Unknown",
               title: post.title || "Untitled",
               description: post.description || "",
-              breed: post.breed || "N/A",
               age: post.age ? `${post.age} years old` : "Age not specified",
               sex: post.sex || "N/A",
               price:
@@ -1315,6 +1314,12 @@ const NewsFeed = ({
                         className={darkMode ? "text-gray-400" : "text-gray-500"}
                       >
                         {post.likes} likes
+
+                      </span>
+                      <span
+                        className={darkMode ? "text-gray-400" : "text-gray-500"}
+                      >
+                        {post.comments} Comments
                       </span>
                       <span
                         className={darkMode ? "text-gray-400" : "text-gray-500"}
@@ -1388,7 +1393,7 @@ const NewsFeed = ({
                             <BookmarkIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                           )}
                           <span className="font-medium text-xs sm:text-sm hidden xs:inline">
-                            Save
+                            Bookmark
                           </span>
                         </button>
 
@@ -1426,7 +1431,7 @@ const NewsFeed = ({
                           className={`flex-1 text-center px-4 py-2 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"
                             }`}
                         >
-                          Login to like, comment & save
+                          Login to like, comment & Bookmark
                         </div>
                       </>
                     )}
@@ -1842,22 +1847,7 @@ const NewsFeed = ({
 
                     {/* Right Column */}
                     <div className="space-y-5">
-                      {/* Breed */}
-                      <div>
-                        <h4
-                          className={`text-sm font-semibold mb-1 ${darkMode ? "text-gray-200" : "text-gray-800"
-                            }`}
-                        >
-                          Breed
-                        </h4>
-                        <p
-                          className={
-                            darkMode ? "text-gray-400" : "text-gray-700"
-                          }
-                        >
-                          {selectedPost.animalInfo.breed}
-                        </p>
-                      </div>
+                      
 
                       {/* Location */}
                       <div>
@@ -1924,20 +1914,6 @@ const NewsFeed = ({
                             className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"
                               }`}
                           >
-                            {selectedPost.bookmarks}
-                          </p>
-                          <p
-                            className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-600"
-                              }`}
-                          >
-                            Bookmarks
-                          </p>
-                        </div>
-                        <div className="text-center">
-                          <p
-                            className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"
-                              }`}
-                          >
                             {comments.length}
                           </p>
                           <p
@@ -1947,6 +1923,21 @@ const NewsFeed = ({
                             Comments
                           </p>
                         </div>
+                        <div className="text-center">
+                          <p
+                            className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"
+                              }`}
+                          >
+                            {selectedPost.bookmarks}
+                          </p>
+                          <p
+                            className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                          >
+                            Bookmarks
+                          </p>
+                        </div>
+                        
                       </div>
                     </div>
                   )}
@@ -1996,7 +1987,7 @@ const NewsFeed = ({
                           ) : (
                             <BookmarkIcon className="w-5 h-5" />
                           )}
-                          <span className="font-medium">Save</span>
+                          <span className="font-medium">Bookmark</span>
                         </button>
 
                         <button
@@ -2035,7 +2026,7 @@ const NewsFeed = ({
                           className={`flex-1 text-center px-4 py-2 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"
                             }`}
                         >
-                          Login to like, comment & save
+                          Login to like, comment & Bookmark
                         </div>
                       </>
                     )}
