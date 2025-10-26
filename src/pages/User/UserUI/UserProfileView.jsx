@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, ChevronLeft, ChevronRight, Grid, List, Flag, MoreVertical, Edit, Trash2  } from 'lucide-react';
+import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, ChevronLeft, ChevronRight, Grid, List, Flag, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import ShareModal from '../../../components/ShareModal'; // Adjust path if needed
 
 
@@ -36,13 +36,13 @@ const SAMPLE_POSTS = [
     timestamp: '2 hours ago',
     isLiked: false,
     isBookmarked: false,
-    animalInfo: { 
-      title: 'Premium Cattle', 
-      type: 'Cattle', 
-      breed: 'Brahman', 
+    animalInfo: {
+      title: 'Premium Cattle',
+      type: 'Cattle',
+      breed: 'Brahman',
       age: '2 years',
       sex: 'Male',
-      price: '₱85,000', 
+      price: '₱85,000',
       availability: 'available',
       description: 'Premium quality Brahman cattle in excellent health condition. Regularly vaccinated and dewormed. Perfect for breeding or meat production. Well-trained and easy to handle.'
     }
@@ -57,13 +57,13 @@ const SAMPLE_POSTS = [
     timestamp: '5 hours ago',
     isLiked: true,
     isBookmarked: false,
-    animalInfo: { 
-      title: 'Free-Range Chickens', 
-      type: 'Poultry', 
-      breed: 'Rhode Island Red', 
+    animalInfo: {
+      title: 'Free-Range Chickens',
+      type: 'Poultry',
+      breed: 'Rhode Island Red',
       age: '6 months',
       sex: 'Female',
-      price: '₱350 each', 
+      price: '₱350 each',
       availability: 'available',
       description: 'Healthy free-range Rhode Island Red chickens. Excellent egg layers producing 5-6 eggs per week. Fed with organic feed and raised in spacious, natural environment.'
     }
@@ -78,13 +78,13 @@ const SAMPLE_POSTS = [
     timestamp: '1 day ago',
     isLiked: false,
     isBookmarked: true,
-    animalInfo: { 
-      title: 'Dairy Goats', 
-      type: 'Goats', 
-      breed: 'Saanen', 
+    animalInfo: {
+      title: 'Dairy Goats',
+      type: 'Goats',
+      breed: 'Saanen',
       age: '1.5 years',
       sex: 'Female',
-      price: '₱12,000', 
+      price: '₱12,000',
       availability: 'sold',
       description: 'High-producing Saanen dairy goats. Excellent milk production with good fat content. Friendly and easy to handle. Perfect for small-scale dairy operations.'
     }
@@ -161,23 +161,23 @@ const ProfileCardPreview = ({ user, darkMode, onViewProfile }) => {
     dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
     light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', muted: 'text-gray-600', border: 'border-gray-200' }
   };
-  
+
   const scheme = darkMode ? COLORS.dark : COLORS.light;
-  
+
   return (
     <div className={`w-full max-w-sm rounded-2xl overflow-hidden shadow-xl ${scheme.card}`}>
       {/* Cover Photo */}
       <div className="relative h-32 overflow-hidden">
         <img src={user.coverPhoto} alt="Cover" className="w-full h-full object-cover" />
       </div>
-      
+
       {/* Profile Picture */}
       <div className="flex justify-center -mt-16 mb-4 px-6">
         <div className="relative">
-          <img 
-            src={user.avatar} 
-            alt={user.name} 
-            className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg" 
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg"
           />
           {user.isVerified && (
             <div className="absolute bottom-2 right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white">
@@ -186,25 +186,25 @@ const ProfileCardPreview = ({ user, darkMode, onViewProfile }) => {
           )}
         </div>
       </div>
-      
+
       {/* User Info */}
       <div className="px-6 pb-6 text-center">
         <h2 className={`text-xl font-bold mb-1 ${scheme.text}`}>{user.name}</h2>
         <p className={`text-sm mb-2 ${scheme.muted}`}>{user.username}</p>
-        
+
         {/* Seller/Buyer Badge */}
         <div className="flex justify-center mb-3">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
             Verified Seller
           </span>
         </div>
-        
+
         {/* Location */}
         <div className={`flex items-center justify-center space-x-1 mb-4 ${scheme.muted}`}>
           <MapPin className="w-4 h-4" />
           <span className="text-sm">{user.location}</span>
         </div>
-        
+
         {/* Rating */}
         <div className={`flex items-center justify-center space-x-2 mb-6 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
           <RatingStars rating={user.rating} darkMode={darkMode} />
@@ -212,9 +212,9 @@ const ProfileCardPreview = ({ user, darkMode, onViewProfile }) => {
             {user.rating.toFixed(1)} ({user.totalReviews} reviews)
           </span>
         </div>
-        
+
         {/* Contact Button */}
-        <button 
+        <button
           onClick={onViewProfile}
           className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
         >
@@ -233,16 +233,16 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
     dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
     light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', muted: 'text-gray-600', border: 'border-gray-200' }
   };
-  
+
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const [showPreview, setShowPreview] = useState(false);
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState('');
   const qrRef = useRef(null);
-  
+
   // Generate profile URL for QR code
   const profileUrl = `${window.location.origin}/profile/${user.username.replace('@', '')}`;
-  
+
   // Generate QR code as data URL
   useEffect(() => {
     const generateQR = () => {
@@ -251,17 +251,17 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
       const size = 256;
       const moduleSize = 8;
       const modules = Math.floor(size / moduleSize);
-      
+
       canvas.width = size;
       canvas.height = size;
-      
+
       // White background
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, size, size);
-      
+
       // Simple QR-like pattern (for demo)
       ctx.fillStyle = '#000000';
-      
+
       // Corner squares (position markers)
       const cornerSize = moduleSize * 7;
       [0, size - cornerSize].forEach(x => {
@@ -272,7 +272,7 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
           ctx.fillRect(x + 2 * moduleSize, y + 2 * moduleSize, cornerSize - 4 * moduleSize, cornerSize - 4 * moduleSize);
         });
       });
-      
+
       // Random pattern for data
       for (let i = 0; i < modules; i++) {
         for (let j = 0; j < modules; j++) {
@@ -281,17 +281,17 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
           }
         }
       }
-      
+
       setQrDataUrl(canvas.toDataURL());
     };
-    
+
     generateQR();
   }, [profileUrl]);
-  
+
   const handleSimulateScan = () => {
     setShowPreview(true);
   };
-  
+
   const handleCopyLink = () => {
     navigator.clipboard.writeText(profileUrl).then(() => {
       setCopied(true);
@@ -301,37 +301,37 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
       alert('Failed to copy link');
     });
   };
-  
+
   const handleDownload = () => {
     if (!qrDataUrl) {
       alert('QR code is still generating, please wait...');
       return;
     }
-    
+
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 300;
     canvas.height = 380;
-    
+
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     const qrImage = new Image();
     qrImage.onload = () => {
       ctx.drawImage(qrImage, 20, 20, 260, 260);
-      
+
       ctx.fillStyle = '#111827';
       ctx.font = 'bold 18px Arial';
       ctx.textAlign = 'center';
       ctx.fillText(user.name, 150, 310);
-      
+
       ctx.fillStyle = '#6b7280';
       ctx.font = '14px Arial';
       ctx.fillText(user.username, 150, 335);
-      
+
       ctx.font = '12px Arial';
       ctx.fillText('Scan to view profile', 150, 360);
-      
+
       canvas.toBlob((blob) => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -345,20 +345,20 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
     };
     qrImage.src = qrDataUrl;
   };
-  
+
   return (
- <div
-  className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-  onClick={onClose}
->
-     <div className={`w-full max-w-md rounded-2xl overflow-hidden ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div className={`w-full max-w-md rounded-2xl overflow-hidden ${scheme.card}`} onClick={(e) => e.stopPropagation()}>
         <div className={`flex items-center justify-between p-4 border-b ${scheme.border}`}>
           <h3 className={`text-lg font-semibold ${scheme.text}`}>Share Profile QR Code</h3>
           <button onClick={onClose} className={`p-2 rounded-full hover:opacity-80 ${scheme.muted}`}>
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         {!showPreview ? (
           <div className="p-6">
             <div className="text-center mb-6">
@@ -371,29 +371,28 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
                   )}
                 </div>
               </div>
-              
-         
+
+
               <p className={`text-sm mt-4 ${scheme.muted}`}>Scan this code to view profile</p>
             </div>
-            
+
             <div className={`mb-4 p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
               <p className={`text-xs font-medium mb-2 ${scheme.muted}`}>Profile Link</p>
               <div className="flex items-center space-x-2">
-                <input 
-                  type="text" 
-                  value={profileUrl} 
+                <input
+                  type="text"
+                  value={profileUrl}
                   readOnly
                   className={`flex-1 px-3 py-2 text-sm rounded-lg border-none focus:outline-none ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-white text-gray-700'}`}
                 />
                 <button
                   onClick={handleCopyLink}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
-                    copied 
-                      ? 'bg-green-600 text-white' 
-                      : darkMode 
-                        ? 'bg-gray-600 hover:bg-gray-500 text-gray-200' 
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${copied
+                      ? 'bg-green-600 text-white'
+                      : darkMode
+                        ? 'bg-gray-600 hover:bg-gray-500 text-gray-200'
                         : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                  }`}
+                    }`}
                 >
                   {copied ? (
                     <>
@@ -409,7 +408,7 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
                 </button>
               </div>
             </div>
-            
+
             <div className="flex gap-3 mb-3">
               <button
                 onClick={handleDownload}
@@ -418,7 +417,7 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
                 <Camera className="w-5 h-5" />
                 <span>Download QR</span>
               </button>
-              
+
               <button
                 onClick={handleSimulateScan}
                 className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
@@ -426,7 +425,7 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
                 Preview Card
               </button>
             </div>
-            
+
             <button
               onClick={onClose}
               className={`w-full px-4 py-3 rounded-lg font-medium transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
@@ -436,8 +435,8 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
           </div>
         ) : (
           <div className="p-6">
-            <ProfileCardPreview 
-              user={user} 
+            <ProfileCardPreview
+              user={user}
               darkMode={darkMode}
               onViewProfile={() => {
                 setShowPreview(false);
@@ -461,15 +460,14 @@ const QRCodeModal = ({ user, darkMode, onClose }) => {
 // Post List Item
 const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLike, onBookmark, onImageClick }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
-  
+
   return (
     <div className={`rounded-lg border overflow-hidden relative ${scheme.card} ${scheme.border}`}>
       {/* Diagonal Ribbon */}
       {post.animalInfo && (
         <div className="absolute top-0 right-0 w-32 h-35 overflow-hidden z-10">
-          <div className={`absolute top-4 right-[-32px] w-40 h-8 transform rotate-45 text-center text-white text-xs font-bold leading-8 shadow-lg ${
-            post.animalInfo.availability === 'available' ? 'bg-green-500' : 'bg-red-500'
-          }`}>
+          <div className={`absolute top-4 right-[-32px] w-40 h-8 transform rotate-45 text-center text-white text-xs font-bold leading-8 shadow-lg ${post.animalInfo.availability === 'available' ? 'bg-green-500' : 'bg-red-500'
+            }`}>
             {post.animalInfo.availability === 'available' ? 'AVAILABLE' : 'SOLD OUT'}
           </div>
         </div>
@@ -505,7 +503,7 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
             <h3 className={`text-lg font-semibold mb-1 text-center ${darkMode ? 'text-green-200' : 'text-green-800'}`}>
               {post.animalInfo.title}
             </h3>
-            
+
             {post.animalInfo.description && (
               <div className="mb-2 text-center">
                 <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
@@ -513,7 +511,7 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
                 </p>
               </div>
             )}
-            
+
             <div className="flex justify-center items-center">
               <span className={`text-lg font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
                 {post.animalInfo.price}
@@ -526,9 +524,8 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
       {/* Images */}
       {post.images?.length > 0 && (
         <div className="px-6 pb-4">
-          <div className={`grid gap-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition-opacity ${
-            post.images.length === 1 ? 'grid-cols-1' : post.images.length === 2 ? 'grid-cols-2' : post.images.length === 3 ? 'grid-cols-2' : 'grid-cols-2'
-          }`} onClick={onImageClick}>
+          <div className={`grid gap-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition-opacity ${post.images.length === 1 ? 'grid-cols-1' : post.images.length === 2 ? 'grid-cols-2' : post.images.length === 3 ? 'grid-cols-2' : 'grid-cols-2'
+            }`} onClick={onImageClick}>
             {post.images.slice(0, 4).map((image, i) => (
               <div key={i} className={`relative ${post.images.length === 3 && i === 0 ? 'row-span-2' : ''}`}>
                 <img src={image} alt={`Post ${i}`} className="w-full h-full object-cover" style={{ minHeight: '200px', maxHeight: '400px' }} />
@@ -543,8 +540,8 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
         </div>
       )}
       {/* Stats */}
-<div className={`px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-sm ${scheme.muted}`}>
-       <span>{post.likes} likes</span> &nbsp;  <span>{post.comments} comments</span>  &nbsp; <span>{post.bookmarks} bookmarks</span> 
+      <div className={`px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-sm ${scheme.muted}`}>
+        <span>{post.likes} likes</span> &nbsp;  <span>{post.comments} comments</span>  &nbsp; <span>{post.bookmarks} bookmarks</span>
       </div>
 
       {/* Actions */}
@@ -553,7 +550,7 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
           { icon: Heart, label: '', action: onLike, active: likedPosts.has(post.id), color: 'text-green-600' },
           { icon: MessageCircle, label: '', action: onImageClick, color: 'text-blue-600' },
           { icon: Bookmark, label: '', action: onBookmark, active: bookmarkedPosts.has(post.id), color: 'text-yellow-600' },
-          { icon: Share, label: '', action: () => {}, color: 'text-green-600' }
+          { icon: Share, label: '', action: () => { }, color: 'text-green-600' }
         ].map(({ icon: Icon, label, action, active, color }) => (
           <button key={label} onClick={action} className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${active ? color : scheme.muted}`}>
             <Icon className={`w-5 h-5 ${active ? 'fill-current' : ''}`} />
@@ -568,7 +565,7 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
 // Review Item
 const ReviewItem = ({ review, darkMode }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
-  
+
   return (
     <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
       <div className="flex items-start space-x-3">
@@ -673,7 +670,7 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
 
         <div className={`relative rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden ${scheme.card}`}>
           {/* Header */}
-         {/* Header */}
+          {/* Header */}
           <div className={`flex items-center justify-between p-6 border-b ${scheme.border}`}>
             <div className="flex items-center space-x-4">
               <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
@@ -686,41 +683,38 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               {/* Report Menu Button - Only show if logged in */}
               {isAuthenticated && (
                 <div className="relative">
                   <button
                     onClick={() => setShowReportMenu(!showReportMenu)}
-                    className={`p-2 rounded-lg transition-colors ${
-                      darkMode
+                    className={`p-2 rounded-lg transition-colors ${darkMode
                         ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
                         : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     <MoreVertical className="w-6 h-6" />
                   </button>
-                  
+
                   {/* Dropdown Menu */}
                   {showReportMenu && (
                     <div
-                      className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 ${
-                        darkMode
+                      className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 ${darkMode
                           ? "bg-gray-700 border border-gray-600"
                           : "bg-white border border-gray-200"
-                      }`}
+                        }`}
                     >
                       <button
                         onClick={() => {
                           setShowReportModal(true);
                           setShowReportMenu(false);
                         }}
-                        className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors rounded-lg ${
-                          darkMode
+                        className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors rounded-lg ${darkMode
                             ? "text-gray-300 hover:bg-gray-600"
                             : "text-gray-700 hover:bg-gray-100"
-                        }`}
+                          }`}
                       >
                         <Flag className="w-5 h-5 text-red-500" />
                         <span>Report Post</span>
@@ -729,7 +723,7 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                   )}
                 </div>
               )}
-              
+
               {/* Close Button */}
               <button onClick={onClose} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
                 <X className="w-6 h-6" />
@@ -747,7 +741,7 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                     <img src={post.images[currentImageIndex]} alt={post.animalInfo.title} className="w-full h-80 object-cover rounded-xl" />
                     {post.images.length > 1 && (
                       <>
-                        <button onClick={() => setCurrentImageIndex(prev => prev === 0 ? post.images.length - 1 : prev - 1)} 
+                        <button onClick={() => setCurrentImageIndex(prev => prev === 0 ? post.images.length - 1 : prev - 1)}
                           className={`absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg ${darkMode ? 'bg-gray-700 bg-opacity-80' : 'bg-white bg-opacity-80'}`}>
                           <ChevronLeft className="w-5 h-5" />
                         </button>
@@ -854,12 +848,12 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                       <Bookmark className={`w-5 h-5 ${post.isBookmarked ? 'fill-current' : ''}`} />
                       <span className="font-medium">Save</span>
                     </button>
-                   <button 
-  onClick={() => setShowShareModal(true)}
-  className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}>
-  <Share className="w-5 h-5" />
-  <span className="font-medium">Share</span>
-</button>
+                    <button
+                      onClick={() => setShowShareModal(true)}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}>
+                      <Share className="w-5 h-5" />
+                      <span className="font-medium">Share</span>
+                    </button>
                   </>
                 ) : (
                   <>
@@ -876,7 +870,7 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
               {isAuthenticated && (
                 <div className={`border-t pt-4 ${scheme.border}`}>
                   <h3 className={`text-lg font-semibold mb-4 ${scheme.text}`}>Comments ({comments.length})</h3>
-                  
+
                   {/* Add Comment */}
                   <div className="mb-6">
                     <div className={`flex space-x-3 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
@@ -982,16 +976,16 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
         </div>
       </div>
 
-     {/* Share Modal - THIS SHOULD BE HERE */}
-    {showShareModal && (
-      <ShareModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        darkMode={darkMode}
-        postId={post.id}
-        title={post.animalInfo.title}
-      />
-    )}
+      {/* Share Modal - THIS SHOULD BE HERE */}
+      {showShareModal && (
+        <ShareModal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          darkMode={darkMode}
+          postId={post.id}
+          title={post.animalInfo.title}
+        />
+      )}
       {/* Report Modal */}
       {showReportModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -1002,30 +996,26 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
             />
 
             <div
-              className={`relative rounded-2xl shadow-xl max-w-md w-full ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              }`}
+              className={`relative rounded-2xl shadow-xl max-w-md w-full ${darkMode ? "bg-gray-800" : "bg-white"
+                }`}
             >
               {/* Modal Header */}
               <div
-                className={`flex items-center justify-between p-6 border-b ${
-                  darkMode ? "border-gray-700" : "border-gray-200"
-                }`}
+                className={`flex items-center justify-between p-6 border-b ${darkMode ? "border-gray-700" : "border-gray-200"
+                  }`}
               >
                 <h2
-                  className={`text-xl font-semibold ${
-                    darkMode ? "text-white" : "text-gray-900"
-                  }`}
+                  className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-900"
+                    }`}
                 >
                   Report Post
                 </h2>
                 <button
                   onClick={() => setShowReportModal(false)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    darkMode
+                  className={`p-2 rounded-lg transition-colors ${darkMode
                       ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
                       : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -1034,9 +1024,8 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
               {/* Modal Content */}
               <div className="p-6">
                 <p
-                  className={`text-sm mb-4 ${
-                    darkMode ? "text-gray-300" : "text-gray-600"
-                  }`}
+                  className={`text-sm mb-4 ${darkMode ? "text-gray-300" : "text-gray-600"
+                    }`}
                 >
                   Help us understand what's wrong with this post. Your report
                   will be reviewed by our team.
@@ -1045,9 +1034,8 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                 {/* Reason Selection */}
                 <div className="mb-4">
                   <label
-                    className={`block text-sm font-medium mb-2 ${
-                      darkMode ? "text-gray-200" : "text-gray-700"
-                    }`}
+                    className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-200" : "text-gray-700"
+                      }`}
                   >
                     Reason for reporting <span className="text-red-500">*</span>
                   </label>
@@ -1055,15 +1043,14 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                     {reportReasons.map((reason) => (
                       <label
                         key={reason}
-                        className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${
-                          reportReason === reason
+                        className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${reportReason === reason
                             ? darkMode
                               ? "bg-red-900 bg-opacity-30 border-2 border-red-500"
                               : "bg-red-50 border-2 border-red-500"
                             : darkMode
-                            ? "bg-gray-700 hover:bg-gray-600 border-2 border-gray-600"
-                            : "bg-gray-50 hover:bg-gray-100 border-2 border-gray-200"
-                        }`}
+                              ? "bg-gray-700 hover:bg-gray-600 border-2 border-gray-600"
+                              : "bg-gray-50 hover:bg-gray-100 border-2 border-gray-200"
+                          }`}
                       >
                         <input
                           type="radio"
@@ -1074,9 +1061,8 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                           className="mr-3 text-red-500 focus:ring-red-500"
                         />
                         <span
-                          className={`text-sm ${
-                            darkMode ? "text-gray-200" : "text-gray-700"
-                          }`}
+                          className={`text-sm ${darkMode ? "text-gray-200" : "text-gray-700"
+                            }`}
                         >
                           {reason}
                         </span>
@@ -1088,9 +1074,8 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                 {/* Additional Comments */}
                 <div className="mb-6">
                   <label
-                    className={`block text-sm font-medium mb-2 ${
-                      darkMode ? "text-gray-200" : "text-gray-700"
-                    }`}
+                    className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-200" : "text-gray-700"
+                      }`}
                   >
                     Additional details (optional)
                   </label>
@@ -1099,11 +1084,10 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                     onChange={(e) => setReportComment(e.target.value)}
                     placeholder="Provide any additional information that might help us understand the issue..."
                     rows="4"
-                    className={`w-full px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-red-500 ${
-                      darkMode
+                    className={`w-full px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-red-500 ${darkMode
                         ? "bg-gray-700 text-white placeholder-gray-400 border border-gray-600"
                         : "bg-gray-50 text-gray-900 placeholder-gray-500 border border-gray-300"
-                    }`}
+                      }`}
                   />
                 </div>
 
@@ -1115,24 +1099,22 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
                       setReportReason("");
                       setReportComment("");
                     }}
-                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
-                      darkMode
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${darkMode
                         ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
                         : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                    }`}
+                      }`}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleReportSubmit}
                     disabled={!reportReason}
-                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
-                      reportReason
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${reportReason
                         ? "bg-red-500 hover:bg-red-600 text-white"
                         : darkMode
-                        ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                          ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      }`}
                   >
                     Report Post
                   </button>
@@ -1143,10 +1125,10 @@ const PostModal = ({ post, user, darkMode, onClose, isAuthenticated = true }) =>
         </div>
       )}
 
-  
+
     </div>
 
-    
+
   );
 };
 
@@ -1198,11 +1180,11 @@ const MessageModal = ({ user, darkMode, onClose }) => {
       </div>
     </div>
   );
-  
+
 };
 
 // Main Profile Component
-export default function UserViewProfile({ user, userPosts = [], darkMode = false, onBack }) {
+export default function UserViewProfile({ user, userPosts = [], darkMode = false, onBack, onMessage }) {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const currentUser = user || DEFAULT_USER;
   const posts = userPosts.length > 0 ? userPosts : SAMPLE_POSTS;
@@ -1237,21 +1219,20 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
   return (
     <div className={`min-h-screen transition-colors ${scheme.bg}`}>
 
- <div className="max-w-4xl mx-auto px-4 pt-6">
-      <button
-        onClick={onBack}
-        className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-          darkMode
-            ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-        }`}
-      >
-        <ChevronLeft className="w-5 h-5" />
-        <span>Back</span>
-      </button>
-    </div>
+      <div className="max-w-4xl mx-auto px-4 pt-6">
+        <button
+          onClick={onBack}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${darkMode
+              ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            }`}
+        >
+          <ChevronLeft className="w-5 h-5" />
+          <span>Back</span>
+        </button>
+      </div>
 
-      
+
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Card */}
         <div className={`rounded-2xl overflow-hidden shadow-lg ${scheme.card}`}>
@@ -1259,13 +1240,13 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
           <div className="relative h-48 md:h-64 overflow-hidden">
             <img src={currentUser.coverPhoto} alt="Cover" className="w-full h-full object-cover" />
           </div>
-          
+
           <div className="px-6 pb-6">
             {/* Avatar */}
             <div className="flex justify-center md:justify-start -mt-16 mb-6">
               <img src={currentUser.avatar} alt={currentUser.name} className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg" />
             </div>
-            
+
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6 text-center md:text-left">
               <div>
@@ -1282,7 +1263,14 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
                 <button onClick={() => setShowQRCode(true)} className={`px-4 py-2 rounded-lg font-medium transition ${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}>
                   <QrCode className="w-4 h-4" />
                 </button>
-                <button onClick={() => setShowMessageModal(true)} className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
+                <button onClick={async () => {
+                  // If parent provided onMessage handler, use it to create conversation and navigate
+                  if (typeof onMessage === 'function') {
+                    await onMessage(currentUser.id);
+                  } else {
+                    setShowMessageModal(true);
+                  }
+                }} className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
                   <MessageCircle className="w-4 h-4" />
                   <span>Message</span>
                 </button>
@@ -1323,21 +1311,19 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
 
             {/* Rating */}
             <div
-  className={`p-4 rounded-lg text-center max-w-md mx-auto ${
-    darkMode ? "bg-gray-700" : "bg-gray-50"
-  }`}
->
-  <div className="flex items-center justify-center space-x-1 mb-1">
-    <RatingStars rating={currentUser.rating} darkMode={darkMode} />
-  </div>
-  <div
-    className={`text-sm ${
-      darkMode ? "text-gray-400" : "text-gray-600"
-    }`}
-  >
-    {currentUser.rating.toFixed(1)} ({currentUser.totalReviews} reviews)
-  </div>
-</div>
+              className={`p-4 rounded-lg text-center max-w-md mx-auto ${darkMode ? "bg-gray-700" : "bg-gray-50"
+                }`}
+            >
+              <div className="flex items-center justify-center space-x-1 mb-1">
+                <RatingStars rating={currentUser.rating} darkMode={darkMode} />
+              </div>
+              <div
+                className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"
+                  }`}
+              >
+                {currentUser.rating.toFixed(1)} ({currentUser.totalReviews} reviews)
+              </div>
+            </div>
 
           </div>
         </div>
@@ -1354,8 +1340,8 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
                   </button>
                 ))}
               </nav>
-              
-          
+
+
             </div>
           </div>
 
@@ -1367,7 +1353,7 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
                     {viewMode === 'grid' ? (
                       <PostGridItem post={post} onClick={() => setSelectedPost(post)} />
                     ) : (
-                      <PostListItem 
+                      <PostListItem
                         post={post}
                         user={currentUser}
                         darkMode={darkMode}
@@ -1383,52 +1369,48 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
               </div>
             )}
 
-           {activeTab === 'reviews' && (
-  <div className="space-y-4">
-    {/* Existing reviews */}
-    {SAMPLE_REVIEWS.map((review) => (
-      <ReviewItem key={review.id} review={review} darkMode={darkMode} />
-    ))}
+            {activeTab === 'reviews' && (
+              <div className="space-y-4">
+                {/* Existing reviews */}
+                {SAMPLE_REVIEWS.map((review) => (
+                  <ReviewItem key={review.id} review={review} darkMode={darkMode} />
+                ))}
 
-    {/* Divider (optional, just for visual separation) */}
-    <hr className={`my-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`} />
+                {/* Divider (optional, just for visual separation) */}
+                <hr className={`my-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`} />
 
-    {/* Write a new review */}
-    <div
-      className={`p-4 rounded-lg ${
-        darkMode ? 'bg-gray-700' : 'bg-gray-50'
-      }`}
-    >
-      <h4
-        className={`text-sm font-medium mb-2 ${
-          darkMode ? 'text-gray-300' : 'text-gray-700'
-        }`}
-      >
-        Write a Review
-      </h4>
+                {/* Write a new review */}
+                <div
+                  className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'
+                    }`}
+                >
+                  <h4
+                    className={`text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}
+                  >
+                    Write a Review
+                  </h4>
 
-      <textarea
-        rows="3"
-        placeholder="Share your experience..."
-        className={`w-full p-2 rounded-md border text-sm resize-none focus:outline-none focus:ring-2 ${
-          darkMode
-            ? 'bg-gray-800 border-gray-600 text-gray-200 focus:ring-blue-500'
-            : 'bg-white border-gray-300 text-gray-700 focus:ring-blue-400'
-        }`}
-      />
+                  <textarea
+                    rows="3"
+                    placeholder="Share your experience..."
+                    className={`w-full p-2 rounded-md border text-sm resize-none focus:outline-none focus:ring-2 ${darkMode
+                        ? 'bg-gray-800 border-gray-600 text-gray-200 focus:ring-blue-500'
+                        : 'bg-white border-gray-300 text-gray-700 focus:ring-blue-400'
+                      }`}
+                  />
 
-      <button
-        className={`mt-3 px-4 py-2 rounded-md text-sm font-medium transition ${
-          darkMode
-            ? 'bg-green-600 hover:bg-green-700 text-white'
-            : 'bg-green-600 hover:bg-green-700 text-white'  
-        }`}
-      >
-        Send Review
-      </button>
-    </div>
-  </div>
-)}
+                  <button
+                    className={`mt-3 px-4 py-2 rounded-md text-sm font-medium transition ${darkMode
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-green-600 hover:bg-green-700 text-white'
+                      }`}
+                  >
+                    Send Review
+                  </button>
+                </div>
+              </div>
+            )}
 
           </div>
         </div>

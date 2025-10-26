@@ -27,6 +27,7 @@ import {
   Home,
   User,
 } from "lucide-react";
+import { apiPostFormData } from '../../context/utils/apiFormData';
 
 const Modal = ({ isOpen, onClose, children, darkMode = false }) => {
   if (!isOpen) return null;
@@ -176,40 +177,70 @@ const Mainboard = () => {
 
 
 
-const handleViewUserProfile = (user) => {
-  // Transform the user data to match the expected format
-  const transformedUser = {
-    id: user.id,
-    name: user.name,
-    username: user.username || `@${(user.name || '').toLowerCase().replace(/\s+/g, '')}`,
-    avatar: user.avatar,
-    coverPhoto: user.cover_photo || user.coverPhoto || 
-      'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
-    bio: user.bio || `${user.user_type || 'User'} on AgriConnect`,
-    location: user.location || 'Philippines',
-    joinDate: user.created_at ? 
-      `Joined ${new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` : 
-      'Member',
-    rating: user.rating || 0,
-    totalReviews: user.totalReviews || 0,
-    followers: user.followers || 0,
-    following: user.following || 0,
-    isVerified: user.isVerified || false,
-    specialties: user.specialties || [],
-    user_type: user.user_type || user.type || 'user',
-    email: user.email || ''
+  const handleViewUserProfile = (user) => {
+    // Transform the user data to match the expected format
+    const transformedUser = {
+      id: user.id,
+      name: user.name,
+      username: user.username || `@${(user.name || '').toLowerCase().replace(/\s+/g, '')}`,
+      avatar: user.avatar,
+      coverPhoto: user.cover_photo || user.coverPhoto ||
+        'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
+      bio: user.bio || `${user.user_type || 'User'} on AgriConnect`,
+      location: user.location || 'Philippines',
+      joinDate: user.created_at ?
+        `Joined ${new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` :
+        'Member',
+      rating: user.rating || 0,
+      totalReviews: user.totalReviews || 0,
+      followers: user.followers || 0,
+      following: user.following || 0,
+      isVerified: user.isVerified || false,
+      specialties: user.specialties || [],
+      user_type: user.user_type || user.type || 'user',
+      email: user.email || ''
+    };
+
+    // Note: startConversation moved to component scope (defined below) so it can be
+    // passed into UserProfileView without causing a ReferenceError when renderMainContent runs.
+
+    setSelectedUser(transformedUser);
+    setViewingUserProfile(true);
+    setUserSearchTerm("");
+    setShowUserResults(false);
+    setMobileTab("home");
   };
-  
-  setSelectedUser(transformedUser);
-  setViewingUserProfile(true);
-  setUserSearchTerm("");
-  setShowUserResults(false);
-  setMobileTab("home");
-};
 
   const handleBackFromUserProfile = () => {
     setViewingUserProfile(false);
     setSelectedUser(null);
+  };
+
+  // Create conversation and navigate to chat tab
+  const startConversation = async (receiverId) => {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('receiver_id', receiverId);
+
+    try {
+      const endpoint = `chat/conversations/${userId}/create`;
+      const res = await apiPostFormData(endpoint, fd, true);
+      if (res && (res.status === 'success' || res.success === true)) {
+        // Close profile view and switch to chat tab
+        setViewingUserProfile(false);
+        setSelectedUser(null);
+        setActiveTab('chat');
+      } else {
+        console.warn('Create conversation response:', res);
+      }
+    } catch (err) {
+      console.error('Error creating conversation:', err);
+    }
   };
 
   // Load dark mode preference
@@ -264,6 +295,7 @@ const handleViewUserProfile = (user) => {
               user={selectedUser}
               onBack={handleBackFromUserProfile}
               darkMode={darkMode}
+              onMessage={startConversation}
             />
           );
         }
@@ -341,8 +373,8 @@ const handleViewUserProfile = (user) => {
                   setShowCategoryDropdown(!showCategoryDropdown);
                 }}
                 className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-colors ${darkMode
-                    ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                    : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
+                  ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                  : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
                   }`}
               >
                 <div className="flex items-center space-x-2">
@@ -405,8 +437,8 @@ const handleViewUserProfile = (user) => {
                   setShowLocationDropdown(!showLocationDropdown);
                 }}
                 className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-colors ${darkMode
-                    ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                    : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
+                  ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                  : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
                   }`}
               >
                 <div className="flex items-center space-x-2">
@@ -490,16 +522,16 @@ const handleViewUserProfile = (user) => {
                 }
               }}
               className={`w-full pl-10 pr-10 py-2 rounded-lg border transition-colors ${darkMode
-                  ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
-                  : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
+                ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
+                : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
                 } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
             />
             {userSearchTerm && (
               <button
                 onClick={() => setUserSearchTerm("")}
                 className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${darkMode
-                    ? "text-gray-400 hover:text-gray-200"
-                    : "text-gray-500 hover:text-gray-700"
+                  ? "text-gray-400 hover:text-gray-200"
+                  : "text-gray-500 hover:text-gray-700"
                   }`}
               >
                 <X className="w-4 h-4" />
@@ -527,8 +559,8 @@ const handleViewUserProfile = (user) => {
                       key={index}
                       onClick={() => handleViewUserProfile(user)}
                       className={`p-3 rounded-lg border transition-colors cursor-pointer ${darkMode
-                          ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
-                          : "border-gray-200 bg-gray-50 hover:bg-gray-100"
+                        ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
+                        : "border-gray-200 bg-gray-50 hover:bg-gray-100"
                         }`}
                     >
                       <div className="flex items-center gap-3">
@@ -547,12 +579,12 @@ const handleViewUserProfile = (user) => {
                             </h4>
                             <span
                               className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${user.type === "seller"
-                                  ? darkMode
-                                    ? "bg-blue-600 text-blue-100"
-                                    : "bg-blue-100 text-blue-600"
-                                  : darkMode
-                                    ? "bg-purple-600 text-purple-100"
-                                    : "bg-purple-100 text-purple-600"
+                                ? darkMode
+                                  ? "bg-blue-600 text-blue-100"
+                                  : "bg-blue-100 text-blue-600"
+                                : darkMode
+                                  ? "bg-purple-600 text-purple-100"
+                                  : "bg-purple-100 text-purple-600"
                                 }`}
                             >
                               {user.type}
@@ -614,8 +646,8 @@ const handleViewUserProfile = (user) => {
               {/* Mobile Tab Navigation - Only visible on small screens */}
               <div
                 className={`lg:hidden sticky top-16 z-40 border-b transition-colors ${darkMode
-                    ? "bg-gray-800 border-gray-700"
-                    : "bg-white border-gray-200"
+                  ? "bg-gray-800 border-gray-700"
+                  : "bg-white border-gray-200"
                   }`}
               >
                 <div className="flex">
@@ -629,12 +661,12 @@ const handleViewUserProfile = (user) => {
                       }
                     }}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 ${mobileTab === "home"
-                        ? darkMode
-                          ? "bg-green-600 text-white border-b-2 border-green-400"
-                          : "bg-green-50 text-green-600 border-b-2 border-green-500"
-                        : darkMode
-                          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-                          : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                      ? darkMode
+                        ? "bg-green-600 text-white border-b-2 border-green-400"
+                        : "bg-green-50 text-green-600 border-b-2 border-green-500"
+                      : darkMode
+                        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                       }`}
                   >
                     <Home className="w-4 h-4" />
@@ -650,12 +682,12 @@ const handleViewUserProfile = (user) => {
                       }
                     }}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 ${mobileTab === "search"
-                        ? darkMode
-                          ? "bg-green-600 text-white border-b-2 border-green-400"
-                          : "bg-green-50 text-green-600 border-b-2 border-green-500"
-                        : darkMode
-                          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-                          : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                      ? darkMode
+                        ? "bg-green-600 text-white border-b-2 border-green-400"
+                        : "bg-green-50 text-green-600 border-b-2 border-green-500"
+                      : darkMode
+                        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                       }`}
                   >
                     <Search className="w-4 h-4" />
@@ -716,8 +748,8 @@ const handleViewUserProfile = (user) => {
                           }}
                           readOnly={!isAuthenticated}
                           className={`w-full pl-10 pr-10 py-2 rounded-lg border transition-colors ${darkMode
-                              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
-                              : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
+                            ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500"
+                            : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-green-500"
                             } focus:outline-none focus:ring-2 focus:ring-green-500/20 ${!isAuthenticated ? "cursor-pointer opacity-70" : ""
                             }`}
                         />
@@ -726,8 +758,8 @@ const handleViewUserProfile = (user) => {
                           <button
                             onClick={() => setUserSearchTerm("")}
                             className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${darkMode
-                                ? "text-gray-400 hover:text-gray-200"
-                                : "text-gray-500 hover:text-gray-700"
+                              ? "text-gray-400 hover:text-gray-200"
+                              : "text-gray-500 hover:text-gray-700"
                               }`}
                           >
                             <X className="w-4 h-4" />
@@ -757,8 +789,8 @@ const handleViewUserProfile = (user) => {
                                   key={index}
                                   onClick={() => handleViewUserProfile(user)}
                                   className={`p-3 rounded-lg border transition-colors cursor-pointer ${darkMode
-                                      ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
-                                      : "border-gray-200 bg-gray-50 hover:bg-gray-100"
+                                    ? "border-gray-600 bg-gray-700 hover:bg-gray-650"
+                                    : "border-gray-200 bg-gray-50 hover:bg-gray-100"
                                     }`}
                                 >
                                   <div className="flex items-center gap-3">
@@ -776,15 +808,14 @@ const handleViewUserProfile = (user) => {
                                           {user.name}
                                         </h4>
 
-<span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
-  (user.user_type || user.type) === "seller"
-    ? darkMode ? "bg-blue-600 text-blue-100" : "bg-blue-100 text-blue-600"
-    : (user.user_type || user.type) === "buyer"
-    ? darkMode ? "bg-purple-600 text-purple-100" : "bg-purple-100 text-purple-600"
-    : darkMode ? "bg-green-600 text-green-100" : "bg-green-100 text-green-600"
-}`}>
-  {user.user_type || user.type}
-</span>
+                                        <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${(user.user_type || user.type) === "seller"
+                                            ? darkMode ? "bg-blue-600 text-blue-100" : "bg-blue-100 text-blue-600"
+                                            : (user.user_type || user.type) === "buyer"
+                                              ? darkMode ? "bg-purple-600 text-purple-100" : "bg-purple-100 text-purple-600"
+                                              : darkMode ? "bg-green-600 text-green-100" : "bg-green-100 text-green-600"
+                                          }`}>
+                                          {user.user_type || user.type}
+                                        </span>
                                       </div>
                                       <div
                                         className={`flex items-center gap-1 text-xs ${darkMode ? "text-gray-400" : "text-gray-500"
@@ -846,8 +877,8 @@ const handleViewUserProfile = (user) => {
                               setShowLocationDropdown(false);
                             }}
                             className={`w-full flex items-center justify-between p-3 rounded-lg border transition-colors ${darkMode
-                                ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                                : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
+                              ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                              : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
                               }`}
                           >
                             <div className="flex items-center space-x-2">
@@ -912,8 +943,8 @@ const handleViewUserProfile = (user) => {
                               setShowCategoryDropdown(false);
                             }}
                             className={`w-full flex items-center justify-between p-3 rounded-lg border transition-colors ${darkMode
-                                ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                                : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
+                              ? "bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                              : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
                               }`}
                           >
                             <div className="flex items-center space-x-2">
@@ -975,8 +1006,8 @@ const handleViewUserProfile = (user) => {
                   <aside className="w-[24rem] mt-6">
                     <div
                       className={`${darkMode
-                          ? "bg-gray-800 border-gray-700"
-                          : "bg-white border-gray-100"
+                        ? "bg-gray-800 border-gray-700"
+                        : "bg-white border-gray-100"
                         } rounded-xl shadow-lg border sticky top-6 h-[600px] flex flex-col overflow-hidden`}
                     >
                       {/* Header */}
@@ -1033,10 +1064,10 @@ const handleViewUserProfile = (user) => {
                               return (
                                 <div
                                   key={`performer-${performer.id}`}
-                                  
+
                                   className={`${darkMode
-                                      ? "bg-gray-700 hover:bg-gray-650"
-                                      : "bg-gray-50 hover:bg-gray-100"
+                                    ? "bg-gray-700 hover:bg-gray-650"
+                                    : "bg-gray-50 hover:bg-gray-100"
                                     } rounded-xl p-4 border-l-4 ${rankBadge.border
                                     } transition-all duration-200 hover:shadow-md group cursor-pointer`}
                                 >
@@ -1045,20 +1076,20 @@ const handleViewUserProfile = (user) => {
                                     <div className="flex-shrink-0 w-8 flex justify-center">
                                       <span
                                         className={`font-bold text-lg ${index < 3
-                                            ? index === 0
+                                          ? index === 0
+                                            ? darkMode
+                                              ? "text-yellow-400"
+                                              : "text-yellow-500"
+                                            : index === 1
                                               ? darkMode
-                                                ? "text-yellow-400"
-                                                : "text-yellow-500"
-                                              : index === 1
-                                                ? darkMode
-                                                  ? "text-gray-300"
-                                                  : "text-gray-400"
-                                                : darkMode
-                                                  ? "text-amber-600"
-                                                  : "text-amber-700"
-                                            : darkMode
-                                              ? "text-gray-400"
-                                              : "text-gray-500"
+                                                ? "text-gray-300"
+                                                : "text-gray-400"
+                                              : darkMode
+                                                ? "text-amber-600"
+                                                : "text-amber-700"
+                                          : darkMode
+                                            ? "text-gray-400"
+                                            : "text-gray-500"
                                           } transition-all`}
                                       >
                                         {index + 1}
@@ -1073,8 +1104,8 @@ const handleViewUserProfile = (user) => {
                                           src={performer.avatar}
                                           alt={performer.name}
                                           className={`w-12 h-12 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent transition-all ${index === 0
-                                              ? "ring-yellow-400 group-hover:ring-yellow-500"
-                                              : "group-hover:ring-green-400"
+                                            ? "ring-yellow-400 group-hover:ring-yellow-500"
+                                            : "group-hover:ring-green-400"
                                             }`}
                                         />
                                         {index === 0 && (
@@ -1091,8 +1122,8 @@ const handleViewUserProfile = (user) => {
                                         <div className="flex items-center gap-2 mb-1">
                                           <h4
                                             className={`font-semibold text-sm truncate ${darkMode
-                                                ? "text-white"
-                                                : "text-gray-900"
+                                              ? "text-white"
+                                              : "text-gray-900"
                                               }`}
                                           >
                                             {performer.name}
@@ -1105,18 +1136,18 @@ const handleViewUserProfile = (user) => {
                                         </div>
 
                                         {/* Location */}
-   {/* Location - ✅ FIXED */}
-<div
-  className={`flex items-center gap-1 text-xs mb-2 ${darkMode
-      ? "text-gray-400"
-      : "text-gray-500"
-    }`}
->
-  <MapPin className="w-3 h-3 flex-shrink-0" />
-  <span className="truncate">
-    {performer.location || "No location set"}  {/* ✅ USE performer.location */}
-  </span>
-</div>
+                                        {/* Location - ✅ FIXED */}
+                                        <div
+                                          className={`flex items-center gap-1 text-xs mb-2 ${darkMode
+                                            ? "text-gray-400"
+                                            : "text-gray-500"
+                                            }`}
+                                        >
+                                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                                          <span className="truncate">
+                                            {performer.location || "No location set"}  {/* ✅ USE performer.location */}
+                                          </span>
+                                        </div>
 
                                         {/* Rating */}
                                         <div className="flex items-center gap-1">
@@ -1124,17 +1155,17 @@ const handleViewUserProfile = (user) => {
                                             <Star
                                               key={i}
                                               className={`w-3 h-3 ${i < Math.floor(performer.rating)
-                                                  ? "text-yellow-400 fill-current"
-                                                  : darkMode
-                                                    ? "text-gray-600"
-                                                    : "text-gray-300"
+                                                ? "text-yellow-400 fill-current"
+                                                : darkMode
+                                                  ? "text-gray-600"
+                                                  : "text-gray-300"
                                                 }`}
                                             />
                                           ))}
                                           <span
                                             className={`text-xs font-medium ml-1 ${darkMode
-                                                ? "text-yellow-400"
-                                                : "text-yellow-600"
+                                              ? "text-yellow-400"
+                                              : "text-yellow-600"
                                               }`}
                                           >
                                             {performer.rating.toFixed(1)}
