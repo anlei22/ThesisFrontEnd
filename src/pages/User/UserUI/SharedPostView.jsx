@@ -135,18 +135,7 @@ useEffect(() => {
   return (
     <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-50"} py-8 px-4`}>
       <div className="max-w-3xl mx-auto">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate('/')}
-          className={`mb-6 flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-            darkMode
-              ? "text-gray-300 hover:bg-gray-800"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          <ChevronLeftIcon className="w-5 h-5" />
-          <span>Back to Feed</span>
-        </button>
+      
 
         {/* Main Card */}
         <div className={`rounded-lg overflow-hidden shadow-xl ${darkMode ? "bg-gray-800" : "bg-white"}`}>
