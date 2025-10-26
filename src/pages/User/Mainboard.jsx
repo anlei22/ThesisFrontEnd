@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from "../../context/AuthContext";
 import LoginModal from "../../components/LoginModal";
 import Bookmark from './UserUI/Bookmark';
 import Notifications from './UserUI/Notifications';
+import fetchUserProfile from '../../services/profileApi';
 
 
 import {
@@ -177,39 +178,71 @@ const Mainboard = () => {
 
 
 
-  const handleViewUserProfile = (user) => {
-    // Transform the user data to match the expected format
-    const transformedUser = {
+const handleViewUserProfile = async (user) => {
+  try {
+    console.log('🔍 Viewing profile for user:', user.id, user.name);
+    
+    // Show loading state immediately
+    setViewingUserProfile(true);
+    setSelectedUser({
       id: user.id,
       name: user.name,
-      username: user.username || `@${(user.name || '').toLowerCase().replace(/\s+/g, '')}`,
+      username: user.username,
       avatar: user.avatar,
-      coverPhoto: user.cover_photo || user.coverPhoto ||
-        'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
-      bio: user.bio || `${user.user_type || 'User'} on AgriConnect`,
-      location: user.location || 'Philippines',
-      joinDate: user.created_at ?
-        `Joined ${new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` :
-        'Member',
-      rating: user.rating || 0,
-      totalReviews: user.totalReviews || 0,
-      followers: user.followers || 0,
-      following: user.following || 0,
-      isVerified: user.isVerified || false,
-      specialties: user.specialties || [],
-      user_type: user.user_type || user.type || 'user',
-      email: user.email || ''
-    };
+      loading: true,
+    });
 
-    // Note: startConversation moved to component scope (defined below) so it can be
-    // passed into UserProfileView without causing a ReferenceError when renderMainContent runs.
+    // Fetch real profile data from API
+    const { user: profileUser, userPosts } = await fetchUserProfile(user.id);
 
-    setSelectedUser(transformedUser);
-    setViewingUserProfile(true);
+    console.log('✅ Profile fetched successfully:', {
+      user: profileUser.name,
+      posts: userPosts.length,
+      rating: profileUser.rating,
+    });
+
+    // Update with real data
+    setSelectedUser({
+      ...profileUser,
+      // Preserve avatar from search if profile doesn't have one
+      avatar: profileUser.avatar || user.avatar,
+      location: profileUser.location || user.location,
+      posts: userPosts, // Add posts to user object
+      loading: false,
+    });
+
+    // Clear search
     setUserSearchTerm("");
     setShowUserResults(false);
     setMobileTab("home");
-  };
+    
+  } catch (error) {
+    console.error('❌ Error loading user profile:', error);
+    
+    // Show error state but keep basic info
+    setSelectedUser({
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      avatar: user.avatar,
+      bio: 'Failed to load profile details. Please try again.',
+      location: user.location || 'Philippines',
+      rating: user.rating || 0,
+      totalReviews: user.totalReviews || 0,
+      joinDate: 'Member',
+      followers: 0,
+      following: 0,
+      isVerified: false,
+      specialties: [],
+      posts: [],
+      error: true,
+      loading: false,
+    });
+
+    // Show user-friendly error message
+    alert('Unable to load full profile. Showing limited information.');
+  }
+};
 
   const handleBackFromUserProfile = () => {
     setViewingUserProfile(false);

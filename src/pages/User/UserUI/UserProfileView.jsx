@@ -225,7 +225,31 @@ const ProfileCardPreview = ({ user, darkMode, onViewProfile }) => {
     </div>
   );
 };
+const getUserTypeBadge = (type, darkMode) => {
+  const types = {
+    buyer: {
+      light: 'bg-purple-100 text-purple-600',
+      dark: 'bg-purple-600 text-purple-100',
+      label: 'Buyer'
+    },
+    seller: {
+      light: 'bg-blue-100 text-blue-600',
+      dark: 'bg-blue-600 text-blue-100',
+      label: 'Seller'
+    },
+    both: {
+      light: 'bg-green-100 text-green-600',
+      dark: 'bg-green-600 text-green-100',
+      label: 'Buyer & Seller'
+    }
+  };
 
+  const typeConfig = types[type] || types.both;
+  return {
+    className: darkMode ? typeConfig.dark : typeConfig.light,
+    label: typeConfig.label
+  };
+};
 // QR Code Modal Component
 // QR Code Modal Component
 const QRCodeModal = ({ user, darkMode, onClose }) => {
@@ -545,14 +569,14 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
       </div>
 
       {/* Actions */}
-      <div className={`flex items-center justify-around border-t py-2 ${scheme.border}`}>
-        {[
-          { icon: Heart, label: '', action: onLike, active: likedPosts.has(post.id), color: 'text-green-600' },
-          { icon: MessageCircle, label: '', action: onImageClick, color: 'text-blue-600' },
-          { icon: Bookmark, label: '', action: onBookmark, active: bookmarkedPosts.has(post.id), color: 'text-yellow-600' },
-          { icon: Share, label: '', action: () => { }, color: 'text-green-600' }
-        ].map(({ icon: Icon, label, action, active, color }) => (
-          <button key={label} onClick={action} className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${active ? color : scheme.muted}`}>
+<div className={`flex items-center justify-around border-t py-2 ${scheme.border}`}>
+  {[
+    { icon: Heart, label: 'like', action: onLike, active: likedPosts.has(post.id), color: 'text-green-600' },
+    { icon: MessageCircle, label: 'comment', action: onImageClick, color: 'text-blue-600' },
+    { icon: Bookmark, label: 'bookmark', action: onBookmark, active: bookmarkedPosts.has(post.id), color: 'text-yellow-600' },
+    { icon: Share, label: 'share', action: () => {}, color: 'text-green-600' }
+  ].map(({ icon: Icon, label, action, active, color }) => (
+    <button key={label} onClick={action} className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${active ? color : scheme.muted}`}>
             <Icon className={`w-5 h-5 ${active ? 'fill-current' : ''}`} />
             <span className="text-sm font-medium">{label}</span>
           </button>
@@ -1187,12 +1211,84 @@ const MessageModal = ({ user, darkMode, onClose }) => {
 export default function UserViewProfile({ user, userPosts = [], darkMode = false, onBack, onMessage }) {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const currentUser = user || DEFAULT_USER;
-  const posts = userPosts.length > 0 ? userPosts : SAMPLE_POSTS;
 
+ // ✅ PRIORITY: Use posts from user.posts if available (from API)
+  const posts = user?.posts?.length > 0 
+    ? user.posts 
+    : (userPosts.length > 0 ? userPosts : SAMPLE_POSTS);
+
+  console.log('📊 UserProfileView Data:', {
+    userId: currentUser.id,
+    name: currentUser.name,
+    postsCount: posts.length,
+    hasRealPosts: user?.posts?.length > 0,
+    loading: user?.loading,
+    error: user?.error,
+  });
+
+  // ✅ Show loading state while fetching profile
+  if (user?.loading) {
+    return (
+      <div className={`min-h-screen transition-colors ${scheme.bg} flex items-center justify-center`}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-green-600 mx-auto mb-4"></div>
+          <p className={`text-lg font-medium ${scheme.text}`}>Loading profile...</p>
+          <p className={`text-sm ${scheme.muted} mt-2`}>Fetching user data and posts</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Show error state if failed to load
+  if (user?.error) {
+    return (
+      <div className={`min-h-screen transition-colors ${scheme.bg}`}>
+        <div className="max-w-4xl mx-auto px-4 pt-6">
+          <button
+            onClick={onBack}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              darkMode
+                ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            }`}
+          >
+            <ChevronLeft className="w-5 h-5" />
+            <span>Back</span>
+          </button>
+          
+          <div className={`mt-8 p-6 rounded-lg ${
+            darkMode ? 'bg-red-900/20 border-2 border-red-600' : 'bg-red-50 border-2 border-red-200'
+          }`}>
+            <div className="text-center">
+              <div className="mb-4">
+                <svg className={`w-16 h-16 mx-auto ${darkMode ? 'text-red-400' : 'text-red-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-red-300' : 'text-red-700'}`}>
+                Failed to Load Profile
+              </h3>
+              <p className={`mb-4 ${darkMode ? 'text-red-200' : 'text-red-600'}`}>
+                Unable to fetch complete profile data. Showing limited information.
+              </p>
+              <button
+                onClick={onBack}
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Rest of your existing UserProfileView code continues here...
   const [isFollowing, setIsFollowing] = useState(false);
-  const [followerCount, setFollowerCount] = useState(currentUser.followers || 1234);
-  const [likedPosts, setLikedPosts] = useState(new Set([2]));
-  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set([3]));
+  const [followerCount, setFollowerCount] = useState(currentUser.followers || 0);
+  const [likedPosts, setLikedPosts] = useState(new Set(posts.filter(p => p.isLiked).map(p => p.id)));
+  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set(posts.filter(p => p.isBookmarked).map(p => p.id)));
   const [showQRCode, setShowQRCode] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
@@ -1215,6 +1311,8 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
     newBookmarked.has(postId) ? newBookmarked.delete(postId) : newBookmarked.add(postId);
     setBookmarkedPosts(newBookmarked);
   };
+
+
 
   return (
     <div className={`min-h-screen transition-colors ${scheme.bg}`}>
@@ -1243,65 +1341,66 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
 
           <div className="px-6 pb-6">
             {/* Avatar */}
-            <div className="flex justify-center md:justify-start -mt-16 mb-6">
+            <div className="flex justify-center md:justify-start -mt-16 mb-6 relative z-10">
               <img src={currentUser.avatar} alt={currentUser.name} className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg" />
             </div>
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6 text-center md:text-left">
-              <div>
-                <div className="flex items-center justify-center md:justify-start space-x-2 mb-1">
-                  <h1 className={`text-2xl font-bold ${scheme.text}`}>{currentUser.name}</h1>
-                  {currentUser.isVerified && <ShieldCheck className="w-6 h-6 text-blue-500 fill-current" />}
-                </div>
-                <p className={`text-base ${scheme.muted}`}>{currentUser.username}</p>
-              </div>
-              <div className="flex justify-center md:justify-end gap-2 mt-4 md:mt-0">
-                <button onClick={handleFollow} className={`px-6 py-2 rounded-lg font-medium transition ${isFollowing ? (darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-900') : 'bg-green-600 hover:bg-green-700 text-white'}`}>
-                  {isFollowing ? 'Following' : 'Follow'}
-                </button>
-                <button onClick={() => setShowQRCode(true)} className={`px-4 py-2 rounded-lg font-medium transition ${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}>
-                  <QrCode className="w-4 h-4" />
-                </button>
-                <button onClick={async () => {
-                  // If parent provided onMessage handler, use it to create conversation and navigate
-                  if (typeof onMessage === 'function') {
-                    await onMessage(currentUser.id);
-                  } else {
-                    setShowMessageModal(true);
-                  }
-                }} className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Message</span>
-                </button>
-              </div>
-            </div>
+         {/* Header */}
+<div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6 text-center md:text-left">
+  <div>
+    {/* Name + Verified Badge + User Type Badge */}
+    <div className="flex items-center justify-center md:justify-start space-x-2 mb-1 flex-wrap gap-2">
+      <h1 className={`text-2xl font-bold ${scheme.text}`}>{currentUser.name}</h1>
 
-            {/* Stats */}
-            <div className="flex justify-center md:justify-start gap-8 mb-6">
-              {[
-                { label: 'Posts', value: posts.length },
-                { label: 'Followers', value: followerCount.toLocaleString() },
-                { label: 'Following', value: (currentUser.following || 0).toLocaleString() }
-              ].map(({ label, value }) => (
-                <div key={label} className="text-center">
-                  <div className={`text-xl font-bold ${scheme.text}`}>{value}</div>
-                  <div className={`text-sm ${scheme.muted}`}>{label}</div>
-                </div>
-              ))}
-            </div>
+     
+      {/* User Type Badge */}
+      {currentUser.user_type && (
+        <span
+          className={`text-xs px-3 py-1 rounded-full font-medium ${
+            getUserTypeBadge(currentUser.user_type, darkMode).className
+          }`}
+        >
+          {getUserTypeBadge(currentUser.user_type, darkMode).label}
+        </span>
+      )}
+    </div>
 
-            {/* Bio */}
-            <p className={`mb-4 ${scheme.text} text-center md:text-left`}>{currentUser.bio}</p>
+    {/* Username */}
+    <p className={`text-base ${scheme.muted}`}>{currentUser.username}</p>
+  </div>
 
-            {/* Specialties */}
-            {currentUser.specialties?.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4 justify-center md:justify-start">
-                {currentUser.specialties.map(specialty => (
-                  <span key={specialty} className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>{specialty}</span>
-                ))}
-              </div>
-            )}
+  {/* Action Buttons */}
+  <div className="flex justify-center md:justify-end gap-2 mt-4 md:mt-0">
+    <button 
+      onClick={() => setShowQRCode(true)} 
+      className={`px-4 py-2 rounded-lg font-medium transition ${
+        darkMode 
+          ? 'bg-gray-700 text-white hover:bg-gray-600' 
+          : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+      }`}
+    >
+      <QrCode className="w-4 h-4" />
+    </button>
+    <button 
+      onClick={async () => {
+        if (typeof onMessage === 'function') {
+          await onMessage(currentUser.id);
+        } else {
+          setShowMessageModal(true);
+        }
+      }} 
+      className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center space-x-2"
+    >
+      <MessageCircle className="w-4 h-4" />
+      <span>Message</span>
+    </button>
+  </div>
+</div>
+
+
+
+
 
             {/* Location & Join Date */}
             <div className="flex flex-wrap gap-4 mb-4 text-sm justify-center md:justify-start">
