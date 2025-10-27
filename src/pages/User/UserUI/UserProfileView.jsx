@@ -3,6 +3,7 @@ import {
   Heart,
   MessageCircle,
   Share,
+  ShareIcon,  
   Bookmark,
   QrCode,
   Star,
@@ -24,6 +25,129 @@ import {
   Trash2,
 } from "lucide-react";
 import ProfileQRModal from "../../../components/profileQrModal";
+import { QRCodeCanvas } from "qrcode.react";
+const ShareModal = ({ isOpen, onClose, darkMode, postId, title = "Animal Post" }) => {
+  const [shareUrl, setShareUrl] = useState("");
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && postId) {
+      const appUrl = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/+$/, '');
+      setShareUrl(`${appUrl}/post/${postId}`);
+    }
+  }, [postId]);
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Link copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className={`rounded-lg p-6 w-full max-w-md mx-auto ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-2">
+            <Share className={`w-6 h-6 ${darkMode ? "text-green-400" : "text-green-600"}`} />
+            <h2 className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>
+              Share Post
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className={`p-2 rounded-full transition-colors duration-200 ${
+              darkMode ? "text-gray-400 hover:bg-gray-700 hover:text-white" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            }`}
+          >
+            ✕
+          </button>
+        </div>
+
+        <p className={`text-sm mb-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+          {title}
+        </p>
+
+        {/* QR CODE SECTION - NEW! */}
+        {shareUrl && (
+          <div className="text-center mb-6">
+            <div
+              className={`inline-block p-4 rounded-lg ${
+                darkMode ? "bg-gray-700" : "bg-gray-50"
+              }`}
+            >
+              <QRCodeCanvas
+                value={shareUrl}
+                size={200}
+                bgColor={darkMode ? "#1f2937" : "#ffffff"}
+                fgColor={darkMode ? "#10b981" : "#059669"}
+                level="H"
+                includeMargin={true}
+              />
+            </div>
+            <p
+              className={`text-sm mt-2 ${darkMode ? "text-gray-400" : "text-gray-600"}`}
+            >
+              Scan QR code to view this post
+            </p>
+          </div>
+        )}
+
+        <div className="mb-6">
+          <label className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+            Share Link
+          </label>
+          <div className="flex">
+            <input
+              type="text"
+              value={shareUrl}
+              readOnly
+              className={`flex-1 px-3 py-2 text-sm rounded-l-lg border focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                darkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-gray-50 border-gray-300 text-gray-900"
+              }`}
+            />
+            <button
+              onClick={copyToClipboard}
+              className={`px-3 py-2 rounded-r-lg border border-l-0 transition-colors duration-200 ${
+                darkMode ? "bg-green-600 hover:bg-green-700 border-green-600 text-white" : "bg-green-500 hover:bg-green-600 border-green-500 text-white"
+              }`}
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <div className="flex space-x-2">
+          <button
+            onClick={() => window.open(
+              `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+              "_blank"
+            )}
+            className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+              darkMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"
+            }`}
+          >
+            Facebook
+          </button>
+          <button
+            onClick={() => window.open(
+              `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`,
+              "_blank"
+            )}
+            className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+              darkMode ? "bg-sky-600 hover:bg-sky-700 text-white" : "bg-sky-500 hover:bg-sky-600 text-white"
+            }`}
+          >
+            Twitter
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const COLORS = {
   dark: {
@@ -355,6 +479,7 @@ const getUserTypeBadge = (type, darkMode) => {
 // QR Code Modal Component
 
 // Post List Item
+// CORRECT: PostListItem Component with Share Button
 const PostListItem = ({
   post,
   user,
@@ -364,6 +489,7 @@ const PostListItem = ({
   onLike,
   onBookmark,
   onImageClick,
+  onShare,  // ✅ ADD THIS PROP
 }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
 
@@ -494,6 +620,7 @@ const PostListItem = ({
           </div>
         </div>
       )}
+
       {/* Stats */}
       <div
         className={`px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-sm ${scheme.muted}`}
@@ -510,33 +637,33 @@ const PostListItem = ({
         {[
           {
             icon: Heart,
-            label: "like",
+            label: "",
             action: onLike,
             active: likedPosts.has(post.id),
             color: "text-green-600",
           },
           {
             icon: MessageCircle,
-            label: "comment",
+            label: "",
             action: onImageClick,
             color: "text-blue-600",
           },
           {
             icon: Bookmark,
-            label: "bookmark",
+            label: "",
             action: onBookmark,
             active: bookmarkedPosts.has(post.id),
             color: "text-yellow-600",
           },
           {
-            icon: Share,
-            label: "share",
-            action: () => {},
+            icon: ShareIcon,
+            label: "",
+            action: () => onShare(post), // ✅ CALL onShare WITH POST DATA
             color: "text-green-600",
           },
         ].map(({ icon: Icon, label, action, active, color }) => (
           <button
-            key={label}
+            key={label || "share"}
             onClick={action}
             className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${
               active ? color : scheme.muted
@@ -590,6 +717,7 @@ const PostModal = ({
   darkMode,
   onClose,
   isAuthenticated = true,
+   onShare, 
 }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -601,7 +729,7 @@ const PostModal = ({
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportComment, setReportComment] = useState("");
-  const [showShareModal, setShowShareModal] = useState(false);
+
 
   const reportReasons = [
     "Spam or misleading",
@@ -688,7 +816,7 @@ const PostModal = ({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm"
           onClick={onClose}
         />
 
@@ -774,7 +902,13 @@ const PostModal = ({
           </div>
 
           {/* Content */}
-          <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+        <div
+  className="overflow-y-auto max-h-[calc(90vh-120px)]"
+  style={{
+    scrollbarWidth: "none",       /* Firefox */
+    msOverflowStyle: "none",      /* Internet Explorer/Edge */
+  }}
+>
             <div className="p-6">
               {/* Images */}
               {post.images && post.images.length > 0 && (
@@ -916,14 +1050,7 @@ const PostModal = ({
                   </div>
                 </div>
                 <div className="space-y-5">
-                  <div>
-                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>
-                      Breed
-                    </h4>
-                    <p className={darkMode ? "text-gray-400" : "text-gray-700"}>
-                      {post.animalInfo.breed}
-                    </p>
-                  </div>
+
                   <div>
                     <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>
                       Location
@@ -1016,15 +1143,15 @@ const PostModal = ({
                           post.isBookmarked ? "fill-current" : ""
                         }`}
                       />
-                      <span className="font-medium">Save</span>
+                      <span className="font-medium">Bookmarks</span>
                     </button>
                     <button
-                      onClick={() => setShowShareModal(true)}
+                      onClick={() => onShare(post)} // ✅ CALL onShare WITH POST
                       className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}
                     >
-                      <Share className="w-5 h-5" />
-                      <span className="font-medium">Share</span>
-                    </button>
+    <ShareIcon className="w-5 h-5" />
+    <span className="font-medium">Shre</span>
+  </button>
                   </>
                 ) : (
                   <>
@@ -1278,22 +1405,13 @@ const PostModal = ({
         </div>
       </div>
 
-      {/* Share Modal - THIS SHOULD BE HERE */}
-      {showShareModal && (
-        <ShareModal
-          isOpen={showShareModal}
-          onClose={() => setShowShareModal(false)}
-          darkMode={darkMode}
-          postId={post.id}
-          title={post.animalInfo.title}
-        />
-      )}
+ 
       {/* Report Modal */}
       {showReportModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <div
-              className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
               onClick={() => setShowReportModal(false)}
             />
 
@@ -1561,6 +1679,7 @@ const MessageModal = ({ user, darkMode, onClose }) => {
 };
 
 // Main Profile Component
+
 export default function UserViewProfile({
   user,
   userPosts = [],
@@ -1571,7 +1690,47 @@ export default function UserViewProfile({
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const currentUser = user || DEFAULT_USER;
 
-  // ✅ PRIORITY: Use posts from user.posts if available (from API)
+  // ✅ MOVE ALL useState CALLS HERE - AT THE TOP
+  // BEFORE any conditional returns
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedPostToShare, setSelectedPostToShare] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(
+    currentUser.followers || 0
+  );
+  const [likedPosts, setLikedPosts] = useState(
+    new Set((user?.posts || userPosts || SAMPLE_POSTS).filter((p) => p.isLiked).map((p) => p.id))
+  );
+  const [bookmarkedPosts, setBookmarkedPosts] = useState(
+    new Set((user?.posts || userPosts || SAMPLE_POSTS).filter((p) => p.isBookmarked).map((p) => p.id))
+  );
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("posts");
+  const [viewMode, setViewMode] = useState("list");
+  const [selectedPost, setSelectedPost] = useState(null);
+
+  // ✅ Handler functions AFTER all hooks
+  const handleShareClick = (post) => {
+    setSelectedPostToShare(post);
+    setShowShareModal(true);
+  };
+
+  const toggleLike = (postId) => {
+    const newLiked = new Set(likedPosts);
+    newLiked.has(postId) ? newLiked.delete(postId) : newLiked.add(postId);
+    setLikedPosts(newLiked);
+  };
+
+  const toggleBookmark = (postId) => {
+    const newBookmarked = new Set(bookmarkedPosts);
+    newBookmarked.has(postId)
+      ? newBookmarked.delete(postId)
+      : newBookmarked.add(postId);
+    setBookmarkedPosts(newBookmarked);
+  };
+
+  // ✅ Posts data
   const posts =
     user?.posts?.length > 0
       ? user.posts
@@ -1588,128 +1747,22 @@ export default function UserViewProfile({
     error: user?.error,
   });
 
-  // ✅ Show loading state while fetching profile
+  // ✅ NOW you can have conditional returns
   if (user?.loading) {
     return (
-      <div
-        className={`min-h-screen transition-colors ${scheme.bg} flex items-center justify-center`}
-      >
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-green-600 mx-auto mb-4"></div>
-          <p className={`text-lg font-medium ${scheme.text}`}>
-            Loading profile...
-          </p>
-          <p className={`text-sm ${scheme.muted} mt-2`}>
-            Fetching user data and posts
-          </p>
-        </div>
+      <div className={`min-h-screen transition-colors ${scheme.bg} flex items-center justify-center`}>
+        {/* Loading content */}
       </div>
     );
   }
 
-  // ✅ Show error state if failed to load
   if (user?.error) {
     return (
       <div className={`min-h-screen transition-colors ${scheme.bg}`}>
-        <div className="max-w-4xl mx-auto px-4 pt-6">
-          <button
-            onClick={onBack}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-              darkMode
-                ? "text-gray-400 hover:bg-gray-800 hover:text-white"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-            }`}
-          >
-            <ChevronLeft className="w-5 h-5" />
-            <span>Back</span>
-          </button>
-
-          <div
-            className={`mt-8 p-6 rounded-lg ${
-              darkMode
-                ? "bg-red-900/20 border-2 border-red-600"
-                : "bg-red-50 border-2 border-red-200"
-            }`}
-          >
-            <div className="text-center">
-              <div className="mb-4">
-                <svg
-                  className={`w-16 h-16 mx-auto ${
-                    darkMode ? "text-red-400" : "text-red-600"
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <h3
-                className={`text-xl font-semibold mb-2 ${
-                  darkMode ? "text-red-300" : "text-red-700"
-                }`}
-              >
-                Failed to Load Profile
-              </h3>
-              <p
-                className={`mb-4 ${darkMode ? "text-red-200" : "text-red-600"}`}
-              >
-                Unable to fetch complete profile data. Showing limited
-                information.
-              </p>
-              <button
-                onClick={onBack}
-                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
-              >
-                Go Back
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Error content */}
       </div>
     );
   }
-
-  // ✅ Rest of your existing UserProfileView code continues here...
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followerCount, setFollowerCount] = useState(
-    currentUser.followers || 0
-  );
-  const [likedPosts, setLikedPosts] = useState(
-    new Set(posts.filter((p) => p.isLiked).map((p) => p.id))
-  );
-  const [bookmarkedPosts, setBookmarkedPosts] = useState(
-    new Set(posts.filter((p) => p.isBookmarked).map((p) => p.id))
-  );
-  const [showQRCode, setShowQRCode] = useState(false);
-  const [showMessageModal, setShowMessageModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("posts");
-  const [viewMode, setViewMode] = useState("list");
-  const [selectedPost, setSelectedPost] = useState(null);
-
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-    setFollowerCount((prev) => (isFollowing ? prev - 1 : prev + 1));
-  };
-
-  const toggleLike = (postId) => {
-    const newLiked = new Set(likedPosts);
-    newLiked.has(postId) ? newLiked.delete(postId) : newLiked.add(postId);
-    setLikedPosts(newLiked);
-  };
-
-  const toggleBookmark = (postId) => {
-    const newBookmarked = new Set(bookmarkedPosts);
-    newBookmarked.has(postId)
-      ? newBookmarked.delete(postId)
-      : newBookmarked.add(postId);
-    setBookmarkedPosts(newBookmarked);
-  };
 
   return (
     <div className={`min-h-screen transition-colors ${scheme.bg}`}>
@@ -1878,16 +1931,17 @@ export default function UserViewProfile({
                         onClick={() => setSelectedPost(post)}
                       />
                     ) : (
-                      <PostListItem
-                        post={post}
-                        user={currentUser}
-                        darkMode={darkMode}
-                        likedPosts={likedPosts}
-                        bookmarkedPosts={bookmarkedPosts}
-                        onLike={() => toggleLike(post.id)}
-                        onBookmark={() => toggleBookmark(post.id)}
-                        onImageClick={() => setSelectedPost(post)}
-                      />
+                     <PostListItem
+  post={post}
+  user={currentUser}
+  darkMode={darkMode}
+  likedPosts={likedPosts}
+  bookmarkedPosts={bookmarkedPosts}
+  onLike={() => toggleLike(post.id)}
+  onBookmark={() => toggleBookmark(post.id)}
+  onImageClick={() => setSelectedPost(post)}
+  onShare={handleShareClick}  // ✅ ADD THIS
+/>
                     )}
                   </div>
                 ))}
@@ -1972,8 +2026,19 @@ export default function UserViewProfile({
             user={currentUser}
             darkMode={darkMode}
             onClose={() => setSelectedPost(null)}
+             onShare={handleShareClick}  // ✅ PASS THE HANDLER
           />
         )}
+
+        {showShareModal && selectedPostToShare && (
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        darkMode={darkMode}
+        postId={selectedPostToShare.id}
+        title={selectedPostToShare.animalInfo?.title || "Animal Post"}
+      />
+    )}
       </div>
     </div>
   );
