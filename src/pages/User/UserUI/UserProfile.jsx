@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, ChevronLeft, ChevronRight, Grid, List, Flag, MoreVertical, Edit, Trash2  } from 'lucide-react';
-
+import { useAuth } from '../../../context/AuthContext';
 // Constants
 const COLORS = {
   dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
@@ -1653,14 +1653,19 @@ const DeleteConfirmationModal = ({
   );
 };
 // Main Profile Component
-export default function UserViewProfile({ user, userPosts = [], darkMode = false, onBack }) {
+export default function UserViewProfile({ 
+
+  darkMode = false, 
+  onBack,
+ apiBaseUrl = 'http://localhost:8000/api'  // ADD THIS - CHANGE TO YOUR API URL
+}) {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
-  const currentUser = user || DEFAULT_USER;
-  const posts = userPosts.length > 0 ? userPosts : SAMPLE_POSTS;
+  const { user } = useAuth(); // ADD THIS LINE
+  const userId = user?.id || localStorage.getItem('user_id'); 
 
   // State declarations
-  const [profileData, setProfileData] = useState(currentUser);
-  const [postsList, setPostsList] = useState(posts);
+const [profileData, setProfileData] = useState(null);  // CHANGE THIS
+const [postsList, setPostsList] = useState([]);        // CHANGE THIS
   const [likedPosts, setLikedPosts] = useState(new Set([2]));
   const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set([3]));
   const [showQRCode, setShowQRCode] = useState(false);
@@ -1671,8 +1676,102 @@ export default function UserViewProfile({ user, userPosts = [], darkMode = false
 const [selectedPost, setSelectedPost] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
+const [loading, setLoading] = useState(true);  // ADD THIS
+const [error, setError] = useState(null);      // ADD THIS
+// FETCH PROFILE DATA FROM API
+useEffect(() => {
+  const fetchProfile = async () => {
+    if (!userId) {
+      setError('User ID is required');
+      setLoading(false);
+      return;
+    }
 
+    try {
+      setLoading(true);
+      const response = await fetch(`${apiBaseUrl}/profile/get/${userId}/profile`);
+      const result = await response.json();
 
+      if (result.status === 'success') {
+        const data = result.data;
+
+        // Transform API data to match your component
+        const transformedProfile = {
+          id: data.id,
+          name: data.name,
+          username: `@${data.username}`,
+          email: data.email,
+          avatar: data.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
+          coverPhoto: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
+          bio: data.bio || 'Professional livestock farmer',
+          location: data.location || 'Philippines',
+          phoneNumber: data.phone,
+          joinDate: new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          birthday: data.birthday || '',
+          rating: parseFloat(result.average_rating) || 0,
+          totalReviews: result.total_raters || 0,
+          followers: 0,
+          following: 0,
+          accountType: data.user_type || 'both',
+          isVerified: data.isVerified,
+          firstName: data.name.split(' ')[0],
+          lastName: data.name.split(' ').slice(1).join(' '),
+          address: data.location
+        };
+
+        // Transform posts
+        const transformedPosts = (data.animal_feeds || []).map(feed => ({
+          id: feed.id,
+          content: feed.description,
+          images: feed.images.map(img => img.image_path),
+          likes: feed.likes_count,
+          comments: 0,
+          bookmarks: feed.bookmarks_count,
+          timestamp: new Date(feed.created_at).toLocaleDateString(),
+          isLiked: feed.is_liked,
+          isBookmarked: feed.is_bookmarked,
+          animalInfo: {
+            title: feed.title,
+            type: feed.type,
+            breed: feed.breed,
+            age: feed.age,
+            sex: feed.sex,
+            price: `₱${parseFloat(feed.price).toLocaleString()}`,
+            availability: feed.status === 'available' ? 'available' : 'sold',
+            description: feed.description
+          }
+        }));
+
+        setProfileData(transformedProfile);
+        setPostsList(transformedPosts);
+
+        // Set liked/bookmarked posts
+        const liked = new Set();
+        const bookmarked = new Set();
+        transformedPosts.forEach(post => {
+          if (post.isLiked) liked.add(post.id);
+          if (post.isBookmarked) bookmarked.add(post.id);
+        });
+        setLikedPosts(liked);
+        setBookmarkedPosts(bookmarked);
+        
+        setError(null);
+      } else {
+        throw new Error(result.message || 'Failed to load profile');
+      }
+    } catch (err) {
+      console.error('Profile fetch error:', err);
+      setError(err.message);
+      // Fallback to default data
+      setProfileData(DEFAULT_USER);
+      setPostsList(SAMPLE_POSTS);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProfile();
+}, [userId, apiBaseUrl]);
 // Handler functions
 // Handler functions
   const handleSaveProfile = (updatedData) => {
@@ -1722,6 +1821,35 @@ const handleSavePost = (updatedPostData) => {
 
   return (
     <div className={`min-h-screen transition-colors ${scheme.bg}`}>
+
+  {/* ADD LOADING STATE */}
+    {loading && (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className={`text-center ${scheme.text}`}>
+          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-medium">Loading profile...</p>
+        </div>
+      </div>
+    )}
+
+    {/* ADD ERROR STATE */}
+    {error && !loading && (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className={`max-w-md text-center p-8 rounded-2xl ${scheme.card}`}>
+          <h3 className={`text-xl font-bold mb-2 ${scheme.text}`}>Error</h3>
+          <p className={`text-sm mb-4 ${scheme.muted}`}>{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-6 py-2 bg-green-600 text-white rounded-lg"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )}
+ {/* WRAP YOUR EXISTING CONTENT IN THIS */}
+    {!loading && !error && profileData && (
+
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Card */}
         <div className={`rounded-2xl overflow-hidden shadow-lg ${scheme.card}`}>
@@ -1740,8 +1868,7 @@ const handleSavePost = (updatedPostData) => {
   <div>
     <div className="flex items-center justify-center md:justify-start space-x-2 mb-1 flex-wrap gap-2">
       <h1 className={`text-2xl font-bold ${scheme.text}`}>{profileData.name}</h1>
-      {profileData.isVerified && <ShieldCheck className="w-6 h-6 text-blue-500 fill-current" />}
-      
+    
       {/* User Type Badge - ADD THIS */}
       {profileData.accountType && (
         <span
@@ -1766,25 +1893,7 @@ const handleSavePost = (updatedPostData) => {
   </div>
 </div>
 
-            {/* Stats */}
-            <div className="flex justify-center md:justify-start gap-8 mb-6">
-              {[
-                { label: 'Posts', value: postsList.length },
-                { label: 'Followers', value: profileData.followers.toLocaleString() },
-                { label: 'Following', value: (profileData.following || 0).toLocaleString() }
-              ].map(({ label, value }) => (
-                <div key={label} className="text-center">
-                  <div className={`text-xl font-bold ${scheme.text}`}>{value}</div>
-                  <div className={`text-sm ${scheme.muted}`}>{label}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Bio */}
-            <p className={`mb-4 ${scheme.text} text-center md:text-left`}>{profileData.bio}</p>
-
-          
-
+           
             {/* Location & Join Date */}
             <div className="flex flex-wrap gap-4 mb-4 text-sm justify-center md:justify-start">
               <div className={`flex items-center space-x-1 ${scheme.muted}`}><MapPin className="w-4 h-4" /><span>{profileData.location}</span></div>
@@ -1873,6 +1982,7 @@ const handleSavePost = (updatedPostData) => {
       )}
    
       </div>
+    )}
     </div>
   );
 }
