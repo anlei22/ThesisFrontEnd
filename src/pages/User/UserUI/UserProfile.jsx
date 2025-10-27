@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, ChevronLeft, ChevronRight, Grid, List, Flag, MoreVertical, Edit, Trash2  } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { ShareIcon } from '@heroicons/react/24/outline';
 // Constants
 const COLORS = {
   dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
@@ -89,8 +90,7 @@ const SAMPLE_POSTS = [
     isBookmarked: false,
     animalInfo: { 
       title: 'Premium Cattle', 
-      type: 'Cattle', 
-      breed: 'Brahman', 
+      type: 'Cattle',  
       age: '2 years',
       sex: 'Male',
       price: '₱85,000', 
@@ -294,8 +294,13 @@ const EditProfileModal = ({ user, darkMode, onClose, onSave }) => {
         </div>
 
         {/* Form */}
-        <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6" style={{ scrollbarWidth: 'thin' }}>
-          <div className="space-y-6">
+       <div
+  className="overflow-y-auto max-h-[calc(90vh-140px)] p-6 custom-scroll-hide"
+  style={{
+    scrollbarWidth: 'none', // Firefox
+    msOverflowStyle: 'none', // IE & Edge
+  }}
+>   <div className="space-y-6">
             {/* Images Section */}
             <div className={`p-6 rounded-xl ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
               <h4 className={`text-lg font-bold mb-4 ${scheme.text}`}>Profile Images</h4>
@@ -433,22 +438,7 @@ const EditProfileModal = ({ user, darkMode, onClose, onSave }) => {
                 </div>
               </div>
 
-              {/* Bio */}
-              <div>
-                <label className={`block text-sm font-semibold mb-2 ${scheme.text}`}>Bio</label>
-                <textarea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleInputChange}
-                  rows="4"
-                  placeholder="Tell us about yourself..."
-                  maxLength="500"
-                  className={`w-full px-4 py-2.5 rounded-lg border resize-none ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} focus:outline-none focus:ring-2 focus:ring-green-500`}
-                />
-                <p className={`text-xs mt-1 text-right ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                  {formData.bio.length}/500
-                </p>
-              </div>
+            
             </div>
           </div>
         </div>
@@ -569,16 +559,16 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
 
       {/* Stats */}
       <div className={`px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-sm ${scheme.muted}`}>
-        <span>{post.likes} likes</span> • <span>{post.bookmarks} saves</span>
+        <span>{post.likes} likes</span> &nbsp;<span>{post.comments} comments</span>&nbsp; <span>{post.bookmarks} bookmarks</span>
       </div>
 
       {/* Actions */}
       <div className={`flex items-center justify-around border-t py-2 ${scheme.border}`}>
         {[
-          { icon: Heart, label: 'Like', action: onLike, active: likedPosts.has(post.id), color: 'text-green-600' },
-          { icon: MessageCircle, label: 'Comment', action: onImageClick, color: 'text-blue-600' },
-          { icon: Bookmark, label: 'Save', action: onBookmark, active: bookmarkedPosts.has(post.id), color: 'text-yellow-600' },
-          { icon: Share, label: 'Share', action: () => {}, color: 'text-green-600' }
+          { icon: Heart, label: '', action: onLike, active: likedPosts.has(post.id), color: 'text-green-600' },
+          { icon: MessageCircle, label: '', action: onImageClick, color: 'text-blue-600' },
+          { icon: Bookmark, label: '', action: onBookmark, active: bookmarkedPosts.has(post.id), color: 'text-yellow-600' },
+          { icon: ShareIcon, label: '', action: () => {}, color: 'text-green-600' }
         ].map(({ icon: Icon, label, action, active, color }) => (
           <button key={label} onClick={action} className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${active ? color : scheme.muted}`}>
             <Icon className={`w-5 h-5 ${active ? 'fill-current' : ''}`} />
@@ -683,7 +673,13 @@ const EditPostModal = ({ post, darkMode, onClose, onSave }) => {
         </div>
 
         {/* Form */}
-        <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
+       <div
+  className="overflow-y-auto max-h-[calc(90vh-140px)] p-6 custom-scroll-hide"
+  style={{
+    scrollbarWidth: 'none', // Firefox
+    msOverflowStyle: 'none', // IE & Edge
+  }}
+>
           <div className="space-y-6">
             {/* Images Section */}
             <div className={`p-6 rounded-xl ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
@@ -1073,10 +1069,7 @@ const handleDelete = () => {
                   </div>
                 </div>
                 <div className="space-y-5">
-                  <div>
-                    <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Breed</h4>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-700'}>{post.animalInfo.breed}</p>
-                  </div>
+                 
                   <div>
                     <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>Location</h4>
                     <div className="flex items-start space-x-2">
@@ -1100,13 +1093,14 @@ const handleDelete = () => {
                       <p className={`text-xs ${scheme.muted}`}>Likes</p>
                     </div>
                     <div className="text-center">
-                      <p className={`text-2xl font-bold ${scheme.text}`}>{post.bookmarks}</p>
-                      <p className={`text-xs ${scheme.muted}`}>Bookmarks</p>
-                    </div>
-                    <div className="text-center">
                       <p className={`text-2xl font-bold ${scheme.text}`}>{comments.length}</p>
                       <p className={`text-xs ${scheme.muted}`}>Comments</p>
                     </div>
+                    <div className="text-center">
+                      <p className={`text-2xl font-bold ${scheme.text}`}>{post.bookmarks}</p>
+                      <p className={`text-xs ${scheme.muted}`}>Bookmarks</p>
+                    </div>
+                    
                   </div>
                 </div>
               )}
@@ -1121,10 +1115,10 @@ const handleDelete = () => {
                     </button>
                     <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${post.isBookmarked ? 'text-yellow-600' : scheme.muted}`}>
                       <Bookmark className={`w-5 h-5 ${post.isBookmarked ? 'fill-current' : ''}`} />
-                      <span className="font-medium">Save</span>
+                      <span className="font-medium">Bookmark</span>
                     </button>
                     <button className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}>
-                      <Share className="w-5 h-5" />
+                      <ShareIcon className="w-5 h-5" />
                       <span className="font-medium">Share</span>
                     </button>
                   </>
@@ -1733,7 +1727,6 @@ useEffect(() => {
           animalInfo: {
             title: feed.title,
             type: feed.type,
-            breed: feed.breed,
             age: feed.age,
             sex: feed.sex,
             price: `₱${parseFloat(feed.price).toLocaleString()}`,

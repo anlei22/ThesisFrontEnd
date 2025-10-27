@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon ,} from "@heroicons/react/24/outline";
 
 const SharedPostView = ({ darkMode = false }) => {
   const { id } = useParams();

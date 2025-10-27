@@ -3,7 +3,6 @@ import {
   Heart,
   MessageCircle,
   Share,
-  ShareIcon,  
   Bookmark,
   QrCode,
   Star,
@@ -24,6 +23,7 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
+import { ShareIcon } from '@heroicons/react/24/outline';
 import ProfileQRModal from "../../../components/profileQrModal";
 import { QRCodeCanvas } from "qrcode.react";
 const ShareModal = ({ isOpen, onClose, darkMode, postId, title = "Animal Post" }) => {
@@ -52,7 +52,7 @@ const ShareModal = ({ isOpen, onClose, darkMode, postId, title = "Animal Post" }
       <div className={`rounded-lg p-6 w-full max-w-md mx-auto ${darkMode ? "bg-gray-800" : "bg-white"}`}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
-            <Share className={`w-6 h-6 ${darkMode ? "text-green-400" : "text-green-600"}`} />
+            <ShareIcon className={`w-6 h-6 ${darkMode ? "text-green-400" : "text-green-600"}`} />
             <h2 className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>
               Share Post
             </h2>
@@ -1158,7 +1158,7 @@ const PostModal = ({
                     <button
                       className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}
                     >
-                      <Share className="w-5 h-5" />
+                      <ShareIcon className="w-5 h-5" />
                       <span className="font-medium">Share</span>
                     </button>
                     <div

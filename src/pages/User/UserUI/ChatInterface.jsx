@@ -296,8 +296,15 @@ const ChatInterface = ({ darkMode }) => {
             </div>
 
             {/* Messages */}
-            <div className={`flex-1 overflow-y-auto p-4 space-y-4 transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-green-50'
-              }`}>
+       <div
+  className={`flex-1 overflow-y-auto p-4 space-y-4 transition-colors duration-300 ${
+    darkMode ? 'bg-gray-900' : 'bg-green-50'
+  }`}
+  style={{
+    scrollbarWidth: 'none', // Firefox
+    msOverflowStyle: 'none', // IE and Edge
+  }}
+>
               {selectedMessages.map((msg) => (
                 <div
                   key={msg.id}
