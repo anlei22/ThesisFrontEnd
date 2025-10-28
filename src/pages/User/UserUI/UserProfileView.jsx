@@ -26,6 +26,8 @@ import {
 import { ShareIcon } from '@heroicons/react/24/outline';
 import ProfileQRModal from "../../../components/profileQrModal";
 import { QRCodeCanvas } from "qrcode.react";
+import { apiPost } from '../../../context/utils/apiPost';
+   import { apiPostFormData } from '../../../context/utils/apiFormData';
 const ShareModal = ({ isOpen, onClose, darkMode, postId, title = "Animal Post" }) => {
   const [shareUrl, setShareUrl] = useState("");
 
@@ -172,7 +174,7 @@ const DEFAULT_USER = {
   avatar:
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
   coverPhoto:
-    "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop",
+    "",
   bio: "Professional livestock farmer specializing in cattle and poultry.",
   location: "Nueva Ecija, Philippines",
   joinDate: "Joined March 2023",
@@ -710,18 +712,20 @@ const ReviewItem = ({ review, darkMode }) => {
 };
 
 // Post Modal
-// Post Modal
+// ✅ Update PostModal function signature
 const PostModal = ({
   post,
   user,
   darkMode,
   onClose,
   isAuthenticated = true,
-   onShare, 
+  onShare,
+  postComments,         // ✅ ADD THIS
+  setPostComments,      // ✅ ADD THIS
 }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [comments, setComments] = useState(INITIAL_COMMENTS);
+  const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
@@ -730,6 +734,12 @@ const PostModal = ({
   const [reportReason, setReportReason] = useState("");
   const [reportComment, setReportComment] = useState("");
 
+ // ✅ FIX 1: Use post's like/bookmark state
+  const [isLiked, setIsLiked] = useState(post?.isLiked || false);
+  const [isBookmarked, setIsBookmarked] = useState(post?.isBookmarked || false);
+  const [likes, setLikes] = useState(post?.likes || 0);
+  const [bookmarks, setBookmarks] = useState(post?.bookmarks || 0);
+  const [commentLikes, setCommentLikes] = useState({});
 
   const reportReasons = [
     "Spam or misleading",
@@ -740,77 +750,287 @@ const PostModal = ({
     "Other",
   ];
 
-  const handleReportSubmit = () => {
+   const getCurrentUserId = () => {
+    let userId = localStorage.getItem('user_id');
+    if (!userId) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          userId = parsedUser?.id;
+        } catch (e) { }
+      }
+    }
+    return userId ? parseInt(userId) : null;
+  };
+
+   useEffect(() => {
+    if (post?.id && postComments[post.id]) {
+      setComments(postComments[post.id]);
+      
+      // Initialize like counts for all comments and replies
+      const likes = {};
+      postComments[post.id].forEach(comment => {
+        likes[comment.id] = comment.likes || 0;
+        if (comment.replies) {
+          comment.replies.forEach(reply => {
+            likes[reply.id] = reply.likes || 0;
+          });
+        }
+      });
+      setCommentLikes(likes);
+    }
+  }, [post?.id, postComments]);
+
+// ADD THIS useEffect near the top with other useState (around line 1100)
+  useEffect(() => {
+    if (post) {
+      setIsLiked(post.isLiked || false);
+      setIsBookmarked(post.isBookmarked || false);
+      setLikes(post.likes || 0);
+      setBookmarks(post.bookmarks || 0);
+    }
+  }, [post]);
+
+
+const handleLike = async () => {
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) {
+        alert('Please log in to like posts');
+        return;
+      }
+
+      // Optimistic update
+      const newIsLiked = !isLiked;
+      const newLikes = newIsLiked ? likes + 1 : likes - 1;
+      
+      setIsLiked(newIsLiked);
+      setLikes(newLikes);
+
+      // API call
+      const response = await apiPost(
+        'news-feed/unlike-or-like',
+        {
+          feed_id: post.id,
+          user_id: userId
+        },
+        true
+      );
+
+      if (response.status !== 'success') {
+        // Revert on failure
+        setIsLiked(!newIsLiked);
+        setLikes(newIsLiked ? newLikes - 1 : newLikes + 1);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      // Revert on error
+      setIsLiked(!isLiked);
+      setLikes(isLiked ? likes + 1 : likes - 1);
+    }
+  };
+
+  // Handle Bookmark
+ const handleBookmark = async () => {
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) {
+        alert('Please log in to bookmark posts');
+        return;
+      }
+
+      // Optimistic update
+      const newIsBookmarked = !isBookmarked;
+      const newBookmarks = newIsBookmarked ? bookmarks + 1 : bookmarks - 1;
+      
+      setIsBookmarked(newIsBookmarked);
+      setBookmarks(newBookmarks);
+
+      // API call
+      const response = await apiPost(
+        'news-feed/unbookmark-or-bookmark',
+        {
+          feed_id: post.id,
+          user_id: userId
+        },
+        true
+      );
+
+      if (response.status !== 'success') {
+        // Revert on failure
+        setIsBookmarked(!newIsBookmarked);
+        setBookmarks(newIsBookmarked ? newBookmarks - 1 : newBookmarks + 1);
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      // Revert on error
+      setIsBookmarked(!isBookmarked);
+      setBookmarks(isBookmarked ? bookmarks + 1 : bookmarks - 1);
+    }
+  };
+// Handle Like Comment
+const handleCommentLike = (commentId) => {
+    setCommentLikes(prev => ({
+      ...prev,
+      [commentId]: (prev[commentId] || 0) + 1
+    }));
+  };
+
+  // Handle Like Reply
+  const handleReplyLike = (replyId) => {
+    setCommentLikes(prev => ({
+      ...prev,
+      [replyId]: (prev[replyId] || 0) + 1
+    }));
+  };
+
+;
+
+  const handleAddComment = async () => {
+    if (!commentText.trim()) return;
+
+    const userId = getCurrentUserId();
+    if (!userId) {
+      alert('Please log in to comment');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('feed_id', post.id);
+    formData.append('comments', commentText);
+
+    try {
+      const response = await apiPostFormData('add/add-comment', formData, true);
+
+      const newComment = {
+        id: response.data?.id || Date.now(),
+        user: {
+          name: "You",
+          avatar: "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
+        },
+        text: commentText,
+        timestamp: "Just now",
+        likes: 0,
+        replies: [],
+      };
+
+      // ✅ Update both local state and parent state
+      const updatedComments = [newComment, ...comments];
+      setComments(updatedComments);
+      setPostComments(prev => ({
+        ...prev,
+        [post.id]: updatedComments
+      }));
+
+      setCommentLikes(prev => ({
+        ...prev,
+        [newComment.id]: 0
+      }));
+
+      setCommentText("");
+    } catch (err) {
+      console.error('Error adding comment:', err);
+      alert('Failed to add comment');
+    }
+  };
+// Add Reply
+ const handleAddReply = async (commentId) => {
+    if (!replyText.trim()) return;
+
+    const userId = getCurrentUserId();
+    if (!userId) {
+      alert('Please log in to reply');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('reply', replyText);
+    formData.append('comment_section_id', commentId);
+
+    try {
+      const response = await apiPostFormData(
+        `comments/reply/${commentId}`,
+        formData,
+        true
+      );
+
+      const newReply = {
+        id: response.data?.id || Date.now(),
+        user: {
+          name: "You",
+          avatar: "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
+        },
+        text: replyText,
+        timestamp: "Just now",
+        likes: 0,
+      };
+
+      // ✅ Update comments with new reply
+      const updatedComments = comments.map(comment => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            replies: [...(comment.replies || []), newReply],
+          };
+        }
+        return comment;
+      });
+
+      setComments(updatedComments);
+      setPostComments(prev => ({
+        ...prev,
+        [post.id]: updatedComments
+      }));
+
+      setCommentLikes(prev => ({
+        ...prev,
+        [newReply.id]: 0
+      }));
+
+      setReplyText("");
+      setReplyingTo(null);
+    } catch (err) {
+      console.error('Error adding reply:', err);
+      alert('Failed to add reply');
+    }
+  };
+
+
+  const handleReportSubmit = async () => {
     if (!reportReason) {
       alert("Please select a reason for reporting");
       return;
     }
 
-    console.log("Report submitted:", {
-      postId: post?.id,
-      reason: reportReason,
-      comment: reportComment,
-    });
+    const userId = getCurrentUserId();
+    if (!userId) {
+      alert('You must be logged in to report a post');
+      return;
+    }
 
-    alert("Thank you for your report. We will review it shortly.");
+    const fd = new FormData();
+    fd.append('post_id', post?.id ?? '');
+    fd.append('reason', reportReason);
+    fd.append('description', reportComment || '');
+    fd.append('report_by', userId);
 
-    setShowReportModal(false);
-    setShowReportMenu(false);
-    setReportReason("");
-    setReportComment("");
-  };
-
-  const handleAddComment = () => {
-    if (commentText.trim()) {
-      setComments([
-        ...comments,
-        {
-          id: Date.now(),
-          user: {
-            name: "You",
-            avatar:
-              "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop",
-          },
-          text: commentText,
-          timestamp: "Just now",
-          likes: 0,
-          replies: [],
-        },
-      ]);
-      setCommentText("");
+    try {
+      const res = await apiPostFormData('reports/create', fd, true);
+      alert('Thank you for your report. We will review it shortly.');
+      setShowReportModal(false);
+      setShowReportMenu(false);
+      setReportReason("");
+      setReportComment("");
+    } catch (err) {
+      console.error('Error submitting report:', err);
+      alert('An error occurred while sending the report.');
     }
   };
 
-  const handleAddReply = (commentId) => {
-    if (replyText.trim()) {
-      setComments(
-        comments.map((comment) => {
-          if (comment.id === commentId) {
-            return {
-              ...comment,
-              replies: [
-                ...(comment.replies || []),
-                {
-                  id: Date.now(),
-                  user: {
-                    name: "You",
-                    avatar:
-                      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop",
-                  },
-                  text: replyText,
-                  timestamp: "Just now",
-                  likes: 0,
-                },
-              ],
-            };
-          }
-          return comment;
-        })
-      );
-      setReplyText("");
-      setReplyingTo(null);
-    }
-  };
+
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -823,7 +1043,6 @@ const PostModal = ({
         <div
           className={`relative rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden ${scheme.card}`}
         >
-          {/* Header */}
           {/* Header */}
           <div
             className={`flex items-center justify-between p-6 border-b ${scheme.border}`}
@@ -847,7 +1066,6 @@ const PostModal = ({
             </div>
 
             <div className="flex items-center space-x-2">
-              {/* Report Menu Button - Only show if logged in */}
               {isAuthenticated && (
                 <div className="relative">
                   <button
@@ -861,7 +1079,6 @@ const PostModal = ({
                     <MoreVertical className="w-6 h-6" />
                   </button>
 
-                  {/* Dropdown Menu */}
                   {showReportMenu && (
                     <div
                       className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 ${
@@ -875,7 +1092,7 @@ const PostModal = ({
                           setShowReportModal(true);
                           setShowReportMenu(false);
                         }}
-                        className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors rounded-lg ${
+                        className={`w-full flex items-center space-x-2 px-4 py-3 text-left transition-colors ${
                           darkMode
                             ? "text-gray-300 hover:bg-gray-600"
                             : "text-gray-700 hover:bg-gray-100"
@@ -889,7 +1106,6 @@ const PostModal = ({
                 </div>
               )}
 
-              {/* Close Button */}
               <button
                 onClick={onClose}
                 className={`p-2 rounded-lg ${
@@ -902,13 +1118,13 @@ const PostModal = ({
           </div>
 
           {/* Content */}
-        <div
-  className="overflow-y-auto max-h-[calc(90vh-120px)]"
-  style={{
-    scrollbarWidth: "none",       /* Firefox */
-    msOverflowStyle: "none",      /* Internet Explorer/Edge */
-  }}
->
+          <div
+            className="overflow-y-auto max-h-[calc(90vh-120px)]"
+            style={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+          >
             <div className="p-6">
               {/* Images */}
               {post.images && post.images.length > 0 && (
@@ -1005,7 +1221,7 @@ const PostModal = ({
                 </p>
               </div>
 
-              {/* Details */}
+              {/* Details Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                 <div className="space-y-5">
                   <div>
@@ -1050,7 +1266,6 @@ const PostModal = ({
                   </div>
                 </div>
                 <div className="space-y-5">
-
                   <div>
                     <h4 className={`text-sm font-semibold mb-1 ${scheme.text}`}>
                       Location
@@ -1091,13 +1306,13 @@ const PostModal = ({
                   <div className="flex items-center space-x-6">
                     <div className="text-center">
                       <p className={`text-2xl font-bold ${scheme.text}`}>
-                        {post.likes}
+                        {likes}
                       </p>
                       <p className={`text-xs ${scheme.muted}`}>Likes</p>
                     </div>
                     <div className="text-center">
                       <p className={`text-2xl font-bold ${scheme.text}`}>
-                        {post.bookmarks}
+                        {bookmarks}
                       </p>
                       <p className={`text-xs ${scheme.muted}`}>Bookmarks</p>
                     </div>
@@ -1122,43 +1337,66 @@ const PostModal = ({
                 {isAuthenticated ? (
                   <>
                     <button
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
-                        post.isLiked ? "text-green-600" : scheme.muted
+                      onClick={handleLike}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                        isLiked
+                          ? darkMode
+                            ? "text-green-400 bg-gray-600"
+                            : "text-green-600 bg-green-100"
+                          : darkMode
+                          ? "text-gray-300 hover:bg-gray-600"
+                          : "text-gray-700 hover:bg-gray-100"
                       }`}
                     >
-                      <Heart
-                        className={`w-5 h-5 ${
-                          post.isLiked ? "fill-current" : ""
-                        }`}
-                      />
+                      {isLiked ? (
+                        <Heart className="w-5 h-5 fill-current" />
+                      ) : (
+                        <Heart className="w-5 h-5" />
+                      )}
                       <span className="font-medium">Like</span>
                     </button>
                     <button
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
-                        post.isBookmarked ? "text-yellow-600" : scheme.muted
+                      onClick={handleBookmark}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                        isBookmarked
+                          ? darkMode
+                            ? "text-yellow-400 bg-gray-600"
+                            : "text-yellow-600 bg-yellow-100"
+                          : darkMode
+                          ? "text-gray-300 hover:bg-gray-600"
+                          : "text-gray-700 hover:bg-gray-100"
                       }`}
                     >
-                      <Bookmark
-                        className={`w-5 h-5 ${
-                          post.isBookmarked ? "fill-current" : ""
-                        }`}
-                      />
-                      <span className="font-medium">Bookmarks</span>
+                      {isBookmarked ? (
+                        <Bookmark className="w-5 h-5 fill-current" />
+                      ) : (
+                        <Bookmark className="w-5 h-5" />
+                      )}
+                      <span className="font-medium">Bookmark</span>
                     </button>
                     <button
-                      onClick={() => onShare(post)} // ✅ CALL onShare WITH POST
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}
+                      onClick={() => onShare(post)}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                        darkMode
+                          ? "text-gray-300 hover:bg-gray-600"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                     >
-    <ShareIcon className="w-5 h-5" />
-    <span className="font-medium">Shre</span>
-  </button>
+                      <Share className="w-5 h-5" />
+                      <span className="font-medium">Share</span>
+                    </button>
                   </>
                 ) : (
                   <>
                     <button
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${scheme.muted}`}
+                      onClick={() => onShare(post)}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                        darkMode
+                          ? "text-gray-300 hover:bg-gray-600"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                     >
-                      <ShareIcon className="w-5 h-5" />
+                      <Share className="w-5 h-5" />
                       <span className="font-medium">Share</span>
                     </button>
                     <div
@@ -1170,7 +1408,7 @@ const PostModal = ({
                 )}
               </div>
 
-              {/* Comments */}
+              {/* Comments Section */}
               {isAuthenticated && (
                 <div className={`border-t pt-4 ${scheme.border}`}>
                   <h3 className={`text-lg font-semibold mb-4 ${scheme.text}`}>
@@ -1195,22 +1433,22 @@ const PostModal = ({
                           rows="3"
                           className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${
                             darkMode
-                              ? "bg-gray-600 text-white"
-                              : "bg-white text-gray-900 border border-gray-200"
+                              ? "bg-gray-600 text-white placeholder-gray-400"
+                              : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
                           }`}
                         />
                         <div className="flex justify-end mt-2">
                           <button
                             onClick={handleAddComment}
                             disabled={!commentText.trim()}
-                            className={`px-4 py-2 rounded-lg font-medium ${
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                               commentText.trim()
-                                ? "bg-green-600 hover:bg-green-700 text-white"
+                                ? darkMode
+                                  ? "bg-green-600 hover:bg-green-700 text-white"
+                                  : "bg-green-500 hover:bg-green-600 text-white"
                                 : darkMode
-                                ? "bg-gray-600 text-gray-400"
-                                : "bg-gray-200 text-gray-400"
-                            } cursor-${
-                              commentText.trim() ? "pointer" : "not-allowed"
+                                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                                : "bg-gray-200 text-gray-400 cursor-not-allowed"
                             }`}
                           >
                             Post Comment
@@ -1222,181 +1460,222 @@ const PostModal = ({
 
                   {/* Comments List */}
                   <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {comments.map((comment) => (
-                      <div key={comment.id}>
-                        <div
-                          className={`flex space-x-3 p-3 rounded-lg ${
-                            darkMode ? "bg-gray-700" : "bg-gray-50"
-                          }`}
-                        >
-                          <img
-                            src={comment.user.avatar}
-                            alt={comment.user.name}
-                            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <div>
-                                <h4
-                                  className={`font-semibold text-sm ${scheme.text}`}
-                                >
-                                  {comment.user.name}
-                                </h4>
-                                <p className={`text-xs ${scheme.muted}`}>
-                                  {comment.timestamp}
-                                </p>
-                              </div>
-                            </div>
-                            <p
-                              className={`text-sm mb-2 ${
-                                darkMode ? "text-gray-300" : "text-gray-700"
-                              }`}
-                            >
-                              {comment.text}
-                            </p>
-                            <div className="flex items-center space-x-4">
-                              <button
-                                className={`flex items-center space-x-1 text-xs ${scheme.muted}`}
-                              >
-                                <Heart className="w-4 h-4" />
-                                <span>
-                                  {comment.likes > 0 ? comment.likes : "Like"}
-                                </span>
-                              </button>
-                              <button
-                                onClick={() => setReplyingTo(comment.id)}
-                                className={`text-xs ${scheme.muted}`}
-                              >
-                                Reply
-                              </button>
-                              {comment.replies?.length > 0 && (
-                                <span
-                                  className={`text-xs ${
-                                    darkMode ? "text-gray-500" : "text-gray-400"
-                                  }`}
-                                >
-                                  {comment.replies.length}{" "}
-                                  {comment.replies.length === 1
-                                    ? "reply"
-                                    : "replies"}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Reply Input */}
-                        {replyingTo === comment.id && (
+                    {comments.length > 0 ? (
+                      comments.map((comment) => (
+                        <div key={comment.id}>
                           <div
-                            className={`ml-12 mt-2 p-3 rounded-lg ${
+                            className={`flex space-x-3 p-3 rounded-lg ${
                               darkMode ? "bg-gray-700" : "bg-gray-50"
                             }`}
                           >
-                            <div className="flex space-x-3">
-                              <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
-                                <span className="text-white font-semibold text-xs">
-                                  U
-                                </span>
-                              </div>
-                              <div className="flex-1">
-                                <textarea
-                                  value={replyText}
-                                  onChange={(e) => setReplyText(e.target.value)}
-                                  placeholder={`Reply to ${comment.user.name}...`}
-                                  rows="2"
-                                  autoFocus
-                                  className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                                    darkMode
-                                      ? "bg-gray-600 text-white"
-                                      : "bg-white text-gray-900 border border-gray-200"
-                                  }`}
-                                />
-                                <div className="flex justify-end space-x-2 mt-2">
-                                  <button
-                                    onClick={() => setReplyingTo(null)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                            <img
+                              src={comment.user.avatar}
+                              alt={comment.user.name}
+                              className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <div>
+                                  <h4
+                                    className={`font-semibold text-sm ${
+                                      darkMode ? "text-white" : "text-gray-900"
+                                    }`}
+                                  >
+                                    {comment.user.name}
+                                  </h4>
+                                  <p
+                                    className={`text-xs ${
                                       darkMode
-                                        ? "bg-gray-600 hover:bg-gray-500 text-gray-300"
-                                        : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                                        ? "text-gray-400"
+                                        : "text-gray-500"
                                     }`}
                                   >
-                                    Cancel
-                                  </button>
-                                  <button
-                                    onClick={() => handleAddReply(comment.id)}
-                                    disabled={!replyText.trim()}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                                      replyText.trim()
-                                        ? "bg-green-600 hover:bg-green-700 text-white"
-                                        : darkMode
-                                        ? "bg-gray-600 text-gray-400"
-                                        : "bg-gray-200 text-gray-400"
-                                    } cursor-${
-                                      replyText.trim()
-                                        ? "pointer"
-                                        : "not-allowed"
+                                    {comment.timestamp}
+                                  </p>
+                                </div>
+                              </div>
+                              <p
+                                className={`text-sm mb-2 ${
+                                  darkMode ? "text-gray-300" : "text-gray-700"
+                                }`}
+                              >
+                                {comment.text}
+                              </p>
+                           
+<div className="flex items-center space-x-4">
+  <button
+    onClick={() => handleCommentLike(comment.id)}
+    className={`flex items-center space-x-1 text-xs transition-colors ${
+      darkMode
+        ? "text-gray-400 hover:text-green-400"
+        : "text-gray-600 hover:text-green-600"
+    }`}
+  >
+    <Heart className="w-4 h-4" />
+    <span>
+      {(commentLikes[comment.id] || 0) > 0
+        ? commentLikes[comment.id]
+        : "Like"}
+    </span>
+  </button>
+
+  <button
+    onClick={() => setReplyingTo(comment.id)}
+    className={`text-xs transition-colors ${
+      darkMode
+        ? "text-gray-400 hover:text-green-400"
+        : "text-gray-600 hover:text-green-600"
+    }`}
+  >
+    Reply
+  </button>
+
+  {comment.replies && comment.replies.length > 0 && (
+    <span
+      className={`text-xs ${
+        darkMode ? "text-gray-500" : "text-gray-400"
+      }`}
+    >
+      {comment.replies.length}{" "}
+      {comment.replies.length === 1 ? "reply" : "replies"}
+    </span>
+  )}
+</div>
+                            </div>
+                          </div>
+
+                          {/* Reply Input */}
+                          {replyingTo === comment.id && (
+                            <div
+                              className={`ml-12 mt-2 p-3 rounded-lg ${
+                                darkMode ? "bg-gray-700" : "bg-gray-50"
+                              }`}
+                            >
+                              <div className="flex space-x-3">
+                                <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-white font-semibold text-xs">
+                                    U
+                                  </span>
+                                </div>
+                                <div className="flex-1">
+                                  <textarea
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    placeholder={`Reply to ${comment.user.name}...`}
+                                    rows="2"
+                                    autoFocus
+                                    className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                                      darkMode
+                                        ? "bg-gray-600 text-white placeholder-gray-400"
+                                        : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
                                     }`}
-                                  >
-                                    Reply
-                                  </button>
+                                  />
+                                  <div className="flex justify-end space-x-2 mt-2">
+                                    <button
+                                      onClick={() => setReplyingTo(null)}
+                                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                        darkMode
+                                          ? "bg-gray-600 hover:bg-gray-500 text-gray-300"
+                                          : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                                      }`}
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      onClick={() => handleAddReply(comment.id)}
+                                      disabled={!replyText.trim()}
+                                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                        replyText.trim()
+                                          ? darkMode
+                                            ? "bg-green-600 hover:bg-green-700 text-white"
+                                            : "bg-green-500 hover:bg-green-600 text-white"
+                                          : darkMode
+                                          ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                      }`}
+                                    >
+                                      Reply
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
-                        {/* Replies */}
-                        {comment.replies && comment.replies.length > 0 && (
-                          <div className="ml-12 mt-2 space-y-2">
-                            {comment.replies.map((reply) => (
-                              <div
-                                key={reply.id}
-                                className={`flex space-x-3 p-3 rounded-lg ${
-                                  darkMode ? "bg-gray-700" : "bg-gray-50"
-                                }`}
-                              >
-                                <img
-                                  src={reply.user.avatar}
-                                  alt={reply.user.name}
-                                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                                />
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <div>
-                                      <h4
-                                        className={`font-semibold text-sm ${scheme.text}`}
-                                      >
-                                        {reply.user.name}
-                                      </h4>
-                                      <p className={`text-xs ${scheme.muted}`}>
-                                        {reply.timestamp}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <p
-                                    className={`text-sm mb-2 ${
-                                      darkMode
-                                        ? "text-gray-300"
-                                        : "text-gray-700"
-                                    }`}
-                                  >
-                                    {reply.text}
-                                  </p>
-                                  <button
-                                    className={`flex items-center space-x-1 text-xs ${scheme.muted}`}
-                                  >
-                                    <Heart className="w-3 h-3" />
-                                    <span>
-                                      {reply.likes > 0 ? reply.likes : "Like"}
-                                    </span>
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                          {/* Replies List */}
+{comment.replies && comment.replies.length > 0 && (
+  <div className="ml-12 mt-2 space-y-2">
+    {comment.replies.map((reply) => (
+      <div
+        key={reply.id}
+        className={`flex space-x-3 p-3 rounded-lg ${
+          darkMode ? "bg-gray-700" : "bg-gray-50"
+        }`}
+      >
+        <img
+          src={reply.user.avatar}
+          alt={reply.user.name}
+          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+        />
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-1">
+            <div>
+              <h4
+                className={`font-semibold text-sm ${
+                  darkMode ? "text-white" : "text-gray-900"
+                }`}
+              >
+                {reply.user.name}
+              </h4>
+              <p
+                className={`text-xs ${
+                  darkMode ? "text-gray-400" : "text-gray-500"
+                }`}
+              >
+                {reply.timestamp}
+              </p>
+            </div>
+          </div>
+          <p
+            className={`text-sm mb-2 ${
+              darkMode ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
+            {reply.text}
+          </p>
+          
+          {/* ✅ ADD THIS - Like button */}
+          <button
+            onClick={() => handleReplyLike(reply.id)}
+            className={`flex items-center space-x-1 text-xs transition-colors ${
+              darkMode
+                ? "text-gray-400 hover:text-green-400"
+                : "text-gray-600 hover:text-green-600"
+            }`}
+          >
+            <Heart className="w-3 h-3" />
+            <span>
+              {(commentLikes[reply.id] || 0) > 0
+                ? commentLikes[reply.id]
+                : "Like"}
+            </span>
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+                        </div>
+                      ))
+                    ) : (
+                      <div
+                        className={`text-center py-8 ${
+                          darkMode ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        <p>No comments yet. Be the first to comment!</p>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               )}
@@ -1405,13 +1684,12 @@ const PostModal = ({
         </div>
       </div>
 
- 
       {/* Report Modal */}
       {showReportModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <div
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm"
               onClick={() => setShowReportModal(false)}
             />
 
@@ -1420,17 +1698,12 @@ const PostModal = ({
                 darkMode ? "bg-gray-800" : "bg-white"
               }`}
             >
-              {/* Modal Header */}
               <div
                 className={`flex items-center justify-between p-6 border-b ${
                   darkMode ? "border-gray-700" : "border-gray-200"
                 }`}
               >
-                <h2
-                  className={`text-xl font-semibold ${
-                    darkMode ? "text-white" : "text-gray-900"
-                  }`}
-                >
+                <h2 className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>
                   Report Post
                 </h2>
                 <button
@@ -1445,31 +1718,20 @@ const PostModal = ({
                 </button>
               </div>
 
-              {/* Modal Content */}
               <div className="p-6">
-                <p
-                  className={`text-sm mb-4 ${
-                    darkMode ? "text-gray-300" : "text-gray-600"
-                  }`}
-                >
-                  Help us understand what's wrong with this post. Your report
-                  will be reviewed by our team.
+                <p className={`text-sm mb-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                  Help us understand what's wrong with this post.
                 </p>
 
-                {/* Reason Selection */}
                 <div className="mb-4">
-                  <label
-                    className={`block text-sm font-medium mb-2 ${
-                      darkMode ? "text-gray-200" : "text-gray-700"
-                    }`}
-                  >
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-200" : "text-gray-700"}`}>
                     Reason for reporting <span className="text-red-500">*</span>
                   </label>
                   <div className="space-y-2">
                     {reportReasons.map((reason) => (
                       <label
                         key={reason}
-                        className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${
+                        className={`flex items-center p-3 rounded-lg cursor-pointer ${
                           reportReason === reason
                             ? darkMode
                               ? "bg-red-900 bg-opacity-30 border-2 border-red-500"
@@ -1485,13 +1747,9 @@ const PostModal = ({
                           value={reason}
                           checked={reportReason === reason}
                           onChange={(e) => setReportReason(e.target.value)}
-                          className="mr-3 text-red-500 focus:ring-red-500"
+                          className="mr-3"
                         />
-                        <span
-                          className={`text-sm ${
-                            darkMode ? "text-gray-200" : "text-gray-700"
-                          }`}
-                        >
+                        <span className={`text-sm ${darkMode ? "text-gray-200" : "text-gray-700"}`}>
                           {reason}
                         </span>
                       </label>
@@ -1499,19 +1757,14 @@ const PostModal = ({
                   </div>
                 </div>
 
-                {/* Additional Comments */}
                 <div className="mb-6">
-                  <label
-                    className={`block text-sm font-medium mb-2 ${
-                      darkMode ? "text-gray-200" : "text-gray-700"
-                    }`}
-                  >
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-200" : "text-gray-700"}`}>
                     Additional details (optional)
                   </label>
                   <textarea
                     value={reportComment}
                     onChange={(e) => setReportComment(e.target.value)}
-                    placeholder="Provide any additional information that might help us understand the issue..."
+                    placeholder="Provide more information..."
                     rows="4"
                     className={`w-full px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-red-500 ${
                       darkMode
@@ -1521,7 +1774,6 @@ const PostModal = ({
                   />
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex space-x-3">
                   <button
                     onClick={() => {
@@ -1529,7 +1781,7 @@ const PostModal = ({
                       setReportReason("");
                       setReportComment("");
                     }}
-                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium ${
                       darkMode
                         ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
                         : "bg-gray-200 hover:bg-gray-300 text-gray-700"
@@ -1540,7 +1792,7 @@ const PostModal = ({
                   <button
                     onClick={handleReportSubmit}
                     disabled={!reportReason}
-                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium ${
                       reportReason
                         ? "bg-red-500 hover:bg-red-600 text-white"
                         : darkMode
@@ -1679,7 +1931,6 @@ const MessageModal = ({ user, darkMode, onClose }) => {
 };
 
 // Main Profile Component
-
 export default function UserViewProfile({
   user,
   userPosts = [],
@@ -1690,68 +1941,157 @@ export default function UserViewProfile({
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const currentUser = user || DEFAULT_USER;
 
-  // ✅ MOVE ALL useState CALLS HERE - AT THE TOP
-  // BEFORE any conditional returns
+  // ✅ ALL useState HOOKS AT THE TOP
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectedPostToShare, setSelectedPostToShare] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [followerCount, setFollowerCount] = useState(
-    currentUser.followers || 0
-  );
-  const [likedPosts, setLikedPosts] = useState(
-    new Set((user?.posts || userPosts || SAMPLE_POSTS).filter((p) => p.isLiked).map((p) => p.id))
-  );
-  const [bookmarkedPosts, setBookmarkedPosts] = useState(
-    new Set((user?.posts || userPosts || SAMPLE_POSTS).filter((p) => p.isBookmarked).map((p) => p.id))
-  );
+  const [followerCount, setFollowerCount] = useState(currentUser.followers || 0);
+  const [likedPosts, setLikedPosts] = useState(new Set());
+  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set());
   const [showQRCode, setShowQRCode] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
   const [viewMode, setViewMode] = useState("list");
   const [selectedPost, setSelectedPost] = useState(null);
+  const [postComments, setPostComments] = useState({});
 
-  // ✅ Handler functions AFTER all hooks
+  // ✅ DECLARE posts BEFORE using it in useEffect
+  const posts = user?.posts?.length > 0 
+    ? user.posts 
+    : userPosts.length > 0 
+    ? userPosts 
+    : SAMPLE_POSTS;
+
+  // ✅ NOW useEffect hooks can use 'posts' safely
+  useEffect(() => {
+    const liked = new Set();
+    const bookmarked = new Set();
+    
+    posts.forEach(post => {
+      if (post.isLiked) liked.add(post.id);
+      if (post.isBookmarked) bookmarked.add(post.id);
+    });
+    
+    setLikedPosts(liked);
+    setBookmarkedPosts(bookmarked);
+  }, [posts]);
+
+  useEffect(() => {
+    const initialComments = {};
+    posts.forEach((post) => {
+      if (post.comments && Array.isArray(post.comments)) {
+        initialComments[post.id] = post.comments;
+      }
+    });
+    setPostComments(initialComments);
+  }, [posts]);
+
+  // ✅ Helper function
+  const getCurrentUserId = () => {
+    let userId = localStorage.getItem('user_id');
+    if (!userId) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          userId = parsedUser?.id;
+        } catch (e) { }
+      }
+    }
+    return userId ? parseInt(userId) : null;
+  };
+
+  // ✅ HANDLERS
   const handleShareClick = (post) => {
     setSelectedPostToShare(post);
     setShowShareModal(true);
   };
 
-  const toggleLike = (postId) => {
-    const newLiked = new Set(likedPosts);
-    newLiked.has(postId) ? newLiked.delete(postId) : newLiked.add(postId);
-    setLikedPosts(newLiked);
+  const toggleLike = async (postId) => {
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) {
+        alert('Please log in to like posts');
+        return;
+      }
+
+      // Optimistic update
+      const newLiked = new Set(likedPosts);
+      const wasLiked = newLiked.has(postId);
+      
+      if (wasLiked) {
+        newLiked.delete(postId);
+      } else {
+        newLiked.add(postId);
+      }
+      setLikedPosts(newLiked);
+
+      // API call
+      const response = await apiPost(
+        'news-feed/unlike-or-like',
+        {
+          feed_id: postId,
+          user_id: userId
+        },
+        true
+      );
+
+      if (response.status !== 'success') {
+        // Revert on failure
+        setLikedPosts(likedPosts);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      // Revert on error
+      setLikedPosts(likedPosts);
+    }
   };
 
-  const toggleBookmark = (postId) => {
-    const newBookmarked = new Set(bookmarkedPosts);
-    newBookmarked.has(postId)
-      ? newBookmarked.delete(postId)
-      : newBookmarked.add(postId);
-    setBookmarkedPosts(newBookmarked);
+  const toggleBookmark = async (postId) => {
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) {
+        alert('Please log in to bookmark posts');
+        return;
+      }
+
+      // Optimistic update
+      const newBookmarked = new Set(bookmarkedPosts);
+      const wasBookmarked = newBookmarked.has(postId);
+      
+      if (wasBookmarked) {
+        newBookmarked.delete(postId);
+      } else {
+        newBookmarked.add(postId);
+      }
+      setBookmarkedPosts(newBookmarked);
+
+      // API call
+      const response = await apiPost(
+        'news-feed/unbookmark-or-bookmark',
+        {
+          feed_id: postId,
+          user_id: userId
+        },
+        true
+      );
+
+      if (response.status !== 'success') {
+        // Revert on failure
+        setBookmarkedPosts(bookmarkedPosts);
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      // Revert on error
+      setBookmarkedPosts(bookmarkedPosts);
+    }
   };
 
-  // ✅ Posts data
-  const posts =
-    user?.posts?.length > 0
-      ? user.posts
-      : userPosts.length > 0
-      ? userPosts
-      : SAMPLE_POSTS;
-
-  console.log("📊 UserProfileView Data:", {
-    userId: currentUser.id,
-    name: currentUser.name,
-    postsCount: posts.length,
-    hasRealPosts: user?.posts?.length > 0,
-    loading: user?.loading,
-    error: user?.error,
-  });
-
-  // ✅ NOW you can have conditional returns
+  // ✅ CONDITIONAL RETURNS (after all hooks and variable declarations)
   if (user?.loading) {
     return (
       <div className={`min-h-screen transition-colors ${scheme.bg} flex items-center justify-center`}>
-        {/* Loading content */}
+        <p className={scheme.text}>Loading...</p>
       </div>
     );
   }
@@ -1759,7 +2099,7 @@ export default function UserViewProfile({
   if (user?.error) {
     return (
       <div className={`min-h-screen transition-colors ${scheme.bg}`}>
-        {/* Error content */}
+        <p className={`text-red-500 p-4`}>Error: {user.error}</p>
       </div>
     );
   }
@@ -2020,15 +2360,18 @@ export default function UserViewProfile({
             onClose={() => setShowMessageModal(false)}
           />
         )}
-        {selectedPost && (
-          <PostModal
-            post={selectedPost}
-            user={currentUser}
-            darkMode={darkMode}
-            onClose={() => setSelectedPost(null)}
-             onShare={handleShareClick}  // ✅ PASS THE HANDLER
-          />
-        )}
+      // ✅ CORRECTED
+{selectedPost && (
+  <PostModal
+    post={selectedPost}
+    user={currentUser}
+    darkMode={darkMode}
+    onClose={() => setSelectedPost(null)}
+    onShare={handleShareClick}
+    postComments={postComments}        // ✅ ADD
+    setPostComments={setPostComments}  // ✅ ADD
+  />
+)}
 
         {showShareModal && selectedPostToShare && (
       <ShareModal
