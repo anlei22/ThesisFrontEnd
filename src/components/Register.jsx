@@ -437,7 +437,7 @@
         </div>
         <div className="sm:col-span-2 lg:col-span-1">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Role *
+            User Type *
           </label>
           <select
             value={formData.user_type}
