@@ -51,25 +51,35 @@
     // Map frontend field names to backend expected names
     formDataToSend.append('FirstName', formData.firstname);
     formDataToSend.append('LastName', formData.lastname);
-    formDataToSend.append('Username', formData.email); // Using email as username, or create a separate username field
+    formDataToSend.append('Username', formData.email);
     formDataToSend.append('Email', formData.email);
     formDataToSend.append('Password', formData.password);
+    formDataToSend.append('Password_confirmation', formData.confirmPassword); // ✅ ADD THIS - Laravel expects this for 'confirmed' validation
     formDataToSend.append('phone_number', formData.phone);
     
     // Add other fields
-    formDataToSend.append('middlename', formData.middlename);
+    formDataToSend.append('middlename', formData.middlename || '');
     formDataToSend.append('address', formData.address);
     formDataToSend.append('birthdate', formData.birthdate);
     formDataToSend.append('age', formData.age);
     formDataToSend.append('sex', formData.sex);
-  formDataToSend.append('user_type', formData.role); // ✅ Changed to user_type
+    formDataToSend.append('user_type', formData.user_type);
     
-    // Add files properly
-    if (formData.valid_id_picture) {
+    // ✅ Add verification code (this was missing!)
+    formDataToSend.append('code', formData.verificationCode);
+    
+    // Add files properly - FILES MUST BE APPENDED CORRECTLY
+    if (formData.valid_id_picture && formData.valid_id_picture instanceof File) {
       formDataToSend.append('valid_id_picture', formData.valid_id_picture);
     }
-    if (formData.selfie_with_id_picture) {
+    if (formData.selfie_with_id_picture && formData.selfie_with_id_picture instanceof File) {
       formDataToSend.append('selfie_with_id_picture', formData.selfie_with_id_picture);
+    }
+
+    // ✅ Log FormData for debugging
+    console.log('Sending registration data:');
+    for (let pair of formDataToSend.entries()) {
+      console.log(pair[0] + ': ', pair[1]);
     }
 
     const data = await request('register', {
@@ -81,7 +91,11 @@
     });
     
     setStatusMessage("Registration successful");
-    console.log(data);
+    console.log('Registration response:', data);
+    
+    // Move to next step after successful registration
+    setCurrentStep(5);
+    
   } catch (err) {
     setStatusMessage("Failed to create registration");
     console.error("Failed to create registration:", err);
@@ -89,6 +103,13 @@
     // Log the error response for debugging
     if (err.response && err.response.data) {
       console.error("Validation errors:", err.response.data.error);
+      
+      // Show specific validation errors to user
+      const errors = err.response.data.error;
+      if (errors) {
+        const errorMessages = Object.values(errors).flat().join(', ');
+        setStatusMessage(`Validation failed: ${errorMessages}`);
+      }
     }
   }
 };
@@ -104,7 +125,7 @@
       age: "",
       sex: "",
      
-      role: "",
+      user_type: "",
 
 
       // Step 2 - Phone Verification
@@ -155,7 +176,7 @@
         formData.birthdate &&
         formData.age &&
         formData.sex &&
-        formData.role
+        formData.user_type
       );
       
     };
@@ -419,11 +440,11 @@
             Role *
           </label>
           <select
-            value={formData.role}
-            onChange={(e) => handleInputChange("role", e.target.value)}
+            value={formData.user_type}
+            onChange={(e) => handleInputChange("user_type", e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           >
-            <option value="">Select preferred role</option>
+            <option value="">Select preferred user_type</option>
             <option value="buyer">Buyer</option>
             <option value="seller">Seller</option>
             <option value="both">Both (Buyer & Seller)</option>

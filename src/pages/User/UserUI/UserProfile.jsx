@@ -3,10 +3,31 @@ import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, 
 import { useAuth } from '../../../context/AuthContext';
 import { ShareIcon } from '@heroicons/react/24/outline';
 // Constants
+
+const getCurrentUserId = () => {
+  let userId = localStorage.getItem('user_id');
+  if (!userId) {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        userId = parsedUser?.id;
+        if (userId) {
+          localStorage.setItem('user_id', userId.toString());
+        }
+      } catch (e) {
+        console.error('Error parsing stored user:', e);
+      }
+    }
+  }
+  return userId ? parseInt(userId) : null;
+};
 const COLORS = {
   dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-white', muted: 'text-gray-400', border: 'border-gray-700' },
   light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', muted: 'text-gray-600', border: 'border-gray-200' }
 };
+
+
 const SuccessModal = ({ message, darkMode, onClose }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   
@@ -225,25 +246,33 @@ const EditProfileModal = ({ user, darkMode, onClose, onSave }) => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!formData.firstName || !formData.lastName) {
-      alert('First name and last name are required');
-      return;
-    }
+const handleSubmit = (e) => {
+  e.preventDefault();
+  
+  if (!formData.firstName || !formData.lastName) {
+    alert('First name and last name are required');
+    return;
+  }
 
-    const fullName = `${formData.firstName}${formData.middleName ? ' ' + formData.middleName : ''} ${formData.lastName}`;
-    
-    onSave({
-      ...formData,
-      name: fullName.trim(),
-      avatar: previewAvatar,
-      coverPhoto: previewCover
-    });
-    
-    onClose();
+  const fullName = `${formData.firstName}${formData.middleName ? ' ' + formData.middleName : ''} ${formData.lastName}`;
+  
+  // Make sure we're sending the correct data
+  const dataToSend = {
+    ...formData,
+    name: fullName.trim(),
+    avatar: previewAvatar || formData.avatar, // Send the preview
+    coverPhoto: previewCover || formData.coverPhoto // Send the preview
   };
+
+  console.log('Sending data:', {
+    hasAvatar: !!dataToSend.avatar,
+    hasCoverPhoto: !!dataToSend.coverPhoto,
+    coverPhotoLength: dataToSend.coverPhoto ? dataToSend.coverPhoto.length : 0
+  });
+  
+  onSave(dataToSend);
+  onClose();
+};
 
   const ImageUploadBox = ({ label, preview, type }) => (
     <div className="space-y-2">
@@ -562,20 +591,39 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
         <span>{post.likes} likes</span> &nbsp;<span>{post.comments} comments</span>&nbsp; <span>{post.bookmarks} bookmarks</span>
       </div>
 
-      {/* Actions */}
-      <div className={`flex items-center justify-around border-t py-2 ${scheme.border}`}>
-        {[
-          { icon: Heart, label: '', action: onLike, active: likedPosts.has(post.id), color: 'text-green-600' },
-          { icon: MessageCircle, label: '', action: onImageClick, color: 'text-blue-600' },
-          { icon: Bookmark, label: '', action: onBookmark, active: bookmarkedPosts.has(post.id), color: 'text-yellow-600' },
-          { icon: ShareIcon, label: '', action: () => {}, color: 'text-green-600' }
-        ].map(({ icon: Icon, label, action, active, color }) => (
-          <button key={label} onClick={action} className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${active ? color : scheme.muted}`}>
-            <Icon className={`w-5 h-5 ${active ? 'fill-current' : ''}`} />
-            <span className="text-sm font-medium">{label}</span>
-          </button>
-        ))}
-      </div>
+    {/* Actions */}
+<div className={`flex items-center justify-around border-t py-2 ${scheme.border}`}>
+  <button 
+    onClick={onLike} 
+    className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${likedPosts.has(post.id) ? 'text-green-600' : scheme.muted}`}
+  >
+    <Heart className={`w-5 h-5 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
+    <span className="text-sm font-medium">Like</span>
+  </button>
+  
+  <button 
+    onClick={onImageClick}
+    className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${scheme.muted}`}
+  >
+    <MessageCircle className="w-5 h-5" />
+    <span className="text-sm font-medium">Comment</span>
+  </button>
+  
+  <button 
+    onClick={onBookmark}
+    className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${bookmarkedPosts.has(post.id) ? 'text-yellow-600' : scheme.muted}`}
+  >
+    <Bookmark className={`w-5 h-5 ${bookmarkedPosts.has(post.id) ? 'fill-current' : ''}`} />
+    <span className="text-sm font-medium">Bookmark</span>
+  </button>
+  
+  <button 
+    className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${scheme.muted}`}
+  >
+    <ShareIcon className="w-5 h-5" />
+    <span className="text-sm font-medium">Share</span>
+  </button>
+</div>
     </div>
   );
 };
@@ -1647,15 +1695,15 @@ const DeleteConfirmationModal = ({
   );
 };
 // Main Profile Component
-export default function UserViewProfile({ 
 
+export default function UserViewProfile({ 
   darkMode = false, 
   onBack,
- apiBaseUrl = 'http://localhost:8000/api'  // ADD THIS - CHANGE TO YOUR API URL
+  apiBaseUrl = 'http://localhost:8000/api'
 }) {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
-  const { user } = useAuth(); // ADD THIS LINE
-  const userId = user?.id || localStorage.getItem('user_id'); 
+  const { user } = useAuth();
+  const userId = user?.id || localStorage.getItem('user_id');
 
   // State declarations
 const [profileData, setProfileData] = useState(null);  // CHANGE THIS
@@ -1688,6 +1736,7 @@ useEffect(() => {
 
       if (result.status === 'success') {
         const data = result.data;
+        const currentUserId = getCurrentUserId();
 
         // Transform API data to match your component
         const transformedProfile = {
@@ -1696,10 +1745,11 @@ useEffect(() => {
           username: `@${data.username}`,
           email: data.email,
           avatar: data.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-          coverPhoto: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
+          coverPhoto: data.coverPhoto || 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
           bio: data.bio || 'Professional livestock farmer',
           location: data.location || 'Philippines',
           phoneNumber: data.phone,
+          phone: data.phone,
           joinDate: new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
           birthday: data.birthday || '',
           rating: parseFloat(result.average_rating) || 0,
@@ -1708,32 +1758,52 @@ useEffect(() => {
           following: 0,
           accountType: data.user_type || 'both',
           isVerified: data.isVerified,
-          firstName: data.name.split(' ')[0],
-          lastName: data.name.split(' ').slice(1).join(' '),
+          firstName: data.firstName || data.name.split(' ')[0],
+          middleName: data.middleName || '',
+          lastName: data.lastName || data.name.split(' ').slice(1).join(' '),
           address: data.location
         };
 
-        // Transform posts
-        const transformedPosts = (data.animal_feeds || []).map(feed => ({
-          id: feed.id,
-          content: feed.description,
-          images: feed.images.map(img => img.image_path),
-          likes: feed.likes_count,
-          comments: 0,
-          bookmarks: feed.bookmarks_count,
-          timestamp: new Date(feed.created_at).toLocaleDateString(),
-          isLiked: feed.is_liked,
-          isBookmarked: feed.is_bookmarked,
-          animalInfo: {
-            title: feed.title,
-            type: feed.type,
-            age: feed.age,
-            sex: feed.sex,
-            price: `₱${parseFloat(feed.price).toLocaleString()}`,
-            availability: feed.status === 'available' ? 'available' : 'sold',
-            description: feed.description
-          }
-        }));
+        // Transform posts with FIXED IMAGE URLS
+        const transformedPosts = (data.animal_feeds || []).map(feed => {
+          // Check if user has liked/bookmarked this post
+          const isLiked = Array.isArray(feed.likes)
+            ? feed.likes.some(like => like.user_id === currentUserId)
+            : false;
+          const isBookmarked = Array.isArray(feed.bookmarks)
+            ? feed.bookmarks.some(bookmark => bookmark.user_id === currentUserId)
+            : false;
+
+          return {
+            id: feed.id,
+            content: feed.description,
+            // FIX: Proper image URL construction
+            images: feed.images.map(img => {
+              const imagePath = img.image_path;
+              // Check if it's already a full URL
+              if (imagePath.startsWith('http')) {
+                return imagePath;
+              }
+              // Construct the full URL - adjust path based on your setup
+              return `${apiBaseUrl.replace('/api', '')}/uploads/news_feed/${imagePath}`;
+            }),
+            likes: feed.likes_count || (Array.isArray(feed.likes) ? feed.likes.length : 0),
+            comments: 0,
+            bookmarks: feed.bookmarks_count || (Array.isArray(feed.bookmarks) ? feed.bookmarks.length : 0),
+            timestamp: new Date(feed.created_at).toLocaleDateString(),
+            isLiked,
+            isBookmarked,
+            animalInfo: {
+              title: feed.title,
+              type: feed.type,
+              age: feed.age,
+              sex: feed.sex,
+              price: `₱${parseFloat(feed.price).toLocaleString()}`,
+              availability: feed.status === 'available' ? 'available' : 'sold',
+              description: feed.description
+            }
+          };
+        });
 
         setProfileData(transformedProfile);
         setPostsList(transformedPosts);
@@ -1765,17 +1835,45 @@ useEffect(() => {
 
   fetchProfile();
 }, [userId, apiBaseUrl]);
-// Handler functions
-// Handler functions
-  const handleSaveProfile = (updatedData) => {
-    setProfileData({
-      ...profileData,
-      ...updatedData
-    });
-    setSuccessMessage('Profile updated successfully!');
-    setShowEditProfile(false);
-  };
 
+const handleSaveProfile = async (updatedData) => {
+  console.log('Data being sent:', {
+    hasCoverPhoto: !!updatedData.coverPhoto,
+    coverPhotoPreview: updatedData.coverPhoto?.substring(0, 50) + '...',
+    hasAvatar: !!updatedData.avatar
+  });
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/profile/update/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedData)
+    });
+
+    const result = await response.json();
+    console.log('Server response:', result);
+
+    if (result.status === 'success') {
+      setProfileData({
+        ...profileData,
+        ...result.data,
+        coverPhoto: result.data.coverPhoto // Make sure this is set
+      });
+      setSuccessMessage('Profile updated successfully!');
+      setShowEditProfile(false);
+      
+      // Force reload to see changes
+      window.location.reload();
+    } else {
+      alert(result.message || 'Failed to update profile');
+    }
+  } catch (error) {
+    console.error('Profile update error:', error);
+    alert('Failed to update profile');
+  }
+};
   const handleEditPost = (post) => {
     setEditingPost(post);
     setShowEditPost(true);
@@ -1791,7 +1889,133 @@ const handleSavePost = (updatedPostData) => {
   setSuccessMessage('Post updated successfully!');
   setShowEditPost(false);
 };
+const handleLike = async (postId) => {
+  try {
+    let userId = localStorage.getItem('user_id');
 
+    if (!userId) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          userId = parsedUser.id;
+          if (userId) {
+            localStorage.setItem('user_id', userId.toString());
+          }
+        } catch (e) {
+          console.error('Error parsing stored user:', e);
+        }
+      }
+    }
+
+    if (!userId) {
+      console.error('User ID not found. Please log in again.');
+      return;
+    }
+
+    // Optimistically update UI
+    const updatePosts = (postsArray) =>
+      postsArray.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLiked: !post.isLiked,
+              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
+            }
+          : post
+      );
+
+    setPostsList(updatePosts);
+
+    // Call API
+    const response = await fetch(`${apiBaseUrl}/news-feed/unlike-or-like`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        feed_id: postId,
+        user_id: parseInt(userId)
+      })
+    });
+
+    const result = await response.json();
+    console.log('Like/Unlike response:', result);
+
+    // If API call fails, reload
+    if (result.status !== 'success') {
+      window.location.reload();
+    }
+  } catch (error) {
+    console.error('Error toggling like:', error);
+    window.location.reload();
+  }
+};
+
+const handleBookmark = async (postId) => {
+  try {
+    let userId = localStorage.getItem('user_id');
+
+    if (!userId) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          userId = parsedUser.id;
+          if (userId) {
+            localStorage.setItem('user_id', userId.toString());
+          }
+        } catch (e) {
+          console.error('Error parsing stored user:', e);
+        }
+      }
+    }
+
+    if (!userId) {
+      console.error('User ID not found. Please log in again.');
+      return;
+    }
+
+    // Optimistically update UI
+    const updatePosts = (postsArray) =>
+      postsArray.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isBookmarked: !post.isBookmarked,
+              bookmarks: post.isBookmarked ? post.bookmarks - 1 : post.bookmarks + 1,
+            }
+          : post
+      );
+
+    setPostsList(updatePosts);
+
+    // Call API
+    const response = await fetch(`${apiBaseUrl}/news-feed/unbookmark-or-bookmark`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        feed_id: postId,
+        user_id: parseInt(userId)
+      })
+    });
+
+    const result = await response.json();
+    console.log('Bookmark/Unbookmark response:', result);
+
+    // If API call fails, reload
+    if (result.status !== 'success') {
+      window.location.reload();
+    }
+  } catch (error) {
+    console.error('Error toggling bookmark:', error);
+    window.location.reload();
+  }
+};
   const handleDeletePost = (postId) => {
     setPostsList(postsList.filter(p => p.id !== postId));
     setSuccessMessage('Post deleted successfully!');
@@ -1923,19 +2147,19 @@ const handleSavePost = (updatedPostData) => {
           <div className="p-6">
             {activeTab === 'posts' && (
               <div className='space-y-4'>
-                {postsList.map((post) => (
-                  <PostListItem 
-                    key={post.id}
-                    post={post}
-                    user={profileData}
-                    darkMode={darkMode}
-                    likedPosts={likedPosts}
-                    bookmarkedPosts={bookmarkedPosts}
-                    onLike={() => toggleLike(post.id)}
-                    onBookmark={() => toggleBookmark(post.id)}
-                    onImageClick={() => setSelectedPost(post)}
-                  />
-                ))}
+               {postsList.map((post) => (
+  <PostListItem 
+    key={post.id}
+    post={post}
+    user={profileData}
+    darkMode={darkMode}
+    likedPosts={likedPosts}
+    bookmarkedPosts={bookmarkedPosts}
+    onLike={() => handleLike(post.id)}
+    onBookmark={() => handleBookmark(post.id)}
+    onImageClick={() => setSelectedPost(post)}
+  />
+))}
               </div>
             )}
 
