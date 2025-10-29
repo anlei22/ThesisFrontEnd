@@ -28,6 +28,7 @@ import ProfileQRModal from "../../../components/profileQrModal";
 import { QRCodeCanvas } from "qrcode.react";
 import { apiPost } from '../../../context/utils/apiPost';
    import { apiPostFormData } from '../../../context/utils/apiFormData';
+
 const ShareModal = ({ isOpen, onClose, darkMode, postId, title = "Animal Post" }) => {
   const [shareUrl, setShareUrl] = useState("");
 
@@ -781,6 +782,218 @@ const PostModal = ({
       setCommentLikes(likes);
     }
   }, [post?.id, postComments]);
+  // ✅ FETCH PROFILE DATA FROM API
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!userId) {
+        setError('User ID is required');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await fetch(`${apiBaseUrl}/profile/get/${userId}/profile`);
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          const data = result.data;
+          const currentUserId = getCurrentUserId();
+
+          // Transform profile data
+          const transformedProfile = {
+            id: data.id,
+            name: data.name,
+            username: `@${data.username}`,
+            email: data.email,
+            avatar: data.avatar || data.profile_picture 
+              ? `${apiBaseUrl.replace('/api', '')}/uploads/profile/${data.avatar || data.profile_picture}`
+              : 'https://ui-avatars.com/api/?name=User&background=10b981&color=fff',
+            coverPhoto: data.coverPhoto 
+              ? `${apiBaseUrl.replace('/api', '')}/uploads/cover/${data.coverPhoto}`
+              : 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
+            bio: data.bio || 'Professional livestock farmer',
+            location: data.location || 'Philippines',
+            phoneNumber: data.phone,
+            phone: data.phone,
+            joinDate: new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+            birthday: data.birthday || '',
+            rating: parseFloat(result.average_rating) || 0,
+            totalReviews: result.total_raters || 0,
+            followers: 0,
+            following: 0,
+            user_type: data.user_type || 'both',
+            isVerified: data.isVerified,
+          };
+
+          // Transform posts with proper image URLs and comments
+          const transformedPosts = (data.animal_feeds || []).map(feed => {
+            // Transform comments with nested replies
+            const transformedComments = (feed.comments || []).map((comment) => {
+              const commentUserId = comment.user?.id || comment.user_id;
+              const commentUserName = currentUserId && commentUserId === currentUserId
+                ? 'You'
+                : `${comment.user?.FirstName || 'Unknown'} ${comment.user?.LastName || 'User'}`;
+              
+              return {
+                id: comment.id,
+                user: {
+                  name: commentUserName,
+                  avatar: comment.user?.profile_picture 
+                    ? `${apiBaseUrl.replace('/api', '')}/uploads/profile/${comment.user.profile_picture}`
+                    : `https://ui-avatars.com/api/?name=${comment.user?.FirstName || 'U'}+${comment.user?.LastName || 'U'}&background=10b981&color=fff`,
+                },
+                text: comment.comment,
+                timestamp: formatTimestamp(comment.created_at || new Date()),
+                likes: 0,
+                replies: (comment.replies || []).map((reply) => {
+                  const replyUserId = reply.user?.id || reply.user_id;
+                  const replyUserName = currentUserId && replyUserId === currentUserId
+                    ? 'You'
+                    : `${reply.user?.FirstName || 'Unknown'} ${reply.user?.LastName || 'User'}`;
+                  
+                  return {
+                    id: reply.id,
+                    user: {
+                      name: replyUserName,
+                      avatar: reply.user?.profile_picture
+                        ? `${apiBaseUrl.replace('/api', '')}/uploads/profile/${reply.user.profile_picture}`
+                        : `https://ui-avatars.com/api/?name=${reply.user?.FirstName || 'U'}+${reply.user?.LastName || 'U'}&background=f59e0b&color=fff`,
+                    },
+                    text: reply.reply,
+                    timestamp: formatTimestamp(reply.created_at || new Date()),
+                    likes: 0,
+                  };
+                }),
+              };
+            });
+
+            // Check if user has liked/bookmarked this post
+            const isLiked = Array.isArray(feed.likes)
+              ? feed.likes.some(like => like.user_id === currentUserId)
+              : false;
+            const isBookmarked = Array.isArray(feed.bookmarks)
+              ? feed.bookmarks.some(bookmark => bookmark.user_id === currentUserId)
+              : false;
+
+            return {
+              id: feed.id,
+              content: feed.description,
+              // FIX: Proper image URL construction
+              images: (feed.images || []).map(img => {
+                const imagePath = img.image_path || img;
+                if (imagePath.startsWith('http')) {
+                  return imagePath;
+                }
+                return `${apiBaseUrl.replace('/api', '')}/uploads/news_feed/${imagePath}`;
+              }),
+              likes: feed.count_likes || (Array.isArray(feed.likes) ? feed.likes.length : 0),
+              comments: transformedComments.length,
+              bookmarks: feed.count_bookmarks || (Array.isArray(feed.bookmarks) ? feed.bookmarks.length : 0),
+              timestamp: formatTimestamp(feed.created_at),
+              isLiked,
+              isBookmarked,
+              animalInfo: {
+                title: feed.title,
+                type: feed.animal_type?.name || feed.type,
+                age: feed.age ? `${feed.age} years old` : 'Age not specified',
+                sex: feed.sex || 'N/A',
+                price: feed.price === "0" || feed.price === 0
+                  ? "Free"
+                  : `₱${parseFloat(feed.price || 0).toLocaleString("en-PH", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}`,
+                availability: feed.status === 'available' ? 'available' : 'sold',
+                description: feed.description
+              },
+              user: {
+                name: transformedProfile.name,
+                avatar: transformedProfile.avatar,
+                isVerified: transformedProfile.isVerified,
+                username: transformedProfile.username,
+                location: transformedProfile.location
+              }
+            };
+          });
+
+          setProfileData(transformedProfile);
+          setPostsList(transformedPosts);
+
+          // Initialize comments for all posts
+          const initialComments = {};
+          transformedPosts.forEach((post) => {
+            const originalFeed = data.animal_feeds.find(f => f.id === post.id);
+            if (originalFeed && originalFeed.comments) {
+              initialComments[post.id] = (originalFeed.comments || []).map((comment) => {
+                const commentUserId = comment.user?.id || comment.user_id;
+                const commentUserName = currentUserId && commentUserId === currentUserId
+                  ? 'You'
+                  : `${comment.user?.FirstName || 'Unknown'} ${comment.user?.LastName || 'User'}`;
+                
+                return {
+                  id: comment.id,
+                  user: {
+                    name: commentUserName,
+                    avatar: comment.user?.profile_picture 
+                      ? `${apiBaseUrl.replace('/api', '')}/uploads/profile/${comment.user.profile_picture}`
+                      : `https://ui-avatars.com/api/?name=${comment.user?.FirstName || 'U'}+${comment.user?.LastName || 'U'}&background=10b981&color=fff`,
+                  },
+                  text: comment.comment,
+                  timestamp: formatTimestamp(comment.created_at || new Date()),
+                  likes: 0,
+                  replies: (comment.replies || []).map((reply) => {
+                    const replyUserId = reply.user?.id || reply.user_id;
+                    const replyUserName = currentUserId && replyUserId === currentUserId
+                      ? 'You'
+                      : `${reply.user?.FirstName || 'Unknown'} ${reply.user?.LastName || 'User'}`;
+                    
+                    return {
+                      id: reply.id,
+                      user: {
+                        name: replyUserName,
+                        avatar: reply.user?.profile_picture
+                          ? `${apiBaseUrl.replace('/api', '')}/uploads/profile/${reply.user.profile_picture}`
+                          : `https://ui-avatars.com/api/?name=${reply.user?.FirstName || 'U'}+${reply.user?.LastName || 'U'}&background=f59e0b&color=fff`,
+                      },
+                      text: reply.reply,
+                      timestamp: formatTimestamp(reply.created_at || new Date()),
+                      likes: 0,
+                    };
+                  }),
+                };
+              });
+            }
+          });
+          setPostComments(initialComments);
+
+          // Set liked/bookmarked posts
+          const liked = new Set();
+          const bookmarked = new Set();
+          transformedPosts.forEach(post => {
+            if (post.isLiked) liked.add(post.id);
+            if (post.isBookmarked) bookmarked.add(post.id);
+          });
+          setLikedPosts(liked);
+          setBookmarkedPosts(bookmarked);
+          
+          setError(null);
+        } else {
+          throw new Error(result.message || 'Failed to load profile');
+        }
+      } catch (err) {
+        console.error('Profile fetch error:', err);
+        setError(err.message);
+        // Fallback to default data
+        setProfileData(user || DEFAULT_USER);
+        setPostsList(userPosts.length > 0 ? userPosts : SAMPLE_POSTS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [userId, apiBaseUrl]);
 
 // ADD THIS useEffect near the top with other useState (around line 1100)
   useEffect(() => {
@@ -2006,7 +2219,6 @@ export default function UserViewProfile({
     setSelectedPostToShare(post);
     setShowShareModal(true);
   };
-
   const toggleLike = async (postId) => {
     try {
       const userId = getCurrentUserId();
@@ -2360,7 +2572,6 @@ export default function UserViewProfile({
             onClose={() => setShowMessageModal(false)}
           />
         )}
-      // ✅ CORRECTED
 {selectedPost && (
   <PostModal
     post={selectedPost}

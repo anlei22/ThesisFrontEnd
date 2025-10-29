@@ -146,35 +146,77 @@ const Mainboard = () => {
   // Extract top performers from API response
   const [topPerformers, setTopPerformers] = useState([]);
 
-  useEffect(() => {
+ useEffect(() => {
+  const fetchTopPerformersWithDetails = async () => {
     if (newsFeedData && newsFeedData.top_performer) {
-      // Handle both single performer and array of performers
       const performers = Array.isArray(newsFeedData.top_performer)
         ? newsFeedData.top_performer
         : [newsFeedData.top_performer];
+ console.log('🔍 First performer raw data:', performers[0]);
+    console.log('🔍 Avatar field:', performers[0]?.avatar);
+    console.log('🔍 Profile picture field:', performers[0]?.profile_picture);
+    console.log('🔍 All available fields:', Object.keys(performers[0]));
+      // ✅ Fetch full profile for each performer to get accurate location
+      const performersWithDetails = await Promise.all(
+        performers.map(async (performer) => {
+          try {
+            // Fetch complete user profile (includes accurate location)
+            const { user: profileUser } = await fetchUserProfile(performer.id);
+            
+            return {
+              id: performer.id,
+              name: `${performer.FirstName || "Unknown"} ${performer.LastName || "User"}`,
+               avatar: (() => {
+  if (performer.profile_picture) {
+    const baseUrl = import.meta.env.VITE_BACKEND_URI?.replace('/api/', '') || 'http://127.0.0.1:8000';
+    return `${baseUrl}/storage/profile_pictures/${performer.profile_picture}`;
+  }
+  return `https://ui-avatars.com/api/?name=${performer.FirstName || "U"}+${performer.LastName || "U"}&background=10b981&color=fff`;
+})(),  rating: parseFloat(performer.average_rating || 0),
+              location: profileUser.location || performer.location || "Unknown Location", // ✅ Use profile location first
+              type: performer.Role === "Super" ? "admin" : (performer.Role || "User").toLowerCase(),
+              username: performer.Username || "unknown",
+              user_type: performer.user_type || "user",
+              email: performer.Email || "",
+              isVerified: !!performer.email_verified_at,
+              ratings: performer.ratings || []
+            };
+         } catch (error) {
+  console.warn(`⚠️ Could not fetch details for performer ${performer.id}:`, error);
+  // Fallback to basic data if profile fetch fails
+  return {
+    id: performer.id,
+    name: `${performer.FirstName || "Unknown"} ${performer.LastName || "User"}`,
+    avatar: (() => {
+      if (performer.profile_picture) {
+        const baseUrl = import.meta.env.VITE_BACKEND_URI?.replace('/api/', '') || 'http://127.0.0.1:8000';
+        return `${baseUrl}/storage/profile_pictures/${performer.profile_picture}`;
+      }
+      return `https://ui-avatars.com/api/?name=${performer.FirstName || "U"}+${performer.LastName || "U"}&background=10b981&color=fff`;
+    })(),
+    rating: parseFloat(performer.average_rating || 0),
+    location: performer.location || "Unknown Location",
+    type: performer.Role === "Super" ? "admin" : (performer.Role || "User").toLowerCase(),
+    username: performer.Username || "unknown",
+    user_type: performer.user_type || "user",
+    email: performer.Email || "",
+    isVerified: !!performer.email_verified_at,
+    ratings: performer.ratings || []
+  };
+}
+        })
+      );
 
-      // Transform and sort by average rating (highest first)
-      const transformedPerformers = performers
-        .map((performer) => ({
-          id: performer.id,
-          name: `${performer.FirstName || "Unknown"} ${performer.LastName || "User"}`,
-          avatar: performer.profile_picture ||
-            `https://ui-avatars.com/api/?name=${performer.FirstName || "U"}+${performer.LastName || "U"}&background=10b981&color=fff`,
-          rating: parseFloat(performer.average_rating || 0),
-          location: performer.location || "Unknown Location",
-          type: performer.Role === "Super" ? "admin" : (performer.Role || "User").toLowerCase(),
-          username: performer.Username || "unknown",
-          user_type: performer.user_type || "user",
-          email: performer.Email || "",
-          isVerified: !!performer.email_verified_at,
-          ratings: performer.ratings || []
-        }))
-        .sort((a, b) => b.rating - a.rating) // Sort by rating descending
-        .slice(0, 5); // Limit to top 5
+      const sortedPerformers = performersWithDetails
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 5);
 
-      setTopPerformers(transformedPerformers);
+      setTopPerformers(sortedPerformers);
     }
-  }, [newsFeedData]);
+  };
+
+  fetchTopPerformersWithDetails();
+}, [newsFeedData]);
 
 
 
