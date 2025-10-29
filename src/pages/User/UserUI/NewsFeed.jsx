@@ -486,40 +486,159 @@ const NewsFeed = ({
   };
 
   // Handle API response
-  useEffect(() => {
-    if (error) {
-      console.error("Error fetching posts:", error);
-      return;
+useEffect(() => {
+  if (error) {
+    console.error("Error fetching posts:", error);
+    return;
+  }
+
+  if (apiResponse) {
+    console.log("📥 API Response:", apiResponse);
+
+    let postsData = [];
+
+    if (apiResponse.status === "success" && apiResponse.data) {
+      postsData = apiResponse.data;
+    } else if (Array.isArray(apiResponse)) {
+      postsData = apiResponse;
     }
 
-    if (apiResponse) {
-      console.log("📥 API Response:", apiResponse);
+    if (Array.isArray(postsData) && postsData.length > 0) {
+      const currentUserId = getCurrentUserId();
+      
+      // ✅ DEFINE GETAVATAURL ONCE - OUTSIDE transformedPosts.map()
+      const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
+        // ✅ FIX: Check if profilePicture exists FIRST
+        if (!profilePicture) {
+          const placeholderUrl = `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=10b981&color=fff`;
+          console.log('📸 Using placeholder for:', firstName, lastName);
+          return placeholderUrl;
+        }
 
-      let postsData = [];
+        // ✅ FIX: Convert to string before calling trim()
+        const picStr = String(profilePicture).trim();
+        if (picStr === '') {
+          const placeholderUrl = `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=10b981&color=fff`;
+          console.log('📸 Using placeholder for:', firstName, lastName);
+          return placeholderUrl;
+        }
 
-      // Handle the new response format from GetAllNewsFeed
-      if (apiResponse.status === "success" && apiResponse.data) {
-        postsData = apiResponse.data;
-      } else if (Array.isArray(apiResponse)) {
-        postsData = apiResponse;
-      }
+        if (picStr.startsWith('http')) {
+          console.log('📸 Already full URL:', picStr);
+          return picStr;
+        }
 
-      if (Array.isArray(postsData) && postsData.length > 0) {
-        const currentUserId = getCurrentUserId();
-        const transformedPosts = postsData.map((post) => {
-          // Transform comments with nested replies
-          const transformedComments = (post.comments || []).map((comment) => {
+        const baseURL = API_URL.replace('/api', '');
+        const finalUrl = `${baseURL}/uploads/profile/${picStr}`;
+        console.log('📸 Built URL:', finalUrl);
+        return finalUrl;
+      };
+
+      // ✅ TRANSFORM POSTS ONCE
+      const transformedPosts = postsData.map((post) => {
+        const transformedComments = (post.comments || []).map((comment) => {
+          const commentUserId = comment.user?.id || comment.user_id;
+          const commentUserName = currentUserId && commentUserId === currentUserId
+            ? 'You'
+            : `${comment.user?.FirstName || 'Unknown'} ${comment.user?.LastName || 'User'}`;
+          
+          return {
+            id: comment.id,
+            user: {
+              name: commentUserName,
+              avatar: getAvatarUrl(comment.user?.profile_picture, comment.user?.FirstName, comment.user?.LastName),
+            },
+            text: comment.comment,
+            timestamp: formatTimestamp(comment.created_at || new Date()),
+            likes: 0,
+            replies: (comment.replies || []).map((reply) => {
+              const replyUserId = reply.user?.id || reply.user_id;
+              const replyUserName = currentUserId && replyUserId === currentUserId
+                ? 'You'
+                : `${reply.user?.FirstName || 'Unknown'} ${reply.user?.LastName || 'User'}`;
+              
+              return {
+                id: reply.id,
+                user: {
+                  name: replyUserName,
+                  avatar: getAvatarUrl(reply.user?.profile_picture, reply.user?.FirstName, reply.user?.LastName),
+                },
+                text: reply.reply,
+                timestamp: formatTimestamp(reply.created_at || new Date()),
+                likes: 0,
+              };
+            }),
+          };
+        });
+
+        const isLiked = Array.isArray(post.likes)
+          ? post.likes.some(like => like.user_id === currentUserId)
+          : false;
+        const isBookmarked = Array.isArray(post.bookmarks)
+          ? post.bookmarks.some(bookmark => bookmark.user_id === currentUserId)
+          : false;
+
+        return {
+          id: post.id,
+          user: {
+            name: `${post.creator?.FirstName || "Unknown"} ${post.creator?.LastName || "User"}`,
+            avatar: getAvatarUrl(post.creator?.profile_picture, post.creator?.FirstName, post.creator?.LastName),
+            isVerified: post.creator?.email_verified_at ? true : false,
+            username: post.creator?.Username || "unknown",
+            location: post.location || post.creator?.location || "",
+          },
+          timestamp: formatTimestamp(post.created_at),
+          content: post.description || "",
+          animalInfo: {
+            type: post.animal_type?.name || "Unknown",
+            title: post.title || "Untitled",
+            description: post.description || "",
+            age: post.age ? `${post.age} years old` : "Age not specified",
+            sex: post.sex || "N/A",
+            price:
+              post.price === "0"
+                ? "Free"
+                : `₱${parseFloat(post.price || 0).toLocaleString("en-PH", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`,
+            availability: post.status || "available",
+          },
+          images: Array.isArray(post.images)
+            ? post.images.map((img) => {
+              const imagePath = img.image_path || img;
+              return imagePath.startsWith('http')
+                ? imagePath
+                : `${API_URL.replace('/api', '')}/storage/feeds/${imagePath}`;
+            })
+            : [],
+          likes: post.count_likes || (Array.isArray(post.likes) ? post.likes.length : 0),
+          comments: transformedComments.length,
+          bookmarks: post.count_bookmarks || (Array.isArray(post.bookmarks) ? post.bookmarks.length : 0),
+          isLiked,
+          isBookmarked,
+        };
+      });
+
+      setPosts(transformedPosts);
+
+      // ✅ REUSE transformedComments data for initialComments (don't transform again)
+      const initialComments = {};
+      transformedPosts.forEach((transformedPost, index) => {
+        const originalPost = postsData[index];
+        if (originalPost && originalPost.comments) {
+          // Just map comments to get the avatar URLs using getAvatarUrl
+          initialComments[transformedPost.id] = originalPost.comments.map((comment) => {
             const commentUserId = comment.user?.id || comment.user_id;
             const commentUserName = currentUserId && commentUserId === currentUserId
               ? 'You'
               : `${comment.user?.FirstName || 'Unknown'} ${comment.user?.LastName || 'User'}`;
+            
             return {
               id: comment.id,
               user: {
                 name: commentUserName,
-                avatar:
-                  comment.user?.profile_picture ||
-                  `https://ui-avatars.com/api/?name=${comment.user?.FirstName || 'U'}+${comment.user?.LastName || 'U'}&background=10b981&color=fff`,
+                avatar: getAvatarUrl(comment.user?.profile_picture, comment.user?.FirstName, comment.user?.LastName),
               },
               text: comment.comment,
               timestamp: formatTimestamp(comment.created_at || new Date()),
@@ -529,13 +648,12 @@ const NewsFeed = ({
                 const replyUserName = currentUserId && replyUserId === currentUserId
                   ? 'You'
                   : `${reply.user?.FirstName || 'Unknown'} ${reply.user?.LastName || 'User'}`;
+                
                 return {
                   id: reply.id,
                   user: {
                     name: replyUserName,
-                    avatar:
-                      reply.user?.profile_picture ||
-                      `https://ui-avatars.com/api/?name=${reply.user?.FirstName || 'U'}+${reply.user?.LastName || 'U'}&background=f59e0b&color=fff`,
+                    avatar: getAvatarUrl(reply.user?.profile_picture, reply.user?.FirstName, reply.user?.LastName),
                   },
                   text: reply.reply,
                   timestamp: formatTimestamp(reply.created_at || new Date()),
@@ -544,120 +662,19 @@ const NewsFeed = ({
               }),
             };
           });
+        }
+      });
 
-          // Check if user has liked/bookmarked this post
-          const isLiked = Array.isArray(post.likes)
-            ? post.likes.some(like => like.user_id === currentUserId)
-            : false;
-          const isBookmarked = Array.isArray(post.bookmarks)
-            ? post.bookmarks.some(bookmark => bookmark.user_id === currentUserId)
-            : false;
-          return {
-            id: post.id,
-            user: {
-              name: `${post.creator?.FirstName || "Unknown"} ${post.creator?.LastName || "User"
-                }`,
-              avatar:
-                post.creator?.profile_picture ||
-                `https://ui-avatars.com/api/?name=${post.creator?.FirstName || "U"
-                }+${post.creator?.LastName || "U"}&background=10b981&color=fff`,
-              isVerified: post.creator?.email_verified_at ? true : false,
-              username: post.creator?.Username || "unknown",
-              location: post.location || post.creator?.location || "",
-            },
-            timestamp: formatTimestamp(post.created_at),
-            content: post.description || "",
-            animalInfo: {
-              type: post.animal_type?.name || "Unknown",
-              title: post.title || "Untitled",
-              description: post.description || "",
-              age: post.age ? `${post.age} years old` : "Age not specified",
-              sex: post.sex || "N/A",
-              price:
-                post.price === "0"
-                  ? "Free"
-                  : `₱${parseFloat(post.price || 0).toLocaleString("en-PH", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}`,
-              availability: post.status || "available",
-            },
-            images: Array.isArray(post.images)
-              ? post.images.map((img) => {
-                // Construct full image URL if it's just a filename
-                const imagePath = img.image_path || img;
-                return imagePath.startsWith('http')
-                  ? imagePath
-                  : `${API_URL.replace('/api', '')}/storage/feeds/${imagePath}`;
-              })
-              : [],
+      setPostComments(initialComments);
 
-            likes: post.count_likes || (Array.isArray(post.likes) ? post.likes.length : 0),
-            comments: transformedComments.length,
-            bookmarks: post.count_bookmarks || (Array.isArray(post.bookmarks) ? post.bookmarks.length : 0),
-            isLiked,
-            isBookmarked,
-          };
-        });
-
-        setPosts(transformedPosts);
-
-        // Initialize comments for all posts
-        const initialComments = {};
-        transformedPosts.forEach((post) => {
-          // Find the original post data to get comments
-          const originalPost = postsData.find(p => p.id === post.id);
-          if (originalPost && originalPost.comments) {
-            const transformedComments = originalPost.comments.map((comment) => {
-              const commentUserId = comment.user?.id || comment.user_id;
-              const commentUserName = currentUserId && commentUserId === currentUserId
-                ? 'You'
-                : `${comment.user?.FirstName || 'Unknown'} ${comment.user?.LastName || 'User'}`;
-              return {
-                id: comment.id,
-                user: {
-                  name: commentUserName,
-                  avatar:
-                    comment.user?.profile_picture ||
-                    `https://ui-avatars.com/api/?name=${comment.user?.FirstName || 'U'}+${comment.user?.LastName || 'U'}&background=10b981&color=fff`,
-                },
-                text: comment.comment,
-                timestamp: formatTimestamp(comment.created_at || new Date()),
-                likes: 0,
-                replies: (comment.replies || []).map((reply) => {
-                  const replyUserId = reply.user?.id || reply.user_id;
-                  const replyUserName = currentUserId && replyUserId === currentUserId
-                    ? 'You'
-                    : `${reply.user?.FirstName || 'Unknown'} ${reply.user?.LastName || 'User'}`;
-                  return {
-                    id: reply.id,
-                    user: {
-                      name: replyUserName,
-                      avatar:
-                        reply.user?.profile_picture ||
-                        `https://ui-avatars.com/api/?name=${reply.user?.FirstName || 'U'}+${reply.user?.LastName || 'U'}&background=f59e0b&color=fff`,
-                    },
-                    text: reply.reply,
-                    timestamp: formatTimestamp(reply.created_at || new Date()),
-                    likes: 0,
-                  };
-                }),
-              };
-            });
-            initialComments[post.id] = transformedComments;
-          }
-        });
-        setPostComments(initialComments);
-
-        // Apply client-side filters
-        const filtered = applyClientSideFilters(transformedPosts);
-        setFilteredPosts(filtered);
-      } else {
-        setPosts([]);
-        setFilteredPosts([]);
-      }
+      const filtered = applyClientSideFilters(transformedPosts);
+      setFilteredPosts(filtered);
+    } else {
+      setPosts([]);
+      setFilteredPosts([]);
     }
-  }, [apiResponse, error, loading]);
+  }
+}, [apiResponse, error, loading]);
 
   // Re-apply filters when filter values change
   useEffect(() => {
