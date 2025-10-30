@@ -82,39 +82,41 @@ const User = () => {
 
       const data = await response.json();
       
-      const transformedUsers = data.map(user => {
-        let mappedStatus = 'approved';
-        const dbStatus = (user.status || user.Status || 'Approved').toLowerCase();
-        
-        if (dbStatus === 'approved') {
-          mappedStatus = 'approved';
-        } else if (dbStatus === 'banned') {
-          mappedStatus = 'banned';
-        } else if (dbStatus === 'pending' || dbStatus === 'for verification') {
-          mappedStatus = 'for verification';
-        }
-        
-        return {
-          id: user.id,
-          firstName: user.FirstName || '',
-          middleName: user.MiddleName || user.middle_name || '',
-          surname: user.LastName || user.last_name || user.surname || '',
-          email: user.Email || user.email || '',
-          role: user.Role || user.role || 'User',
-          joinDate: user.created_at || user.join_date || new Date().toISOString(),
-          phone: user.Phone || user.phone || user.contact_number || '',
-          address: user.Address || user.address || '',
-          birthday: user.Birthday || user.birthday || user.date_of_birth || '',
-          age: user.Age || user.age || '',
-          sex: user.Sex || user.sex || user.gender || '',
-          bio: user.Bio || user.bio || user.description || '',
-          profileImage: user.ProfileImage || user.profile_image || user.profile_picture || `https://i.pravatar.cc/100?img=${user.id}`,
-          idPhoto: user.IDPhoto || user.id_photo || user.government_id || 'https://via.placeholder.com/400x250?text=ID+Photo',
-          selfiePhoto: user.SelfiePhoto || user.selfie_photo || user.selfie || 'https://via.placeholder.com/400x250?text=Selfie',
-          status: mappedStatus,
-        };
-      });
-
+ const transformedUsers = data.map(user => {
+  let mappedStatus = 'approved';
+  const dbStatus = (user.Status || 'Approved').toLowerCase();
+  
+  if (dbStatus === 'approved') {
+    mappedStatus = 'approved';
+  } else if (dbStatus === 'banned') {
+    mappedStatus = 'banned';
+  } else if (dbStatus === 'pending' || dbStatus === 'for verification') {
+    mappedStatus = 'for verification';
+  }
+  
+  return {
+    id: user.id,
+    firstName: user.FirstName || '',
+    middleName: user.MiddleName || '',
+    surname: user.LastName || '',
+    email: user.Email || '',
+    role: user.Role || 'User',
+    joinDate: user.created_at || new Date().toISOString(),
+    phone: user.Phone || '',
+    address: user.Address || '',
+    birthday: user.Birthday || '',
+    age: user.Age || '',
+    sex: user.Sex || '',
+    bio: user.Bio || '',
+    
+    // Use the full URLs from backend OR fallback
+    profileImage: user.ProfileImage || `https://i.pravatar.cc/100?img=${user.id}`,
+    idPhoto: user.IDPhoto || 'https://via.placeholder.com/400x250?text=ID+Photo',
+    selfiePhoto: user.SelfiePhoto || 'https://via.placeholder.com/400x250?text=Selfie',
+    
+    status: mappedStatus,
+  };
+});
       setUsers(transformedUsers);
     } catch (error) {
       console.error('❌ Error fetching users:', error);
