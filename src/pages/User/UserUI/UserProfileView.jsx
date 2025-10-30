@@ -495,6 +495,12 @@ const PostListItem = ({
   onShare,  // ✅ ADD THIS PROP
 }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
+   console.log('PostListItem render:', {
+    postId: post.id,
+    isLiked: post.isLiked,
+    isBookmarked: post.isBookmarked,
+    likes: post.likes,
+    bookmarks: post.bookmarks});
 
   return (
     <div
@@ -633,49 +639,69 @@ const PostListItem = ({
         <span>{post.bookmarks} bookmarks</span>
       </div>
 
-      {/* Actions */}
+     {/* Actions */}
       <div
         className={`flex items-center justify-around border-t py-2 ${scheme.border}`}
       >
-        {[
-          {
-            icon: Heart,
-            label: "",
-            action: onLike,
-            active: likedPosts.has(post.id),
-            color: "text-green-600",
-          },
-          {
-            icon: MessageCircle,
-            label: "",
-            action: onImageClick,
-            color: "text-blue-600",
-          },
-          {
-            icon: Bookmark,
-            label: "",
-            action: onBookmark,
-            active: bookmarkedPosts.has(post.id),
-            color: "text-yellow-600",
-          },
-          {
-            icon: ShareIcon,
-            label: "",
-            action: () => onShare(post), // ✅ CALL onShare WITH POST DATA
-            color: "text-green-600",
-          },
-        ].map(({ icon: Icon, label, action, active, color }) => (
-          <button
-            key={label || "share"}
-            onClick={action}
-            className={`flex items-center space-x-2 px-4 py-2 hover:opacity-80 transition ${
-              active ? color : scheme.muted
-            }`}
-          >
-            <Icon className={`w-5 h-5 ${active ? "fill-current" : ""}`} />
-            <span className="text-sm font-medium">{label}</span>
-          </button>
-        ))}
+        {/* Like Button */}
+        <button
+          onClick={onLike}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+            post.isLiked
+              ? darkMode
+                ? "text-green-400 bg-gray-700"
+                : "text-green-600 bg-green-50"
+              : darkMode
+              ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
+              : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
+          }`}
+        >
+          <Heart className={`w-5 h-5 transition-all ${post.isLiked ? "fill-current scale-110" : ""}`} />
+          <span className="text-sm font-medium"></span>
+        </button>
+
+        {/* Comment Button */}
+        <button
+          onClick={onImageClick}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+            darkMode
+              ? "text-gray-400 hover:bg-gray-700 hover:text-blue-400"
+              : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+          }`}
+        >
+          <MessageCircle className="w-5 h-5" />
+          <span className="text-sm font-medium"></span>
+        </button>
+
+        {/* Bookmark Button */}
+        <button
+          onClick={onBookmark}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+            post.isBookmarked
+              ? darkMode
+                ? "text-yellow-400 bg-gray-700"
+                : "text-yellow-600 bg-yellow-50"
+              : darkMode
+              ? "text-gray-400 hover:bg-gray-700 hover:text-yellow-400"
+              : "text-gray-600 hover:bg-gray-100 hover:text-yellow-600"
+          }`}
+        >
+          <Bookmark className={`w-5 h-5 transition-all ${post.isBookmarked ? "fill-current scale-110" : ""}`} />
+          <span className="text-sm font-medium"></span>
+        </button>
+
+        {/* Share Button */}
+        <button
+          onClick={() => onShare(post)}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+            darkMode
+              ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
+              : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
+          }`}
+        >
+          <ShareIcon className="w-5 h-5" />
+          <span className="text-sm font-medium"></span>
+        </button>
       </div>
     </div>
   );
@@ -721,8 +747,10 @@ const PostModal = ({
   onClose,
   isAuthenticated = true,
   onShare,
-  postComments,         // ✅ ADD THIS
-  setPostComments,      // ✅ ADD THIS
+  postComments,
+  setPostComments,
+  onLike,              // ✅ ADD THIS
+  onBookmark,          // ✅ ADD THIS
 }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -783,303 +811,33 @@ const PostModal = ({
     }
   }, [post?.id, postComments]);
   // ✅ FETCH PROFILE DATA FROM API
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!userId) {
-        setError('User ID is required');
-        setLoading(false);
-        return;
-      }
 
-      try {
-        setLoading(true);
-        const response = await fetch(`${apiBaseUrl}/profile/get/${userId}/profile`);
-        const result = await response.json();
+ 
 
-        if (result.status === 'success') {
-          const data = result.data;
-          const currentUserId = getCurrentUserId();
-
-          // Transform profile data
-          const transformedProfile = {
-            id: data.id,
-            name: data.name,
-            username: `@${data.username}`,
-            email: data.email,
-            avatar: data.avatar || data.profile_picture 
-              ? `${apiBaseUrl.replace('/api', '')}/uploads/profile/${data.avatar || data.profile_picture}`
-              : 'https://ui-avatars.com/api/?name=User&background=10b981&color=fff',
-            coverPhoto: data.coverPhoto 
-              ? `${apiBaseUrl.replace('/api', '')}/uploads/cover/${data.coverPhoto}`
-              : 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
-            bio: data.bio || 'Professional livestock farmer',
-            location: data.location || 'Philippines',
-            phoneNumber: data.phone,
-            phone: data.phone,
-            joinDate: new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-            birthday: data.birthday || '',
-            rating: parseFloat(result.average_rating) || 0,
-            totalReviews: result.total_raters || 0,
-            followers: 0,
-            following: 0,
-            user_type: data.user_type || 'both',
-            isVerified: data.isVerified,
-          };
-
-          // Transform posts with proper image URLs and comments
-          const transformedPosts = (data.animal_feeds || []).map(feed => {
-            // Transform comments with nested replies
-            const transformedComments = (feed.comments || []).map((comment) => {
-              const commentUserId = comment.user?.id || comment.user_id;
-              const commentUserName = currentUserId && commentUserId === currentUserId
-                ? 'You'
-                : `${comment.user?.FirstName || 'Unknown'} ${comment.user?.LastName || 'User'}`;
-              
-              return {
-                id: comment.id,
-                user: {
-                  name: commentUserName,
-                  avatar: comment.user?.profile_picture 
-                    ? `${apiBaseUrl.replace('/api', '')}/uploads/profile/${comment.user.profile_picture}`
-                    : `https://ui-avatars.com/api/?name=${comment.user?.FirstName || 'U'}+${comment.user?.LastName || 'U'}&background=10b981&color=fff`,
-                },
-                text: comment.comment,
-                timestamp: formatTimestamp(comment.created_at || new Date()),
-                likes: 0,
-                replies: (comment.replies || []).map((reply) => {
-                  const replyUserId = reply.user?.id || reply.user_id;
-                  const replyUserName = currentUserId && replyUserId === currentUserId
-                    ? 'You'
-                    : `${reply.user?.FirstName || 'Unknown'} ${reply.user?.LastName || 'User'}`;
-                  
-                  return {
-                    id: reply.id,
-                    user: {
-                      name: replyUserName,
-                      avatar: reply.user?.profile_picture
-                        ? `${apiBaseUrl.replace('/api', '')}/uploads/profile/${reply.user.profile_picture}`
-                        : `https://ui-avatars.com/api/?name=${reply.user?.FirstName || 'U'}+${reply.user?.LastName || 'U'}&background=f59e0b&color=fff`,
-                    },
-                    text: reply.reply,
-                    timestamp: formatTimestamp(reply.created_at || new Date()),
-                    likes: 0,
-                  };
-                }),
-              };
-            });
-
-            // Check if user has liked/bookmarked this post
-            const isLiked = Array.isArray(feed.likes)
-              ? feed.likes.some(like => like.user_id === currentUserId)
-              : false;
-            const isBookmarked = Array.isArray(feed.bookmarks)
-              ? feed.bookmarks.some(bookmark => bookmark.user_id === currentUserId)
-              : false;
-
-            return {
-              id: feed.id,
-              content: feed.description,
-              // FIX: Proper image URL construction
-              images: (feed.images || []).map(img => {
-                const imagePath = img.image_path || img;
-                if (imagePath.startsWith('http')) {
-                  return imagePath;
-                }
-                return `${apiBaseUrl.replace('/api', '')}/uploads/news_feed/${imagePath}`;
-              }),
-              likes: feed.count_likes || (Array.isArray(feed.likes) ? feed.likes.length : 0),
-              comments: transformedComments.length,
-              bookmarks: feed.count_bookmarks || (Array.isArray(feed.bookmarks) ? feed.bookmarks.length : 0),
-              timestamp: formatTimestamp(feed.created_at),
-              isLiked,
-              isBookmarked,
-              animalInfo: {
-                title: feed.title,
-                type: feed.animal_type?.name || feed.type,
-                age: feed.age ? `${feed.age} years old` : 'Age not specified',
-                sex: feed.sex || 'N/A',
-                price: feed.price === "0" || feed.price === 0
-                  ? "Free"
-                  : `₱${parseFloat(feed.price || 0).toLocaleString("en-PH", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}`,
-                availability: feed.status === 'available' ? 'available' : 'sold',
-                description: feed.description
-              },
-              user: {
-                name: transformedProfile.name,
-                avatar: transformedProfile.avatar,
-                isVerified: transformedProfile.isVerified,
-                username: transformedProfile.username,
-                location: transformedProfile.location
-              }
-            };
-          });
-
-          setProfileData(transformedProfile);
-          setPostsList(transformedPosts);
-
-          // Initialize comments for all posts
-          const initialComments = {};
-          transformedPosts.forEach((post) => {
-            const originalFeed = data.animal_feeds.find(f => f.id === post.id);
-            if (originalFeed && originalFeed.comments) {
-              initialComments[post.id] = (originalFeed.comments || []).map((comment) => {
-                const commentUserId = comment.user?.id || comment.user_id;
-                const commentUserName = currentUserId && commentUserId === currentUserId
-                  ? 'You'
-                  : `${comment.user?.FirstName || 'Unknown'} ${comment.user?.LastName || 'User'}`;
-                
-                return {
-                  id: comment.id,
-                  user: {
-                    name: commentUserName,
-                    avatar: comment.user?.profile_picture 
-                      ? `${apiBaseUrl.replace('/api', '')}/uploads/profile/${comment.user.profile_picture}`
-                      : `https://ui-avatars.com/api/?name=${comment.user?.FirstName || 'U'}+${comment.user?.LastName || 'U'}&background=10b981&color=fff`,
-                  },
-                  text: comment.comment,
-                  timestamp: formatTimestamp(comment.created_at || new Date()),
-                  likes: 0,
-                  replies: (comment.replies || []).map((reply) => {
-                    const replyUserId = reply.user?.id || reply.user_id;
-                    const replyUserName = currentUserId && replyUserId === currentUserId
-                      ? 'You'
-                      : `${reply.user?.FirstName || 'Unknown'} ${reply.user?.LastName || 'User'}`;
-                    
-                    return {
-                      id: reply.id,
-                      user: {
-                        name: replyUserName,
-                        avatar: reply.user?.profile_picture
-                          ? `${apiBaseUrl.replace('/api', '')}/uploads/profile/${reply.user.profile_picture}`
-                          : `https://ui-avatars.com/api/?name=${reply.user?.FirstName || 'U'}+${reply.user?.LastName || 'U'}&background=f59e0b&color=fff`,
-                      },
-                      text: reply.reply,
-                      timestamp: formatTimestamp(reply.created_at || new Date()),
-                      likes: 0,
-                    };
-                  }),
-                };
-              });
-            }
-          });
-          setPostComments(initialComments);
-
-          // Set liked/bookmarked posts
-          const liked = new Set();
-          const bookmarked = new Set();
-          transformedPosts.forEach(post => {
-            if (post.isLiked) liked.add(post.id);
-            if (post.isBookmarked) bookmarked.add(post.id);
-          });
-          setLikedPosts(liked);
-          setBookmarkedPosts(bookmarked);
-          
-          setError(null);
-        } else {
-          throw new Error(result.message || 'Failed to load profile');
-        }
-      } catch (err) {
-        console.error('Profile fetch error:', err);
-        setError(err.message);
-        // Fallback to default data
-        setProfileData(user || DEFAULT_USER);
-        setPostsList(userPosts.length > 0 ? userPosts : SAMPLE_POSTS);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [userId, apiBaseUrl]);
+  
 
 // ADD THIS useEffect near the top with other useState (around line 1100)
-  useEffect(() => {
-    if (post) {
-      setIsLiked(post.isLiked || false);
-      setIsBookmarked(post.isBookmarked || false);
-      setLikes(post.likes || 0);
-      setBookmarks(post.bookmarks || 0);
-    }
-  }, [post]);
-
+// Sync modal state with parent post state
+useEffect(() => {
+  if (post) {
+    setIsLiked(post.isLiked || false);
+    setIsBookmarked(post.isBookmarked || false);
+    setLikes(post.likes || 0);
+    setBookmarks(post.bookmarks || 0);
+  }
+}, [post?.id, post?.isLiked, post?.isBookmarked, post?.likes, post?.bookmarks]);
 
 const handleLike = async () => {
-    try {
-      const userId = getCurrentUserId();
-      if (!userId) {
-        alert('Please log in to like posts');
-        return;
-      }
-
-      // Optimistic update
-      const newIsLiked = !isLiked;
-      const newLikes = newIsLiked ? likes + 1 : likes - 1;
-      
-      setIsLiked(newIsLiked);
-      setLikes(newLikes);
-
-      // API call
-      const response = await apiPost(
-        'news-feed/unlike-or-like',
-        {
-          feed_id: post.id,
-          user_id: userId
-        },
-        true
-      );
-
-      if (response.status !== 'success') {
-        // Revert on failure
-        setIsLiked(!newIsLiked);
-        setLikes(newIsLiked ? newLikes - 1 : newLikes + 1);
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      // Revert on error
-      setIsLiked(!isLiked);
-      setLikes(isLiked ? likes + 1 : likes - 1);
+    if (onLike) {
+      // Call parent handler which updates everything
+      await onLike(post.id);
     }
   };
-
   // Handle Bookmark
- const handleBookmark = async () => {
-    try {
-      const userId = getCurrentUserId();
-      if (!userId) {
-        alert('Please log in to bookmark posts');
-        return;
-      }
-
-      // Optimistic update
-      const newIsBookmarked = !isBookmarked;
-      const newBookmarks = newIsBookmarked ? bookmarks + 1 : bookmarks - 1;
-      
-      setIsBookmarked(newIsBookmarked);
-      setBookmarks(newBookmarks);
-
-      // API call
-      const response = await apiPost(
-        'news-feed/unbookmark-or-bookmark',
-        {
-          feed_id: post.id,
-          user_id: userId
-        },
-        true
-      );
-
-      if (response.status !== 'success') {
-        // Revert on failure
-        setIsBookmarked(!newIsBookmarked);
-        setBookmarks(newIsBookmarked ? newBookmarks - 1 : newBookmarks + 1);
-      }
-    } catch (error) {
-      console.error('Error toggling bookmark:', error);
-      // Revert on error
-      setIsBookmarked(!isBookmarked);
-      setBookmarks(isBookmarked ? bookmarks + 1 : bookmarks - 1);
+const handleBookmark = async () => {
+    if (onBookmark) {
+      // Call parent handler which updates everything
+      await onBookmark(post.id);
     }
   };
 // Handle Like Comment
@@ -2168,36 +1926,41 @@ export default function UserViewProfile({
   const [selectedPost, setSelectedPost] = useState(null);
   const [postComments, setPostComments] = useState({});
 
-  // ✅ DECLARE posts BEFORE using it in useEffect
-  const posts = user?.posts?.length > 0 
-    ? user.posts 
-    : userPosts.length > 0 
-    ? userPosts 
-    : SAMPLE_POSTS;
+ // ✅ State for posts list
+  const [postsList, setPostsList] = useState([]);
 
-  // ✅ NOW useEffect hooks can use 'posts' safely
+  // ✅ Initialize posts from props
   useEffect(() => {
+    const initialPosts = user?.posts?.length > 0 
+      ? user.posts 
+      : userPosts.length > 0 
+      ? userPosts 
+      : SAMPLE_POSTS;
+    
+    setPostsList(initialPosts);
+    
+    // Initialize liked/bookmarked sets
     const liked = new Set();
     const bookmarked = new Set();
     
-    posts.forEach(post => {
+    initialPosts.forEach(post => {
       if (post.isLiked) liked.add(post.id);
       if (post.isBookmarked) bookmarked.add(post.id);
     });
     
     setLikedPosts(liked);
     setBookmarkedPosts(bookmarked);
-  }, [posts]);
+  }, [user?.posts, userPosts]);
 
-  useEffect(() => {
+ useEffect(() => {
     const initialComments = {};
-    posts.forEach((post) => {
+    postsList.forEach((post) => {
       if (post.comments && Array.isArray(post.comments)) {
         initialComments[post.id] = post.comments;
       }
     });
     setPostComments(initialComments);
-  }, [posts]);
+  }, [postsList]);
 
   // ✅ Helper function
   const getCurrentUserId = () => {
@@ -2219,7 +1982,7 @@ export default function UserViewProfile({
     setSelectedPostToShare(post);
     setShowShareModal(true);
   };
-  const toggleLike = async (postId) => {
+ const toggleLike = async (postId) => {
     try {
       const userId = getCurrentUserId();
       if (!userId) {
@@ -2227,10 +1990,27 @@ export default function UserViewProfile({
         return;
       }
 
-      // Optimistic update
-      const newLiked = new Set(likedPosts);
-      const wasLiked = newLiked.has(postId);
+      // Find the post
+      const post = postsList.find(p => p.id === postId);
+      if (!post) return;
+
+      // Use post.isLiked instead of likedPosts Set
+      const wasLiked = post.isLiked;
       
+      // Update posts list immediately
+      const updatedPosts = postsList.map(p => 
+        p.id === postId 
+          ? { 
+              ...p, 
+              isLiked: !wasLiked, 
+              likes: wasLiked ? p.likes - 1 : p.likes + 1 
+            }
+          : p
+      );
+      setPostsList(updatedPosts);
+
+      // Update likedPosts Set for tracking
+      const newLiked = new Set(likedPosts);
       if (wasLiked) {
         newLiked.delete(postId);
       } else {
@@ -2249,16 +2029,36 @@ export default function UserViewProfile({
       );
 
       if (response.status !== 'success') {
-        // Revert on failure
+        // Revert on failure - restore original state
+        const revertedPosts = postsList.map(p => 
+          p.id === postId 
+            ? { 
+                ...p, 
+                isLiked: wasLiked, 
+                likes: post.likes 
+              }
+            : p
+        );
+        setPostsList(revertedPosts);
         setLikedPosts(likedPosts);
       }
     } catch (error) {
       console.error('Error toggling like:', error);
-      // Revert on error
-      setLikedPosts(likedPosts);
+      // Revert on error - find original post again
+      const originalPost = postsList.find(p => p.id === postId);
+      if (originalPost) {
+        const revertedPosts = postsList.map(p => 
+          p.id === postId 
+            ? originalPost
+            : p
+        );
+        setPostsList(revertedPosts);
+        setLikedPosts(likedPosts);
+      }
     }
   };
 
+  
   const toggleBookmark = async (postId) => {
     try {
       const userId = getCurrentUserId();
@@ -2267,10 +2067,27 @@ export default function UserViewProfile({
         return;
       }
 
-      // Optimistic update
-      const newBookmarked = new Set(bookmarkedPosts);
-      const wasBookmarked = newBookmarked.has(postId);
+      // Find the post
+      const post = postsList.find(p => p.id === postId);
+      if (!post) return;
+
+      // Use post.isBookmarked instead of bookmarkedPosts Set
+      const wasBookmarked = post.isBookmarked;
       
+      // Update posts list immediately
+      const updatedPosts = postsList.map(p => 
+        p.id === postId 
+          ? { 
+              ...p, 
+              isBookmarked: !wasBookmarked, 
+              bookmarks: wasBookmarked ? p.bookmarks - 1 : p.bookmarks + 1 
+            }
+          : p
+      );
+      setPostsList(updatedPosts);
+
+      // Update bookmarkedPosts Set for tracking
+      const newBookmarked = new Set(bookmarkedPosts);
       if (wasBookmarked) {
         newBookmarked.delete(postId);
       } else {
@@ -2289,13 +2106,32 @@ export default function UserViewProfile({
       );
 
       if (response.status !== 'success') {
-        // Revert on failure
+        // Revert on failure - restore original state
+        const revertedPosts = postsList.map(p => 
+          p.id === postId 
+            ? { 
+                ...p, 
+                isBookmarked: wasBookmarked, 
+                bookmarks: post.bookmarks 
+              }
+            : p
+        );
+        setPostsList(revertedPosts);
         setBookmarkedPosts(bookmarkedPosts);
       }
     } catch (error) {
       console.error('Error toggling bookmark:', error);
       // Revert on error
-      setBookmarkedPosts(bookmarkedPosts);
+      const originalPost = postsList.find(p => p.id === postId);
+      if (originalPost) {
+        const revertedPosts = postsList.map(p => 
+          p.id === postId 
+            ? originalPost
+            : p
+        );
+        setPostsList(revertedPosts);
+        setBookmarkedPosts(bookmarkedPosts);
+      }
     }
   };
 
@@ -2459,14 +2295,14 @@ export default function UserViewProfile({
 
           <div className="p-6">
             {activeTab === "posts" && (
-              <div
+             <div
                 className={
                   viewMode === "grid"
                     ? "grid grid-cols-2 md:grid-cols-3 gap-4"
                     : "space-y-4"
                 }
               >
-                {posts.map((post) => (
+                {postsList.map((post) => (
                   <div key={post.id}>
                     {viewMode === "grid" ? (
                       <PostGridItem
@@ -2565,16 +2401,17 @@ export default function UserViewProfile({
         )}
 {selectedPost && (
   <PostModal
-    post={selectedPost}
+    post={postsList.find(p => p.id === selectedPost.id) || selectedPost}
     user={currentUser}
     darkMode={darkMode}
     onClose={() => setSelectedPost(null)}
     onShare={handleShareClick}
-    postComments={postComments}        // ✅ ADD
-    setPostComments={setPostComments}  // ✅ ADD
+    postComments={postComments}
+    setPostComments={setPostComments}
+    onLike={toggleLike}
+    onBookmark={toggleBookmark}
   />
 )}
-
         {showShareModal && selectedPostToShare && (
       <ShareModal
         isOpen={showShareModal}
