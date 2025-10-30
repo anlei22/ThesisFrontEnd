@@ -115,23 +115,70 @@ export default function RegistrationForm() {
     return true;
   };
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setIsLoading(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    console.log('Registration Data:', formData);
-    setIsLoading(false);
-    
-    setShowModal({
-      show: true,
-      type: 'success',
-      message: 'Registration submitted successfully! You will be notified once your account is verified.'
-    });
-  };
+    try {
+        // Create FormData object for file uploads
+        const formDataToSend = new FormData();
+        
+        // Map frontend fields to backend field names
+        formDataToSend.append('FirstName', formData.firstName);
+        formDataToSend.append('LastName', formData.surname);
+        formDataToSend.append('middlename', formData.middleName);
+        formDataToSend.append('phone_number', formData.phone);
+        formDataToSend.append('address', formData.address);
+        formDataToSend.append('birthdate', formData.birthday);
+        formDataToSend.append('age', formData.age);
+        formDataToSend.append('sex', formData.sex);
+        formDataToSend.append('user_type', formData.role);
+        formDataToSend.append('Email', formData.email);
+        formDataToSend.append('Password', formData.password);
+        formDataToSend.append('Password_confirmation', formData.confirmPassword);
+        formDataToSend.append('valid_id_picture', formData.idPhoto);
+        formDataToSend.append('selfie_with_id_picture', formData.selfiePhoto);
+        
+        // You need to get verification code from SMS authentication first
+        formDataToSend.append('code', '123456'); // Replace with actual code
+        
+        // Add reCAPTCHA token if you have it
+        // formDataToSend.append('g-recaptcha-response', recaptchaToken);
+
+        // Make actual API call
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            body: formDataToSend,
+            // Don't set Content-Type header - browser will set it automatically for FormData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            setShowModal({
+                show: true,
+                type: 'success',
+                message: 'Registration submitted successfully! Please check your email for verification.'
+            });
+        } else {
+            setShowModal({
+                show: true,
+                type: 'error',
+                message: data.error || 'Registration failed. Please try again.'
+            });
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        setShowModal({
+            show: true,
+            type: 'error',
+            message: 'An error occurred. Please try again.'
+        });
+    } finally {
+        setIsLoading(false);
+    }
+};
 
   const closeModal = () => {
     setShowModal({ show: false, type: '', message: '' });
