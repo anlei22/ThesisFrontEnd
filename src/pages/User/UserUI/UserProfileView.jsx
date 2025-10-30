@@ -2385,16 +2385,7 @@ export default function UserViewProfile({
 
               {/* Action Buttons */}
               <div className="flex justify-center md:justify-end gap-2 mt-4 md:mt-0">
-                <button
-                  onClick={() => setShowQRCode(true)}
-                  className={`px-4 py-2 rounded-lg font-medium transition ${
-                    darkMode
-                      ? "bg-gray-700 text-white hover:bg-gray-600"
-                      : "bg-gray-100 text-gray-900 hover:bg-gray-200"
-                  }`}
-                >
-                  <QrCode className="w-4 h-4" />
-                </button>
+         
                 <button
                   onClick={async () => {
                     if (typeof onMessage === "function") {

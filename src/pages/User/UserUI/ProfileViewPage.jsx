@@ -93,19 +93,23 @@ const ProfileCardPreview = ({ user, darkMode, onViewFullProfile }) => {
         <p className={`text-sm mb-2 ${scheme.muted}`}>{user.username}</p>
 
         {/* User Type Badge */}
-        {user.user_type && (
+        {(user.accountType || user.user_type) && (
           <div className="flex justify-center mb-3">
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                getUserTypeBadge(user.user_type, darkMode).className
+                getUserTypeBadge(user.accountType || user.user_type, darkMode).className
               }`}
             >
-              {getUserTypeBadge(user.user_type, darkMode).label}
+              {getUserTypeBadge(user.accountType || user.user_type, darkMode).label}
             </span>
           </div>
         )}
 
- 
+        {/* Bio */}
+        {user.bio && (
+          <p className={`text-sm mb-4 ${scheme.muted}`}>{user.bio}</p>
+        )}
+
         {/* Location */}
         {user.location && (
           <div className={`flex items-center justify-center space-x-1 mb-4 ${scheme.muted}`}>
@@ -125,26 +129,6 @@ const ProfileCardPreview = ({ user, darkMode, onViewFullProfile }) => {
             <span className={`text-sm font-medium ${scheme.text}`}>
               {user.rating.toFixed(1)} ({user.totalReviews || 0} reviews)
             </span>
-          </div>
-        )}
-
-        {/* Specialties */}
-        {user.specialties && user.specialties.length > 0 && (
-          <div className="mb-6">
-            <div className="flex flex-wrap gap-2 justify-center">
-              {user.specialties.map((specialty, index) => (
-                <span
-                  key={index}
-                  className={`px-3 py-1 rounded-full text-xs ${
-                    darkMode
-                      ? 'bg-green-900 text-green-200'
-                      : 'bg-green-100 text-green-800'
-                  }`}
-                >
-                  {specialty}
-                </span>
-              ))}
-            </div>
           </div>
         )}
 
@@ -171,9 +155,22 @@ const ProfileViewPage = ({ darkMode = false }) => {
   const getUsernameFromPath = () => {
     const path = window.location.pathname;
     const parts = path.split('/');
-    const usernameIndex = parts.indexOf('profile') + 1;
-    return parts[usernameIndex] || null;
+    
+    // Check if it's /view/:username or /profile/:username
+    const viewIndex = parts.indexOf('view');
+    const profileIndex = parts.indexOf('profile');
+    
+    if (viewIndex !== -1) {
+      return parts[viewIndex + 1] || null;
+    } else if (profileIndex !== -1) {
+      return parts[profileIndex + 1] || null;
+    }
+    
+    return null;
   };
+
+  // Check if we're on the preview route (QR code view)
+  const isPreviewMode = window.location.pathname.includes('/view/');
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -189,50 +186,52 @@ const ProfileViewPage = ({ darkMode = false }) => {
         setLoading(true);
         setError(null);
 
-        // Try to fetch from API
-        const apiUrl = `/api/users/profile/${username}`;
+        const cleanUsername = username.replace('@', '');
+        const apiUrl = `http://localhost:8000/api/profile/get-by-username/${cleanUsername}`;
         
-        try {
-          const response = await fetch(apiUrl);
-          
-          if (response.ok) {
-            const data = await response.json();
-            setUser(data);
-            setLoading(false);
-            return;
-          }
-        } catch (apiError) {
-          console.log('API not available, using fallback data');
+        console.log('Fetching from:', apiUrl);
+        
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`Profile not found (${response.status})`);
         }
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Invalid response from server');
+        }
+        
+        const result = await response.json();
 
-        // Fallback: Create user data from username
-        // This allows the preview to work even without API
-        const displayName = username
-          .replace('@', '')
-          .replace(/-/g, ' ')
-          .replace(/_/g, ' ')
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
+        if (result.status === 'success') {
+          const data = result.data;
 
-        setUser({
-          id: username,
-          name: displayName,
-          username: `@${username.replace('@', '')}`,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=400&background=10b981&color=fff`,
-          coverPhoto: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
-          bio: 'AgriConnect User - View full profile for more details.',
-          location: '', // Will be empty in fallback, API should provide real location
-          rating: 0,
-          totalReviews: 0,
-          isVerified: false,
-          user_type: 'seller',
-          specialties: []
-        });
+          const transformedUser = {
+            id: data.id,
+            name: data.name,
+            username: `@${data.username}`,
+            email: data.email,
+            avatar: data.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
+            coverPhoto: data.coverPhoto || 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
+            bio: data.bio || 'AgriConnect User',
+            location: data.location || 'Philippines',
+            rating: parseFloat(result.average_rating) || 0,
+            totalReviews: result.total_raters || 0,
+            isVerified: data.isVerified || false,
+            accountType: data.user_type || 'seller',
+            user_type: data.user_type || 'seller'
+          };
+
+          setUser(transformedUser);
+          setError(null);
+        } else {
+          throw new Error(result.message || 'Failed to load profile');
+        }
 
         setLoading(false);
       } catch (err) {
-        console.error('Error in profile view:', err);
+        console.error('Error fetching profile:', err);
         setError(err.message);
         setLoading(false);
       }
@@ -241,18 +240,15 @@ const ProfileViewPage = ({ darkMode = false }) => {
     fetchUserProfile();
   }, []);
 
-const handleViewFullProfile = () => {
-  const username = getUsernameFromPath();
-  window.location.href = `/`;
-};
-
+  const handleViewFullProfile = () => {
+    // Force full page reload to main page
+    window.location.href = window.location.origin + '/';
+  };
 
   const handleGoBack = () => {
-    // Check if there's history to go back to
     if (window.history.length > 1) {
       window.history.back();
     } else {
-      // If no history, go to home page
       window.location.href = '/';
     }
   };
@@ -272,7 +268,7 @@ const handleViewFullProfile = () => {
     );
   }
 
-  // Error State (only show if NO user data at all)
+  // Error State
   if (error && !user) {
     return (
       <div className={`min-h-screen ${bgColor} flex items-center justify-center p-4`}>
@@ -298,24 +294,19 @@ const handleViewFullProfile = () => {
   return (
     <div className={`min-h-screen ${bgColor} flex items-center justify-center p-4`}>
       <div className="w-full max-w-md">
-        {/* Back Button */}
-        
-
         {/* Profile Card */}
         <ProfileCardPreview
           user={user}
           darkMode={darkMode}
-          onViewFullProfile={handleViewFullProfile}
+          onViewProfile={handleViewFullProfile}
         />
 
-
-
-        {/* Info Notice if using fallback data */}
-        {error && (
+        {/* Info message for preview mode */}
+        {isPreviewMode && (
           <div className={`mt-4 p-3 rounded-lg text-center text-xs ${
-            darkMode ? 'bg-yellow-900 bg-opacity-20 text-yellow-300' : 'bg-yellow-50 text-yellow-700'
+            darkMode ? 'bg-green-900 bg-opacity-20 text-green-300' : 'bg-green-50 text-green-700'
           }`}>
-            ℹ️ Showing preview. Login to see complete profile details.
+            📱 Scanned from QR Code - Click "View Full Profile" to explore more
           </div>
         )}
       </div>

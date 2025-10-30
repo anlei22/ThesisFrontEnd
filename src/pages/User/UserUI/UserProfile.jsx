@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, ShieldCheck, MoreHorizontal, Send, X, Camera, UserPlus, ChevronLeft, ChevronRight, Grid, List, Flag, MoreVertical, Edit, Trash2  } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { ShareIcon } from '@heroicons/react/24/outline';
-// Constants
+import { QRCodeCanvas } from "qrcode.react";
 
 const getCurrentUserId = () => {
   let userId = localStorage.getItem('user_id');
@@ -27,6 +27,121 @@ const COLORS = {
   light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', muted: 'text-gray-600', border: 'border-gray-200' }
 };
 
+const ShareModal = ({ isOpen, onClose, darkMode, postId, title = "Profile" }) => {
+  const [shareUrl, setShareUrl] = useState("");
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && postId) {
+      const appUrl = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/+$/, '');
+      setShareUrl(`${appUrl}/profile/${postId}`);  // This will now use the username!
+    }
+  }, [postId]);
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Link copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className={`rounded-lg p-6 w-full max-w-md mx-auto ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>
+            Share Profile
+          </h2>
+          <button
+            onClick={onClose}
+            className={`p-2 rounded-full transition-colors duration-200 ${
+              darkMode ? "text-gray-400 hover:bg-gray-700" : "text-gray-500 hover:bg-gray-100"
+            }`}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* QR CODE SECTION */}
+        {shareUrl && (
+          <div className="text-center mb-6">
+            <div
+              className={`inline-block p-4 rounded-lg ${
+                darkMode ? "bg-gray-700" : "bg-gray-50"
+              }`}
+            >
+              <QRCodeCanvas
+                value={shareUrl}
+                size={200}
+                bgColor={darkMode ? "#1f2937" : "#ffffff"}
+                fgColor={darkMode ? "#10b981" : "#059669"}
+                level="H"
+                includeMargin={true}
+              />
+            </div>
+            <p
+              className={`text-sm mt-2 ${darkMode ? "text-gray-400" : "text-gray-600"}`}
+            >
+              Scan QR code to view this profile
+            </p>
+          </div>
+        )}
+
+        <div className="mb-6">
+          <label className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+            Share Link
+          </label>
+          <div className="flex">
+            <input
+              type="text"
+              value={shareUrl}
+              readOnly
+              className={`flex-1 px-3 py-2 text-sm rounded-l-lg border focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                darkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-gray-50 border-gray-300 text-gray-900"
+              }`}
+            />
+            <button
+              onClick={copyToClipboard}
+              className={`px-3 py-2 rounded-r-lg border border-l-0 transition-colors duration-200 ${
+                darkMode ? "bg-green-600 hover:bg-green-700 border-green-600 text-white" : "bg-green-500 hover:bg-green-600 border-green-500 text-white"
+              }`}
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <div className="flex space-x-2">
+          <button
+            onClick={() => window.open(
+              `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+              "_blank"
+            )}
+            className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+              darkMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"
+            }`}
+          >
+            Facebook
+          </button>
+          <button
+            onClick={() => window.open(
+              `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`,
+              "_blank"
+            )}
+            className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+              darkMode ? "bg-sky-600 hover:bg-sky-700 text-white" : "bg-sky-500 hover:bg-sky-600 text-white"
+            }`}
+          >
+            Twitter
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SuccessModal = ({ message, darkMode, onClose }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
@@ -508,15 +623,15 @@ const PostListItem = ({ post, user, darkMode, likedPosts, bookmarkedPosts, onLik
   return (
     <div className={`rounded-lg border overflow-hidden relative ${scheme.card} ${scheme.border}`}>
       {/* Diagonal Ribbon */}
-      {post.animalInfo && (
-        <div className="absolute top-0 right-0 w-32 h-35 overflow-hidden z-10">
-          <div className={`absolute top-4 right-[-32px] w-40 h-8 transform rotate-45 text-center text-white text-xs font-bold leading-8 shadow-lg ${
-            post.animalInfo.availability === 'available' ? 'bg-green-500' : 'bg-red-500'
-          }`}>
-            {post.animalInfo.availability === 'available' ? 'AVAILABLE' : 'SOLD OUT'}
-          </div>
-        </div>
-      )}
+    {post.animalInfo && (
+  <div className="absolute top-0 right-0 w-32 h-35 overflow-hidden z-10">
+    <div className={`absolute top-4 right-[-32px] w-40 h-8 transform rotate-45 text-center text-white text-xs font-bold leading-8 shadow-lg ${
+      post.animalInfo.availability === 'available' ? 'bg-green-500' : 'bg-red-500'
+    }`}>
+      {post.animalInfo.availability === 'available' ? 'AVAILABLE' : 'SOLD OUT'}
+    </div>
+  </div>
+)}
 
       {/* Post Header */}
       <div className="p-6 pb-4">
@@ -651,15 +766,15 @@ const ReviewItem = ({ review, darkMode }) => {
 // Edit Post Modal - CLEAN VERSION WITH IMAGE EDITING
 const EditPostModal = ({ post, darkMode, onClose, onSave }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
-  const [formData, setFormData] = useState({
-    title: post.animalInfo.title || '',
-    type: post.animalInfo.type || '',
-    age: post.animalInfo.age || '',
-    sex: post.animalInfo.sex || '',
-    price: post.animalInfo.price || '',
-    availability: post.animalInfo.availability || 'available',
-    description: post.animalInfo.description || ''
-  });
+const [formData, setFormData] = useState({
+  title: post.animalInfo.title || '',
+  type: post.animalInfo.type || '',
+  age: post.animalInfo.age || '',
+  sex: post.animalInfo.sex || '',
+  price: post.animalInfo.price || '',
+  availability: post.animalInfo.availability === 'sold' ? 'soldout' : post.animalInfo.availability || 'available',
+  description: post.animalInfo.description || ''
+});
 
   const [images, setImages] = useState(post.images || []);
   const [previews, setPreviews] = useState(post.images || []);
@@ -846,15 +961,17 @@ const EditPostModal = ({ post, darkMode, onClose, onSave }) => {
                 </div>
                 <div>
                   <label className={`block text-sm font-semibold mb-2 ${scheme.text}`}>Status</label>
-                  <select
-                    name="availability"
-                    value={formData.availability}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-2.5 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-green-500`}
-                  >
-                    <option value="available">Available</option>
-                    <option value="sold">Sold</option>
-                  </select>
+             <select
+  name="availability"
+  value={formData.availability}
+  onChange={handleInputChange}
+  className={`w-full px-4 py-2.5 rounded-lg border ...`}
+>
+  <option value="available">Available</option>
+  <option value="soldout">Sold Out</option>
+  <option value="out_of_stock">Out of Stock</option>
+  <option value="discontinued">Discontinued</option>
+</select>
                 </div>
               </div>
 
@@ -1717,7 +1834,7 @@ const [postsList, setPostsList] = useState([]);        // CHANGE THIS
   const [activeTab, setActiveTab] = useState('posts');
 const [selectedPost, setSelectedPost] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-
+const [showShareModal, setShowShareModal] = useState(false);
 const [loading, setLoading] = useState(true);  // ADD THIS
 const [error, setError] = useState(null);      // ADD THIS
 // FETCH PROFILE DATA FROM API
@@ -1880,15 +1997,113 @@ const handleSaveProfile = async (updatedData) => {
     setSelectedPost(null);
   };
 
-const handleSavePost = (updatedPostData) => {
-  setPostsList(postsList.map(p => 
-    p.id === editingPost.id 
-      ? { ...p, ...updatedPostData, animalInfo: { ...p.animalInfo, ...updatedPostData } }
-      : p
-  ));
-  setSuccessMessage('Post updated successfully!');
-  setShowEditPost(false);
+const handleSavePost = async (updatedPostData) => {
+  try {
+    const userId = getCurrentUserId();
+    
+    if (!userId) {
+      alert('User ID not found. Please log in again.');
+      return;
+    }
+
+    // Prepare form data for API
+    const requestData = {
+      feed_id: editingPost.id,
+      user_id: userId,
+      title: updatedPostData.title,
+      description: updatedPostData.description,
+      animalType: updatedPostData.type,
+      breed: updatedPostData.breed || '',
+      age: updatedPostData.age,
+      sex: updatedPostData.sex,
+      price: updatedPostData.price.replace(/[₱,]/g, '').trim(), // Remove currency symbol
+    status: updatedPostData.availability === 'sold' ? 'soldout' : updatedPostData.availability,
+      images: updatedPostData.images // Array of base64 or URLs
+    };
+
+    console.log('Updating post:', requestData);
+
+    const response = await fetch(`${apiBaseUrl}/news-feed/update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify(requestData)
+    });
+
+    const result = await response.json();
+    console.log('Update post response:', result);
+
+    if (result.status === 'success') {
+      // Update local state
+      setPostsList(postsList.map(p => 
+        p.id === editingPost.id 
+          ? { 
+              ...p, 
+              ...updatedPostData, 
+              animalInfo: { ...p.animalInfo, ...updatedPostData },
+              images: updatedPostData.images
+            }
+          : p
+      ));
+      setSuccessMessage('Post updated successfully!');
+      setShowEditPost(false);
+      
+      // Reload profile to get fresh data
+      setTimeout(() => window.location.reload(), 1500);
+    } else {
+      alert(result.message || 'Failed to update post');
+    }
+  } catch (error) {
+    console.error('Error updating post:', error);
+    alert('Failed to update post. Please try again.');
+  }
 };
+
+// REPLACE handleDeletePost with this:
+const handleDeletePost = async (postId) => {
+  try {
+    const userId = getCurrentUserId();
+    
+    if (!userId) {
+      alert('User ID not found. Please log in again.');
+      return;
+    }
+
+    console.log('Deleting post:', postId);
+
+    const response = await fetch(`${apiBaseUrl}/news-feed/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        feed_id: postId,
+        user_id: userId
+      })
+    });
+
+    const result = await response.json();
+    console.log('Delete post response:', result);
+
+    if (result.status === 'success') {
+      // Remove from local state
+      setPostsList(postsList.filter(p => p.id !== postId));
+      setSuccessMessage('Post deleted successfully!');
+      
+      // Reload after a short delay
+      setTimeout(() => window.location.reload(), 1500);
+    } else {
+      alert(result.message || 'Failed to delete post');
+    }
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    alert('Failed to delete post. Please try again.');
+  }
+};
+
 const handleLike = async (postId) => {
   try {
     let userId = localStorage.getItem('user_id');
@@ -2016,11 +2231,6 @@ const handleBookmark = async (postId) => {
     window.location.reload();
   }
 };
-  const handleDeletePost = (postId) => {
-    setPostsList(postsList.filter(p => p.id !== postId));
-    setSuccessMessage('Post deleted successfully!');
-  };
-
 
   const toggleLike = (postId) => {
     const newLiked = new Set(likedPosts);
@@ -2100,9 +2310,19 @@ const handleBookmark = async (postId) => {
     <p className={`text-base ${scheme.muted}`}>{profileData.username}</p>
   </div>
   <div className="flex justify-center md:justify-end gap-2 mt-4 md:mt-0">
-    <button onClick={() => setShowQRCode(true)} className={`px-4 py-2 rounded-lg font-medium transition ${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}>
-      <QrCode className="w-4 h-4" />
-    </button>
+   <button
+  onClick={() => setShowShareModal(true)}
+  className={`px-4 py-2 rounded-lg font-medium transition ${
+    darkMode
+      ? "bg-gray-700 text-white hover:bg-gray-600"
+      : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+  }`}
+>
+  <QrCode className="w-4 h-4" />
+</button>
+
+
+
     <button onClick={() => setShowEditProfile(true)} className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
       <Edit className="w-4 h-4" />
       <span>Edit Profile</span>
@@ -2174,7 +2394,16 @@ const handleBookmark = async (postId) => {
         </div>
 
         {/* Modals */}
-         {showQRCode && <QRCodeModal user={profileData} darkMode={darkMode} onClose={() => setShowQRCode(false)} />}
+{showShareModal && profileData && (
+  <ShareModal
+    isOpen={showShareModal}
+    onClose={() => setShowShareModal(false)}
+    darkMode={darkMode}
+    postId={profileData.username}  // ✅ Use username instead
+    title={profileData.name}
+    user={profileData}  // ✅ Pass full user data
+  />
+)}
       {showEditProfile && <EditProfileModal user={profileData} darkMode={darkMode} onClose={() => setShowEditProfile(false)} onSave={handleSaveProfile} />}
       {showEditPost && editingPost && <EditPostModal post={editingPost} darkMode={darkMode} onClose={() => setShowEditPost(false)} onSave={handleSavePost} />}
       
