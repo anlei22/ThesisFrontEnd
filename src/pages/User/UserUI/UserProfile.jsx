@@ -3,7 +3,7 @@ import { Heart, MessageCircle, Share, Bookmark, QrCode, Star, MapPin, Calendar, 
 import { useAuth } from '../../../context/AuthContext';
 import { ShareIcon } from '@heroicons/react/24/outline';
 import { QRCodeCanvas } from "qrcode.react";
-
+import default_profile from "../../defaultprofile/default_profile.jpg";
 const getCurrentUserId = () => {
   let userId = localStorage.getItem('user_id');
   if (!userId) {
@@ -11,7 +11,7 @@ const getCurrentUserId = () => {
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        userId = parsedUser?.id;
+        userId = parsedUser?.id;  
         if (userId) {
           localStorage.setItem('user_id', userId.toString());
         }
@@ -175,7 +175,7 @@ const SuccessModal = ({ message, darkMode, onClose }) => {
 const DEFAULT_USER = {
   name: 'Juan Dela Cruz',
   username: '@juandelacruz',
-  avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
+  avatar: 'default_profile',
   coverPhoto: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
   bio: 'Professional livestock farmer specializing in cattle and poultry.',
   location: 'Nueva Ecija, Philippines',
@@ -1861,8 +1861,8 @@ useEffect(() => {
           name: data.name,
           username: `@${data.username}`,
           email: data.email,
-          avatar: data.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-          coverPhoto: data.coverPhoto || 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
+        avatar: data.avatar || default_profile,  // Change from Unsplash URL
+          coverPhoto: data.coverPhoto ||"",
           bio: data.bio || 'Professional livestock farmer',
           location: data.location || 'Philippines',
           phoneNumber: data.phone,
