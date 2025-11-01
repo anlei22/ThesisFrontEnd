@@ -10,7 +10,7 @@
     Loader2,
     AlertCircle
   } from "lucide-react";
-
+import default_profile from "../../defaultprofile/default_profile.jpg";
   // ===== API CONFIGURATION =====
   // TODO: Update these values with your actual backend URL and API key
   const API_BASE_URL = 'http://localhost:8000/api'; // Change to your Laravel backend URL
@@ -101,10 +101,9 @@
           status: item.status || 'Available',
           address: item.location || item.address || 'Location not specified',
           user: {
-            name: item.user?.name || item.owner_name || 'Anonymous User',
-            avatar: item.user?.avatar || item.user?.profile_picture || 
-                    'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-          },
+  name: item.user?.name || item.owner_name || 'Anonymous User',
+  avatar: item.user?.avatar || item.user?.profile_picture || default_profile,
+},
         }));
         
         console.log('✨ Transformed data ready for display:', transformedData.length, 'listings');
@@ -396,11 +395,15 @@
                   <div className="p-5">
                     {/* User Info */}
                     <div className="flex items-center space-x-3 mb-3">
-                      <img
-                        src={post.user.avatar}
-                        alt={post.user.name}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
+                   
+<img
+  src={post.user.avatar}
+  alt={post.user.name}
+  className="w-8 h-8 rounded-full object-cover"
+  onError={(e) => {
+    e.target.src = default_profile;
+  }}
+/>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-slate-900 truncate">{post.user.name}</p>
                         <p className="text-sm text-slate-500">{post.date}</p>

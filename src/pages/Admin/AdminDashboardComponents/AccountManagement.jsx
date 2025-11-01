@@ -22,6 +22,7 @@ import {
   Trash2
 } from "lucide-react";
 
+import default_profile from "../../defaultprofile/default_profile.jpg";
 const User = () => {
   const [activeTab, setActiveTab] = useState('all-users');
   const [selectedUser, setSelectedUser] = useState(null);
@@ -100,7 +101,7 @@ const User = () => {
           middleName: user.MiddleName || user.middle_name || '',
           surname: user.LastName || user.last_name || user.surname || '',
           email: user.Email || user.email || '',
-          role: user.Role || user.role || 'User',
+        role: user.user_type || 'buyer',
           joinDate: user.created_at || user.join_date || new Date().toISOString(),
           phone: user.Phone || user.phone || user.contact_number || '',
           address: user.Address || user.address || '',
@@ -108,7 +109,7 @@ const User = () => {
           age: user.Age || user.age || '',
           sex: user.Sex || user.sex || user.gender || '',
           bio: user.Bio || user.bio || user.description || '',
-          profileImage: user.ProfileImage || user.profile_image || user.profile_picture || `https://i.pravatar.cc/100?img=${user.id}`,
+  profileImage: user.ProfileImage || user.profile_image || user.profile_picture || default_profile,
           idPhoto: user.IDPhoto || user.id_photo || user.government_id || 'https://via.placeholder.com/400x250?text=ID+Photo',
           selfiePhoto: user.SelfiePhoto || user.selfie_photo || user.selfie || 'https://via.placeholder.com/400x250?text=Selfie',
           status: mappedStatus,
