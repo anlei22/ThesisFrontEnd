@@ -31,6 +31,8 @@ import { apiPostFormData } from "../../../context/utils/apiFormData";
 const API_URL = import.meta.env.VITE_BACKEND_URI;
 
 // Helper: get current logged-in user id
+
+// Helper: get current logged-in user id
 const getCurrentUserId = () => {
   let userId = localStorage.getItem('user_id');
   if (!userId) {
@@ -39,10 +41,34 @@ const getCurrentUserId = () => {
       try {
         const parsedUser = JSON.parse(storedUser);
         userId = parsedUser?.id;
-      } catch (e) { }
+        if (userId) {
+          localStorage.setItem('user_id', userId.toString());
+        }
+      } catch (e) {
+        console.error('Error parsing user for ID:', e);
+      }
     }
   }
   return userId ? parseInt(userId) : null;
+};
+
+// Helper: get current user profile
+const getCurrentUserProfile = () => {
+  const storedUser = localStorage.getItem('user');
+  if (storedUser) {
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      return {
+        id: parsedUser?.id,
+        firstName: parsedUser?.FirstName || 'User',
+        lastName: parsedUser?.LastName || 'User',
+        avatar: parsedUser?.profile_picture || null,
+      };
+    } catch (e) {
+      console.error('Error parsing user profile:', e);
+    }
+  }
+  return null;
 };
 
 // Comment Input Component
@@ -63,7 +89,7 @@ const PostCommentInput = ({ postId, darkMode, onAddComment }) => {
         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-green-600" : "bg-green-500"
           }`}
       >
-        <span className="text-white font-semibold text-xs">U</span>
+    <span className="text-white font-semibold text-xs">U</span>
       </div>
       <div className="flex-1">
         <textarea
@@ -96,6 +122,7 @@ const PostCommentInput = ({ postId, darkMode, onAddComment }) => {
     </div>
   );
 };
+// Add this near the top with getCurrentUserId
 
 // Comment Item Component
 const PostCommentItem = ({
@@ -507,33 +534,35 @@ useEffect(() => {
       const currentUserId = getCurrentUserId();
       
       // ✅ DEFINE GETAVATAURL ONCE - OUTSIDE transformedPosts.map()
-      const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
-        // ✅ FIX: Check if profilePicture exists FIRST
-        if (!profilePicture) {
-          const placeholderUrl = `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=10b981&color=fff`;
-          console.log('📸 Using placeholder for:', firstName, lastName);
-          return placeholderUrl;
-        }
+// ✅ IMPROVED getAvatarUrl function
 
-        // ✅ FIX: Convert to string before calling trim()
-        const picStr = String(profilePicture).trim();
-        if (picStr === '') {
-          const placeholderUrl = `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=10b981&color=fff`;
-          console.log('📸 Using placeholder for:', firstName, lastName);
-          return placeholderUrl;
-        }
+const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
+  console.log('🔍 getAvatarUrl called with:', { profilePicture, firstName, lastName });
+  
+  // If no profile picture, return placeholder
+  if (!profilePicture || profilePicture === null || profilePicture === '') {
+    const placeholderUrl = `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=10b981&color=fff`;
+    console.log('📸 Using placeholder:', placeholderUrl);
+    return placeholderUrl;
+  }
 
-        if (picStr.startsWith('http')) {
-          console.log('📸 Already full URL:', picStr);
-          return picStr;
-        }
+  // Convert to string and trim
+  let picStr = String(profilePicture).trim();
+  
+  // If already a full URL (from backend)
+  if (picStr.startsWith('http://') || picStr.startsWith('https://')) {
+    // ✅ FIX: Remove double slashes (except after http:// or https://)
+    picStr = picStr.replace(/([^:]\/)\/+/g, "$1");
+    console.log('📸 Using backend URL (cleaned):', picStr);
+    return picStr;
+  }
 
-        const baseURL = API_URL.replace('/api', '');
-        const finalUrl = `${baseURL}/uploads/profile/${picStr}`;
-        console.log('📸 Built URL:', finalUrl);
-        return finalUrl;
-      };
-
+  // Otherwise, construct the URL (backup)
+  const baseURL = API_URL.replace('/api', '').replace(/\/$/, ''); // Remove trailing slash
+  const finalUrl = `${baseURL}/uploads/profile/${picStr}`;
+  console.log('📸 Constructed URL:', finalUrl);
+  return finalUrl;
+};
       // ✅ TRANSFORM POSTS ONCE
       const transformedPosts = postsData.map((post) => {
         const transformedComments = (post.comments || []).map((comment) => {
