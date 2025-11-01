@@ -29,6 +29,8 @@ import { QRCodeCanvas } from "qrcode.react";
 import { apiPost } from '../../../context/utils/apiPost';
    import { apiPostFormData } from '../../../context/utils/apiFormData';
 
+import default_profile from "../../defaultprofile/default_profile.jpg";
+
 const ShareModal = ({ isOpen, onClose, darkMode, postId, title = "Animal Post" }) => {
   const [shareUrl, setShareUrl] = useState("");
 
@@ -172,10 +174,8 @@ const COLORS = {
 const DEFAULT_USER = {
   name: "Juan Dela Cruz",
   username: "@juandelacruz",
-  avatar:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
-  coverPhoto:
-    "",
+ avatar: default_profile,  // Change this line
+  coverPhoto:"",
   bio: "Professional livestock farmer specializing in cattle and poultry.",
   location: "Nueva Ecija, Philippines",
   joinDate: "Joined March 2023",
@@ -192,10 +192,7 @@ const SAMPLE_POSTS = [
     id: 1,
     content:
       "Beautiful healthy cattle ready for sale! Vaccinated and well-maintained.",
-    images: [
-      "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&h=600&fit=crop",
-    ],
+   avatar: default_profile,  // Change this line
     likes: 145,
     comments: 23,
     bookmarks: 45,
@@ -214,54 +211,7 @@ const SAMPLE_POSTS = [
         "Premium quality Brahman cattle in excellent health condition. Regularly vaccinated and dewormed. Perfect for breeding or meat production. Well-trained and easy to handle.",
     },
   },
-  {
-    id: 2,
-    content: "High-quality free-range chickens for egg production.",
-    images: [
-      "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&h=600&fit=crop",
-    ],
-    likes: 89,
-    comments: 15,
-    bookmarks: 28,
-    timestamp: "5 hours ago",
-    isLiked: true,
-    isBookmarked: false,
-    animalInfo: {
-      title: "Free-Range Chickens",
-      type: "Poultry",
-      breed: "Rhode Island Red",
-      age: "6 months",
-      sex: "Female",
-      price: "₱350 each",
-      availability: "available",
-      description:
-        "Healthy free-range Rhode Island Red chickens. Excellent egg layers producing 5-6 eggs per week. Fed with organic feed and raised in spacious, natural environment.",
-    },
-  },
-  {
-    id: 3,
-    content: "Beautiful goats for sale - great for dairy or meat production.",
-    images: [
-      "https://images.unsplash.com/photo-1533318087102-b3ad366ed041?w=800&h=600&fit=crop",
-    ],
-    likes: 67,
-    comments: 12,
-    bookmarks: 18,
-    timestamp: "1 day ago",
-    isLiked: false,
-    isBookmarked: true,
-    animalInfo: {
-      title: "Dairy Goats",
-      type: "Goats",
-      breed: "Saanen",
-      age: "1.5 years",
-      sex: "Female",
-      price: "₱12,000",
-      availability: "sold",
-      description:
-        "High-producing Saanen dairy goats. Excellent milk production with good fat content. Friendly and easy to handle. Perfect for small-scale dairy operations.",
-    },
-  },
+
 ];
 
 const SAMPLE_REVIEWS = [
@@ -269,23 +219,11 @@ const SAMPLE_REVIEWS = [
     id: 1,
     user: {
       name: "Maria Santos",
-      avatar:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
+       avatar: default_profile,  // Change this line
     },
     rating: 5,
     text: "Excellent seller! The cattle were in perfect condition as described. Very professional and knowledgeable.",
     timestamp: "2 weeks ago",
-  },
-  {
-    id: 2,
-    user: {
-      name: "Pedro Reyes",
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-    },
-    rating: 4,
-    text: "Good quality livestock. Delivery was on time and animals were healthy. Would buy again.",
-    timestamp: "1 month ago",
   },
 ];
 
@@ -2172,13 +2110,17 @@ export default function UserViewProfile({
         {/* Profile Card */}
         <div className={`rounded-2xl overflow-hidden shadow-lg ${scheme.card}`}>
           {/* Cover Photo */}
-          <div className="relative h-48 md:h-64 overflow-hidden">
-            <img
-              src={currentUser.coverPhoto}
-              alt="Cover"
-              className="w-full h-full object-cover"
-            />
-          </div>
+         <div className="relative h-48 md:h-64 overflow-hidden">
+  {currentUser.coverPhoto ? (
+    <img
+      src={currentUser.coverPhoto}
+      alt="Cover"
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className={`w-full h-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
+  )}
+</div>
 
           <div className="px-6 pb-6">
             {/* Avatar */}

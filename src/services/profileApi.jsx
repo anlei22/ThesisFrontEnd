@@ -72,7 +72,7 @@ const transformProfileData = (apiData) => {
     username: userData.username ? `@${userData.username}` : '@unknown',
     email: userData.email || '',
     avatar: userData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || 'User')}&background=10b981&color=fff`,
-    coverPhoto: userData.coverPhoto || 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop',
+    coverPhoto: userData.coverPhoto || '',
     bio: userData.bio || `Member since ${new Date(userData.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`,
     location: userData.location || 'Philippines',
     joinDate: `Joined ${new Date(userData.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`,
