@@ -52,22 +52,52 @@ const getCurrentUserId = () => {
   return userId ? parseInt(userId) : null;
 };
 
-// Helper: get current user profile
+
 const getCurrentUserProfile = () => {
   const storedUser = localStorage.getItem('user');
+  console.log('🔍 getCurrentUserProfile - Raw stored user:', storedUser);
+  
   if (storedUser) {
     try {
       const parsedUser = JSON.parse(storedUser);
-      return {
+      console.log('🔍 getCurrentUserProfile - Parsed user:', parsedUser);
+      
+      // ✅ FIX: Check all possible avatar sources in the correct order
+      let avatar = 
+        parsedUser?.avatar || 
+        parsedUser?.profile_picture || 
+        parsedUser?.profilePicture || 
+        parsedUser?.picture ||
+        localStorage.getItem('profile_picture') || 
+        localStorage.getItem('avatar') ||
+        localStorage.getItem('user_avatar');
+      
+      // ✅ If avatar exists but is just a filename, construct the full URL
+      if (avatar && !avatar.startsWith('http://') && !avatar.startsWith('https://')) {
+        const baseURL = API_URL.replace('/api', '').replace(/\/$/, '');
+        avatar = `${baseURL}/uploads/profile/${avatar}`;
+      }
+      
+      // Try to split name into first/last
+      const nameParts = (parsedUser?.name || '').split(' ');
+      const firstName = parsedUser?.FirstName || parsedUser?.firstName || nameParts[0] || 'User';
+      const lastName = parsedUser?.LastName || parsedUser?.lastName || nameParts.slice(1).join(' ') || '';
+      
+      const profile = {
         id: parsedUser?.id,
-        firstName: parsedUser?.FirstName || 'User',
-        lastName: parsedUser?.LastName || 'User',
-        avatar: parsedUser?.profile_picture || null,
+        firstName: firstName,
+        lastName: lastName,
+        avatar: avatar,
       };
+      
+      console.log('✅ getCurrentUserProfile - Returning profile:', profile);
+      console.log('✅ Avatar found:', avatar);
+      return profile;
     } catch (e) {
-      console.error('Error parsing user profile:', e);
+      console.error('❌ Error parsing user profile:', e);
     }
   }
+  console.log('⚠️ getCurrentUserProfile - No user found in localStorage');
   return null;
 };
 
@@ -1158,44 +1188,80 @@ const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
         )}
 
         {/* Create Post Card - Fixed */}
-        <div
-          className={`rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 border transition-colors duration-300 ${darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-green-100"
-            }`}
-        >
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <div
-              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${darkMode ? "bg-green-600" : "bg-green-500"
-                }`}
-            >
-              <span className="text-white font-semibold text-sm sm:text-base">
-                U
-              </span>
-            </div>
-            <div className="flex-1">
-              <button
-                onClick={() => handleShare()}
-                className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-full text-sm sm:text-base transition-colors duration-300 ${darkMode
-                  ? "bg-gray-700 hover:bg-gray-600 text-gray-300 placeholder-gray-400"
-                  : "bg-green-50 hover:bg-green-100 text-gray-600 placeholder-gray-500"
-                  }`}
-              >
-                Share an animal for sale or adoption...
-              </button>
-            </div>
-            <button
-              onClick={() => handleShare()}
-              className={`p-1.5 sm:p-2 rounded-full transition-colors duration-300 ${darkMode
-                ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
-                : "text-gray-500 hover:bg-green-100 hover:text-green-600"
-                }`}
-            >
-              <PhotoIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-          </div>
-        </div>
-
+   {/* Create Post Card - Fixed */}
+<div
+  className={`rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 border transition-colors duration-300 ${darkMode
+    ? "bg-gray-800 border-gray-700"
+    : "bg-white border-green-100"
+    }`}
+>
+  <div className="flex items-center space-x-2 sm:space-x-3">
+    {(() => {
+      const currentUser = getCurrentUserProfile();
+      
+      // DEBUG: Log what we're getting
+      console.log('=== CREATE POST CARD DEBUG ===');
+      console.log('Current User:', currentUser);
+      console.log('Avatar:', currentUser?.avatar);
+      console.log('FirstName:', currentUser?.firstName);
+      console.log('LastName:', currentUser?.lastName);
+      console.log('LocalStorage user:', localStorage.getItem('user'));
+      
+      // Build the avatar URL properly
+      let avatarUrl;
+      if (currentUser?.avatar && currentUser.avatar !== null && currentUser.avatar !== '') {
+        console.log('Using avatar from profile');
+        // Check if it's already a full URL
+        if (currentUser.avatar.startsWith('http://') || currentUser.avatar.startsWith('https://')) {
+          avatarUrl = currentUser.avatar;
+        } else {
+          // Construct the URL
+          const baseURL = API_URL.replace('/api', '').replace(/\/$/, '');
+          avatarUrl = `${baseURL}/uploads/profile/${currentUser.avatar}`;
+        }
+      } else {
+        console.log('Using placeholder - no avatar found');
+        // Use placeholder with actual name
+        avatarUrl = `https://ui-avatars.com/api/?name=${currentUser?.firstName || 'User'}+${currentUser?.lastName || 'User'}&background=10b981&color=fff`;
+      }
+      
+      console.log('Final Avatar URL:', avatarUrl);
+      console.log('=== END DEBUG ===');
+      
+      return (
+        <img
+          src={avatarUrl}
+          alt="Your profile"
+          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+          onError={(e) => {
+            console.log('Image failed to load, using fallback');
+            e.target.src = `https://ui-avatars.com/api/?name=${currentUser?.firstName || 'User'}+${currentUser?.lastName || 'User'}&background=10b981&color=fff`;
+          }}
+        />
+      );
+    })()}
+    <div className="flex-1">
+      <button
+        onClick={() => handleShare()}
+        className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-full text-sm sm:text-base transition-colors duration-300 ${darkMode
+          ? "bg-gray-700 hover:bg-gray-600 text-gray-300 placeholder-gray-400"
+          : "bg-green-50 hover:bg-green-100 text-gray-600 placeholder-gray-500"
+          }`}
+      >
+        Share an animal for sale or adoption...
+      </button>
+    </div>
+    <button
+      onClick={() => handleShare()}
+      className={`p-1.5 sm:p-2 rounded-full transition-colors duration-300 ${darkMode
+        ? "text-gray-400 hover:bg-gray-700 hover:text-green-400"
+        : "text-gray-500 hover:bg-green-100 hover:text-green-600"
+        }`}
+    >
+      <PhotoIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+    </button>
+  </div>
+</div>
         {/* Scrollable Posts Container */}
         <div
           className="flex-1 overflow-y-auto overflow-x-hidden space-y-4 sm:space-y-6 scrollbar-hide"

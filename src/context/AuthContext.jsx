@@ -67,7 +67,12 @@ export const AuthProvider = ({ children }) => {
         email,
         role: result.role,
         name: result.name,
-        id: userId
+        id: userId,
+      avatar: result.avatar || result.profile_picture,
+profile_picture: result.profile_picture,
+        firstName: result.FirstName || result.firstName || result.name?.split(' ')[0],
+        lastName: result.LastName || result.lastName || result.name?.split(' ').slice(1).join(' '),
+  
       };
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));

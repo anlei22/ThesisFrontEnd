@@ -52,25 +52,31 @@ const LoginModal = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateLogin()) return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateLogin()) return;
 
-    setIsLoading(true);
-    try {
-      const result = await login(formData.email, formData.password);
-      if (result.success) {
-        onClose();
-        setFormData({ email: "", password: "" });
-      } else {
-        setErrors({ general: result.error || "Login failed" });
-      }
-    } catch (err) {
-      setErrors({ general: "Something went wrong. Please try again." });
-    } finally {
-      setIsLoading(false);
+  setIsLoading(true);
+  try {
+    console.log('🔵 LoginModal: About to call login()');
+    const result = await login(formData.email, formData.password);
+    console.log('🔵 LoginModal: Login result:', result);
+    
+    if (result.success) {
+      console.log('🔵 LoginModal: Login successful, closing modal');
+      onClose();
+      setFormData({ email: "", password: "" });
+    } else {
+      console.log('🔵 LoginModal: Login failed:', result.error);
+      setErrors({ general: result.error || "Login failed" });
     }
-  };
+  } catch (err) {
+    console.log('🔵 LoginModal: Error caught:', err);
+    setErrors({ general: "Something went wrong. Please try again." });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // ✅ Handle create account navigation
   const handleCreateAccount = () => {
