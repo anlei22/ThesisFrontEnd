@@ -266,7 +266,7 @@ const DEFAULT_USER = {
     "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&h=400&fit=crop",
   bio: "Professional livestock farmer specializing in cattle and poultry.",
   location: "Nueva Ecija, Philippines",
-  joinDate: "birthday",
+  joinDate: "birthdate",
   rating: 4.8,
   totalReviews: 127,
   followers: 1234,
@@ -437,7 +437,7 @@ const EditProfileModal = ({ user, darkMode, onClose, onSave }) => {
     address: user.address || "",
     bio: user.bio || "",
     location: user.location || "",
-    birthday: user.birthday || "",
+    birthdate: user.birthdate || "",
     accountType: user.accountType || "both",
     avatar: user.avatar || null,
     coverPhoto: user.coverPhoto || null,
@@ -748,8 +748,8 @@ const EditProfileModal = ({ user, darkMode, onClose, onSave }) => {
                   </label>
                   <input
                     type="date"
-                    name="birthday"
-                    value={formData.birthday}
+                    name="birthdate"
+                    value={formData.birthdate}
                     onChange={handleInputChange}
                     className={`w-full px-4 py-2.5 rounded-lg border ${
                       darkMode
@@ -2722,7 +2722,7 @@ export default function UserViewProfile({
               month: "long",
               year: "numeric",
             }),
-            birthday: data.birthday || "",
+            birthdate: data.birthdate || "",
             rating: parseFloat(result.average_rating) || 0,
             totalReviews: result.total_raters || 0,
             followers: 0,
