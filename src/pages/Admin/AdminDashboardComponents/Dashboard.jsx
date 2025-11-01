@@ -30,6 +30,7 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({
     userCount: 0,
     feedTableCount: 0,
+    reportCount: 0,
     animalTypeCounts: []
   });
 
@@ -77,6 +78,7 @@ const Dashboard = () => {
       const transformedData = {
         userCount: data.userCount || data.user_count || 0,
         feedTableCount: data.FeedTableCount || data.feedTableCount || data.feed_table_count || 0,
+        reportCount: data.reportCount || data.report_count || 0,
         animalTypeCounts: data.animalTypeCounts || data.animal_type_counts || []
       };
       
@@ -243,8 +245,9 @@ const Dashboard = () => {
                 <h3 className="text-lg font-bold text-gray-800">
                   Reported Posts
                 </h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">4</p>
-                <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">
+                  {dashboardData.reportCount}
+                </p>
               </div>
               <div className="p-3 bg-red-100 rounded-lg text-red-600">
                 <ReportIcon />
