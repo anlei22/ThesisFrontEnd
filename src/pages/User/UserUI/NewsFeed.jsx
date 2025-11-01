@@ -449,7 +449,7 @@ const NewsFeed = ({
       fd.append('post_id', selectedPost?.id ?? '');
       fd.append('reason', reportReason);
       fd.append('description', reportComment || '');
-      fd.append('report_by', userId);
+        fd.append('reported_by', userId); 
 
       console.log(fd);
       for (const [key, value] of fd.entries()) {

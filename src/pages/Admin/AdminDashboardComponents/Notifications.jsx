@@ -57,25 +57,28 @@ const Notifications = () => {
       const data = await response.json();
       
       const transformedNotifications = data.map((report) => ({
-        id: report.id,
-        type: "report",
-        title: "Content Reported",
-        message: `${report.reporter?.name || 'Unknown user'} reported "${report.post?.title || 'Unknown post'}" for ${report.reason}`,
-        timestamp: formatTimestamp(report.created_at),
-        isRead: false,
-        data: {
-          postId: report.post_id,
-          postTitle: report.post?.title || `Post #${report.post_id}`,
-          postAuthor: report.post?.author?.name || 'Unknown',
-          postAuthorEmail: report.post?.author?.email || '',
-          reportedBy: report.reporter?.name || 'Unknown',
-          reportedByEmail: report.reporter?.email || '',
-          reporterId: report.reported_by,
-          reason: report.reason,
-          description: report.description,
-          reportDate: report.created_at,
-        },
-      }));
+  id: report.id,
+  type: "report",
+  title: "Content Reported",
+  message: `${report.reporter?.name || 'Unknown user'} reported "${report.post?.title || 'Unknown post'}" for ${report.reason}`,
+  timestamp: formatTimestamp(report.created_at),
+  isRead: false,
+  data: {
+    postId: report.post_id,
+    postTitle: report.post?.title || `Post #${report.post_id}`,
+    postDescription: report.post?.description || '',
+    postAuthor: report.post?.author?.name || 'Unknown',
+    postAuthorEmail: report.post?.author?.email || '',
+    postAuthorId: report.post?.author?.id || null,
+    reportedBy: report.reporter?.name || 'Unknown',
+    reportedByEmail: report.reporter?.email || '',
+    reportedById: report.reported_by,
+    reason: report.reason,
+    description: report.description,
+    reportDate: report.created_at,
+  },
+}));
+
 
       setNotifications(transformedNotifications);
     } catch (err) {
@@ -323,8 +326,9 @@ const Notifications = () => {
 
       {/* Enhanced Modal with Reporter and Post Author Details */}
       {showModal && selectedNotification && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-black bg-opacity-50 flex items-center justify-center z-40 p-2 sm:p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl mx-2 sm:mx-0">
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-xl flex items-center justify-center z-40 p-2 sm:p-4">
+
+   <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] sm:max-h-[90vh] overflow-hidden shadow-2xl mx-2 mt-8 sm:mx-0">
             <header className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-orange-50">
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                 {getNotificationIcon(selectedNotification.type, selectedNotification.data)}
