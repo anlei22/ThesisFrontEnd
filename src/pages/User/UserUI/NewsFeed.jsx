@@ -25,6 +25,7 @@ import { apiPost } from "../../../context/utils/apiPost";
 import { apiPostFormData } from "../../../context/utils/apiFormData";
 
 
+import default_profile from "../../defaultprofile/default_profile.jpg";
 
 
 // Get API URL from environment
@@ -1189,6 +1190,7 @@ const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
 
         {/* Create Post Card - Fixed */}
    {/* Create Post Card - Fixed */}
+{/* Create Post Card - Fixed */}
 <div
   className={`rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 border transition-colors duration-300 ${darkMode
     ? "bg-gray-800 border-gray-700"
@@ -1199,18 +1201,9 @@ const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
     {(() => {
       const currentUser = getCurrentUserProfile();
       
-      // DEBUG: Log what we're getting
-      console.log('=== CREATE POST CARD DEBUG ===');
-      console.log('Current User:', currentUser);
-      console.log('Avatar:', currentUser?.avatar);
-      console.log('FirstName:', currentUser?.firstName);
-      console.log('LastName:', currentUser?.lastName);
-      console.log('LocalStorage user:', localStorage.getItem('user'));
-      
       // Build the avatar URL properly
       let avatarUrl;
       if (currentUser?.avatar && currentUser.avatar !== null && currentUser.avatar !== '') {
-        console.log('Using avatar from profile');
         // Check if it's already a full URL
         if (currentUser.avatar.startsWith('http://') || currentUser.avatar.startsWith('https://')) {
           avatarUrl = currentUser.avatar;
@@ -1220,13 +1213,9 @@ const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
           avatarUrl = `${baseURL}/uploads/profile/${currentUser.avatar}`;
         }
       } else {
-        console.log('Using placeholder - no avatar found');
-        // Use placeholder with actual name
-        avatarUrl = `https://ui-avatars.com/api/?name=${currentUser?.firstName || 'User'}+${currentUser?.lastName || 'User'}&background=10b981&color=fff`;
+        // Use default_profile image when no user is logged in or no avatar
+        avatarUrl = default_profile;
       }
-      
-      console.log('Final Avatar URL:', avatarUrl);
-      console.log('=== END DEBUG ===');
       
       return (
         <img
@@ -1234,8 +1223,8 @@ const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
           alt="Your profile"
           className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
           onError={(e) => {
-            console.log('Image failed to load, using fallback');
-            e.target.src = `https://ui-avatars.com/api/?name=${currentUser?.firstName || 'User'}+${currentUser?.lastName || 'User'}&background=10b981&color=fff`;
+            // Fallback to default_profile if image fails to load
+            e.target.src = default_profile;
           }}
         />
       );

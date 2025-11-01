@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/24/outline';
 import useApiConnection from '../../../context/ApiConnection';
 import { apiPostFormData } from '../../../context/utils/apiFormData';
-
+import default_profile from "../../defaultprofile/default_profile.jpg";
 const ChatInterface = ({ darkMode }) => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [message, setMessage] = useState('');
@@ -22,7 +22,17 @@ const ChatInterface = ({ darkMode }) => {
   useEffect(() => {
     scrollToBottom();
   }, [selectedChat, selectedMessages]);
-
+// ✅ ADD THIS FUNCTION - Helper to get user avatar
+const getUserAvatar = (user) => {
+  if (!user) return default_profile;
+  
+  // Replace 'image' with your actual column name
+  if (user.image) return user.image;
+  if (user.profile_picture) return user.profile_picture;
+  if (user.avatar) return user.avatar;
+  
+  return default_profile;
+};
   // Chats loaded from backend
   const [chats, setChats] = useState([]);
   const userId = localStorage.getItem('user_id') ? localStorage.getItem('user_id') : null;
@@ -37,67 +47,75 @@ const ChatInterface = ({ darkMode }) => {
   const { data: messagesResp, loading: messagesLoading, error: messagesError, refetch: messagesRefetch } = useApiConnection(messagesEndpoint);
 
   // Map the backend response to the chat shape used by the UI
-  useEffect(() => {
-    if (!convoResp) return;
+useEffect(() => {
+  if (!convoResp) return;
 
-    try {
-      if (convoResp.status === 'success' && Array.isArray(convoResp.data)) {
-        const mapped = convoResp.data.map((item) => {
-          const myId = userId ? parseInt(userId, 10) : null;
-          const other = (item.customer_f_id === myId) ? item.customer_s : item.customer_f;
-          const name = other ? `${other.FirstName || ''} ${other.LastName || ''}`.trim() : 'Unknown';
+  try {
+    if (convoResp.status === 'success' && Array.isArray(convoResp.data)) {
+      const mapped = convoResp.data.map((item) => {
+        const myId = userId ? parseInt(userId, 10) : null;
+        const other = (item.customer_f_id === myId) ? item.customer_s : item.customer_f;
+        
+        // 🔍 ADD THIS TO SEE THE STRUCTURE
+        console.log('User object:', other);
+        
+        const name = other ? `${other.FirstName || ''} ${other.LastName || ''}`.trim() : 'Unknown';
+        
+        return {
+          id: item.id,
+          name: name || 'Unknown',
+          // ✅ CHANGED: Use real user avatar instead of ui-avatars
+          avatar: getUserAvatar(other),
+          lastMessage: `${item.messages_count || 0} messages`,
+          timestamp: item.updated_at ? new Date(item.updated_at).toLocaleString() : '',
+          unread: 0,
+          online: false,
+          messages: []
+        };
+      });
 
-          return {
-            id: item.id,
-            name: name || 'Unknown',
-            // generate a simple avatar via ui-avatars if no avatar provided
-            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=34d399&color=fff&size=128`,
-            lastMessage: `${item.messages_count || 0} messages`,
-            timestamp: item.updated_at ? new Date(item.updated_at).toLocaleString() : '',
-            unread: 0,
-            online: false,
-            messages: []
-          };
-        });
-
-        setChats(mapped);
-      } else {
-        // no conversations or unexpected format
-        setChats([]);
-      }
-    } catch (err) {
-      console.error('Error mapping conversations:', err);
+      setChats(mapped);
+    } else {
       setChats([]);
     }
-  }, [convoResp, userId]);
-
+  } catch (err) {
+    console.error('Error mapping conversations:', err);
+    setChats([]);
+  }
+}, [convoResp, userId]);
   // Map messages response to UI message objects
-  useEffect(() => {
-    if (!messagesResp) {
-      setSelectedMessages([]);
-      return;
-    }
+useEffect(() => {
+  if (!messagesResp) {
+    setSelectedMessages([]);
+    return;
+  }
 
-    try {
-      if (messagesResp.status === 'success' && Array.isArray(messagesResp.messages)) {
-        const mappedMsgs = messagesResp.messages.map((m) => ({
+  try {
+    if (messagesResp.status === 'success' && Array.isArray(messagesResp.messages)) {
+      const mappedMsgs = messagesResp.messages.map((m) => {
+        // 🔍 ADD THIS TO SEE THE MESSAGE STRUCTURE
+        console.log('Message object:', m);
+        console.log('Sender object:', m.sender);
+        
+        return {
           id: m.id,
           senderId: m.sender_id,
           content: m.message,
           timestamp: m.created_at ? new Date(m.created_at).toLocaleString() : '',
-          isMe: userId ? parseInt(userId, 10) === m.sender_id : false
-        }));
+          isMe: userId ? parseInt(userId, 10) === m.sender_id : false,
+          senderAvatar: m.sender ? getUserAvatar(m.sender) : default_profile
+        };
+      });
 
-        setSelectedMessages(mappedMsgs);
-      } else {
-        setSelectedMessages([]);
-      }
-    } catch (err) {
-      console.error('Error mapping messages:', err);
+      setSelectedMessages(mappedMsgs);
+    } else {
       setSelectedMessages([]);
     }
-  }, [messagesResp, userId]);
-
+  } catch (err) {
+    console.error('Error mapping messages:', err);
+    setSelectedMessages([]);
+  }
+}, [messagesResp, userId]);
   // Auto-refresh messages while a conversation is selected
   useEffect(() => {
     if (!selectedChat || !messagesRefetch) return;
