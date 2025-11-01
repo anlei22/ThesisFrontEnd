@@ -1272,14 +1272,14 @@ const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
                       <div
                         className={`absolute top-4 right-[-32px] w-40 h-8 transform rotate-45 text-center text-white text-xs font-bold leading-8 shadow-lg ${post.animalInfo.availability === "available"
                           ? "bg-green-500"
-                          : post.animalInfo.availability === "sold"
+                          : post.animalInfo.availability === "soldout"
                             ? "bg-red-500"
                             : "bg-gray-500"
                           }`}
                       >
                         {post.animalInfo.availability === "available"
                           ? "AVAILABLE"
-                          : post.animalInfo.availability === "sold"
+                          : post.animalInfo.availability === "soldout"
                             ? "SOLD OUT"
                             : post.animalInfo.availability.toUpperCase()}
                       </div>
