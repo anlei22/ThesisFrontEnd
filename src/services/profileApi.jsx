@@ -85,44 +85,39 @@ const transformProfileData = (apiData) => {
     user_type: userData.user_type || 'buyer',
   };
 
-  // Transform posts from animal_feeds
-  const userPosts = (userData.animal_feeds || []).map(feed => {
-    // Get relative timestamp
-    const timestamp = getRelativeTime(feed.created_at);
-    
-    // Transform images - handle both URL formats
-    const images = (feed.images || []).map(img => {
-      // If image_path is already a full URL, use it
-      if (img.image_path?.startsWith('http')) {
-        return img.image_path;
-      }
-      // Otherwise construct the URL
-      return `${API_URL.replace('/api/', '')}/uploads/news_feed/${img.image_path}`;
-    });
-
-    return {
-      id: feed.id,
-      content: feed.description || '',
-      images: images,
-      likes: feed.likes_count || 0,
-      comments: 0, // Not in current API response
-      bookmarks: feed.bookmarks_count || 0,
-      timestamp: timestamp,
-      isLiked: feed.is_liked || false,
-      isBookmarked: feed.is_bookmarked || false,
-      animalInfo: {
-        title: feed.title || 'Untitled',
-        type: feed.type || 'Unknown',
-        breed: feed.breed || 'N/A',
-        age: feed.age || 'N/A',
-        sex: feed.sex || 'N/A',
-        price: feed.price ? `₱${parseFloat(feed.price).toLocaleString()}` : 'Price on request',
-        availability: feed.status === 'available' ? 'available' : 'sold',
-        description: feed.description || 'No description available',
-      }
-    };
+// Transform posts from animal_feeds
+const userPosts = (userData.animal_feeds || []).map(feed => {
+  // Get relative timestamp
+  const timestamp = getRelativeTime(feed.created_at);
+  
+  // ✅ FIX: Backend already returns full URLs
+  const images = (feed.images || []).map(img => {
+    // Backend returns full URL in image_path
+    return img.image_path || img;
   });
 
+  return {
+    id: feed.id,
+    content: feed.description || '',
+    images: images,
+    likes: feed.likes_count || 0,
+    comments: 0,
+    bookmarks: feed.bookmarks_count || 0,
+    timestamp: timestamp,
+    isLiked: feed.is_liked || false,
+    isBookmarked: feed.is_bookmarked || false,
+    animalInfo: {
+      title: feed.title || 'Untitled',
+      type: feed.type || 'Unknown',
+      breed: feed.breed || 'N/A',
+      age: feed.age || 'N/A',
+      sex: feed.sex || 'N/A',
+      price: feed.price ? `₱${parseFloat(feed.price).toLocaleString()}` : 'Price on request',
+      availability: feed.status === 'available' ? 'available' : 'sold',
+      description: feed.description || 'No description available',
+    }
+  };
+});
   console.log('✅ Profile Data Transformed:', {
     userId: user.id,
     name: user.name,
