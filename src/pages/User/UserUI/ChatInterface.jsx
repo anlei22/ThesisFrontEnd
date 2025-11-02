@@ -26,10 +26,18 @@ const ChatInterface = ({ darkMode }) => {
 const getUserAvatar = (user) => {
   if (!user) return default_profile;
   
-  // Replace 'image' with your actual column name
-  if (user.image) return user.image;
-  if (user.profile_picture) return user.profile_picture;
-  if (user.avatar) return user.avatar;
+  // Use the full URL from backend if available
+  if (user.profile_picture_url) {
+    return user.profile_picture_url;
+  }
+  
+  // Fallback to constructing URL manually
+  if (user.profile_picture) {
+    if (user.profile_picture.startsWith('http')) {
+      return user.profile_picture;
+    }
+    return `http://127.0.0.1:8000/uploads/profile/${user.profile_picture}`;
+  }
   
   return default_profile;
 };
