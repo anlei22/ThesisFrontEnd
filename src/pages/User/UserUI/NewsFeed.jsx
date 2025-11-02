@@ -102,7 +102,6 @@ const getCurrentUserProfile = () => {
   return null;
 };
 
-// Comment Input Component
 const PostCommentInput = ({ postId, darkMode, onAddComment }) => {
   const [text, setText] = useState("");
 
@@ -111,17 +110,23 @@ const PostCommentInput = ({ postId, darkMode, onAddComment }) => {
     setText("");
   };
 
+  // Add this to get current user profile
+  const currentUserProfile = getCurrentUserProfile();
+
   return (
     <div
       className={`flex space-x-2 p-2 rounded-lg ${darkMode ? "bg-gray-700" : "bg-white border border-gray-200"
         }`}
     >
-      <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-green-600" : "bg-green-500"
-          }`}
-      >
-    <span className="text-white font-semibold text-xs">U</span>
-      </div>
+      {/* Replace the placeholder div with actual avatar image */}
+      <img
+        src={currentUserProfile?.avatar || default_profile}
+        alt="Your profile"
+        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+        onError={(e) => {
+          e.target.src = default_profile;
+        }}
+      />
       <div className="flex-1">
         <textarea
           value={text}
@@ -153,7 +158,7 @@ const PostCommentInput = ({ postId, darkMode, onAddComment }) => {
     </div>
   );
 };
-// Add this near the top with getCurrentUserId
+
 
 // Comment Item Component
 const PostCommentItem = ({
@@ -164,6 +169,9 @@ const PostCommentItem = ({
 }) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
+  
+  // Add this to get current user profile
+  const currentUserProfile = getCurrentUserProfile();
 
   const handleSubmitReply = () => {
     onAddReply(postId, comment.id, replyText);
@@ -236,12 +244,15 @@ const PostCommentItem = ({
             }`}
         >
           <div className="flex space-x-2">
-            <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-green-600" : "bg-green-500"
-                }`}
-            >
-              <span className="text-white font-semibold text-xs">U</span>
-            </div>
+            {/* ✅ FIXED: Replaced placeholder with actual avatar */}
+            <img
+              src={currentUserProfile?.avatar || default_profile}
+              alt="Your profile"
+              className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+              onError={(e) => {
+                e.target.src = default_profile;
+              }}
+            />
             <div className="flex-1">
               <textarea
                 value={replyText}
@@ -321,7 +332,6 @@ const PostCommentItem = ({
                 >
                   {reply.text}
                 </p>
-                {/* Removed reply like button */}
               </div>
             </div>
           ))}
@@ -982,139 +992,147 @@ const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
   };
 
   // Add Comment to Post (send to backend)
-  const handleAddPostComment = async (postId, text) => {
-    if (!text.trim()) return;
+// Add Comment to Post (send to backend)
+const handleAddPostComment = async (postId, text) => {
+  if (!text.trim()) return;
 
-    // Find the feed_id and post_id for this post
-    const post = posts.find((p) => p.id === postId);
-    if (!post) return;
+  // Find the feed_id and post_id for this post
+  const post = posts.find((p) => p.id === postId);
+  if (!post) return;
 
-    // Get user_id
-    let userId = localStorage.getItem('user_id');
-    if (!userId) {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          userId = parsedUser.id;
-        } catch (e) { }
-      }
+  // Get user_id and profile
+  let userId = localStorage.getItem('user_id');
+  if (!userId) {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        userId = parsedUser.id;
+      } catch (e) { }
     }
-    if (!userId) {
-      alert('User not found. Please log in again.');
-      return;
-    }
+  }
+  if (!userId) {
+    alert('User not found. Please log in again.');
+    return;
+  }
 
-    // Prepare FormData
-    const formData = new FormData();
-    formData.append('user_id', userId);
-    formData.append('feed_id', postId);
-    if (post.animalInfo && post.animalInfo.post_id) {
-      formData.append('post_id', post.animalInfo.post_id);
-    }
-    formData.append('comments', text);
+  // Get current user profile for avatar
+  const currentUserProfile = getCurrentUserProfile();
 
-    try {
-      const response = await apiPostFormData('add/add-comment', formData, true);
-      // Add new comment to UI
-      const newComment = {
-        id: response.data?.id || Date.now(),
-        user: {
-          name: "You",
-          avatar:
-            "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
-        },
-        text: text,
-        timestamp: "Just now",
-        likes: 0,
-        replies: [],
-      };
-      setPostComments((prev) => ({
-        ...prev,
-        [postId]: [newComment, ...(prev[postId] || [])],
-      }));
-      // Also update comments state if modal is open with this post
-      if (selectedPost?.id === postId) {
-        setComments((prev) => [newComment, ...prev]);
-      }
-    } catch (err) {
-      alert('Failed to add comment.');
-    }
-  };
+  // Prepare FormData
+  const formData = new FormData();
+  formData.append('user_id', userId);
+  formData.append('feed_id', postId);
+  if (post.animalInfo && post.animalInfo.post_id) {
+    formData.append('post_id', post.animalInfo.post_id);
+  }
+  formData.append('comments', text);
 
+  try {
+    const response = await apiPostFormData('add/add-comment', formData, true);
+    // Add new comment to UI with actual user avatar
+    const newComment = {
+      id: response.data?.id || Date.now(),
+      user: {
+        name: "You",
+        avatar: currentUserProfile?.avatar || default_profile,
+      },
+      text: text,
+      timestamp: "Just now",
+      likes: 0,
+      replies: [],
+    };
+    setPostComments((prev) => ({
+      ...prev,
+      [postId]: [newComment, ...(prev[postId] || [])],
+    }));
+    // Also update comments state if modal is open with this post
+    if (selectedPost?.id === postId) {
+      setComments((prev) => [newComment, ...prev]);
+    }
+  } catch (err) {
+    alert('Failed to add comment.');
+  }
+};
   // Removed comment/reply like handlers
 
   // Add Reply to Comment (send to backend)
-  const handleAddPostReply = async (postId, commentId, text) => {
-    if (!text.trim()) return;
+// Add Reply to Comment (send to backend)
+const handleAddPostReply = async (postId, commentId, text) => {
+  if (!text.trim()) return;
 
-    // Get user_id
-    let userId = localStorage.getItem('user_id');
-    if (!userId) {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          userId = parsedUser.id;
-        } catch (e) { }
-      }
+  // Get user_id
+  let userId = localStorage.getItem('user_id');
+  if (!userId) {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        userId = parsedUser.id;
+      } catch (e) { }
     }
-    if (!userId) {
-      alert('User not found. Please log in again.');
-      return;
-    }
+  }
+  if (!userId) {
+    alert('User not found. Please log in again.');
+    return;
+  }
 
-    // Prepare FormData
-    const formData = new FormData();
-    formData.append('user_id', userId);
-    formData.append('reply', text);
-    formData.append('comment_section_id', commentId);
+  // Get current user profile for avatar
+  const currentUserProfile = getCurrentUserProfile();
 
-    try {
-      const response = await apiPostFormData(`comments/reply/${commentId}`, formData, true);
-      // Add new reply to UI
-      setPostComments((prev) => ({
-        ...prev,
-        [postId]: prev[postId].map((comment) => {
+  // Prepare FormData
+  const formData = new FormData();
+  formData.append('user_id', userId);
+  formData.append('reply', text);
+  formData.append('comment_section_id', commentId);
+
+  try {
+    const response = await apiPostFormData(`comments/reply/${commentId}`, formData, true);
+    
+    // Create new reply with actual user avatar
+    const newReply = {
+      id: response.data?.id || Date.now(),
+      user: {
+        name: "You",
+        avatar: currentUserProfile?.avatar || default_profile,
+      },
+      text: text,
+      timestamp: "Just now",
+      likes: 0,
+    };
+    
+    // Add new reply to UI
+    setPostComments((prev) => ({
+      ...prev,
+      [postId]: prev[postId].map((comment) => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            replies: [...comment.replies, newReply],
+          };
+        }
+        return comment;
+      }),
+    }));
+    
+    // Also update comments state if modal is open with this post
+    if (selectedPost?.id === postId) {
+      setComments((prev) =>
+        prev.map((comment) => {
           if (comment.id === commentId) {
-            const newReply = {
-              id: response.data?.id || Date.now(),
-              user: {
-                name: "You",
-                avatar:
-                  "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
-              },
-              text: text,
-              timestamp: "Just now",
-              likes: 0,
-            };
             return {
               ...comment,
-              replies: [...comment.replies, newReply],
+              replies: [...(comment.replies || []), newReply],
             };
           }
           return comment;
-        }),
-      }));
-      // Also update comments state if modal is open with this post
-      if (selectedPost?.id === postId) {
-        setComments((prev) =>
-          prev.map((comment) => {
-            if (comment.id === commentId) {
-              return {
-                ...comment,
-                replies: [...(comment.replies || []), newReply],
-              };
-            }
-            return comment;
-          })
-        );
-      }
-    } catch (err) {
-      alert('Failed to add reply.');
+        })
+      );
     }
-  };
-
+  } catch (err) {
+    alert('Failed to add reply.');
+  }
+};
   const PostSkeleton = () => (
     <div
       className={`rounded-lg p-3 sm:p-6 mb-4 sm:mb-6 animate-pulse ${darkMode ? "bg-gray-800" : "bg-white"
@@ -2151,51 +2169,58 @@ const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
                       </h3>
 
                       {/* Add Comment */}
-                      {isAuthenticated && (
-                        <div className="mb-6">
-                          <div
-                            className={`flex space-x-3 p-3 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"
-                              }`}
-                          >
-                            <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-green-600" : "bg-green-500"
-                                }`}
-                            >
-                              <span className="text-white font-semibold">
-                                U
-                              </span>
-                            </div>
-                            <div className="flex-1">
-                              <textarea
-                                value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
-                                placeholder="Write a comment..."
-                                rows="3"
-                                className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode
-                                  ? "bg-gray-600 text-white placeholder-gray-400"
-                                  : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
-                                  }`}
-                              />
-                              <div className="flex justify-end mt-2">
-                                <button
-                                  onClick={handleAddComment}
-                                  disabled={!commentText.trim()}
-                                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${commentText.trim()
-                                    ? darkMode
-                                      ? "bg-green-600 hover:bg-green-700 text-white"
-                                      : "bg-green-500 hover:bg-green-600 text-white"
-                                    : darkMode
-                                      ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                    }`}
-                                >
-                                  Post Comment
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                 {/* Add Comment */}
+{isAuthenticated && (
+  <div className="mb-6">
+    <div
+      className={`flex space-x-3 p-3 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"
+        }`}
+    >
+      {/* Replace the placeholder div with actual avatar image */}
+      {(() => {
+        const currentUserProfile = getCurrentUserProfile();
+        return (
+          <img
+            src={currentUserProfile?.avatar || default_profile}
+            alt="Your profile"
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+            onError={(e) => {
+              e.target.src = default_profile;
+            }}
+          />
+        );
+      })()}
+      <div className="flex-1">
+        <textarea
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          placeholder="Write a comment..."
+          rows="3"
+          className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode
+            ? "bg-gray-600 text-white placeholder-gray-400"
+            : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
+            }`}
+        />
+        <div className="flex justify-end mt-2">
+          <button
+            onClick={handleAddComment}
+            disabled={!commentText.trim()}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${commentText.trim()
+              ? darkMode
+                ? "bg-green-600 hover:bg-green-700 text-white"
+                : "bg-green-500 hover:bg-green-600 text-white"
+              : darkMode
+                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+          >
+            Post Comment
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
                       {/* Comments List */}
                       <div
@@ -2292,68 +2317,68 @@ const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
                               </div>
 
                               {/* Reply Input */}
-                              {replyingTo === comment.id && isAuthenticated && (
-                                <div
-                                  className={`ml-12 mt-2 p-3 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"
-                                    }`}
-                                >
-                                  <div className="flex space-x-3">
-                                    <div
-                                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode
-                                        ? "bg-green-600"
-                                        : "bg-green-500"
-                                        }`}
-                                    >
-                                      <span className="text-white font-semibold text-xs">
-                                        U
-                                      </span>
-                                    </div>
-                                    <div className="flex-1">
-                                      <textarea
-                                        value={replyText}
-                                        onChange={(e) =>
-                                          setReplyText(e.target.value)
-                                        }
-                                        placeholder={`Reply to ${comment.user.name}...`}
-                                        rows="2"
-                                        autoFocus
-                                        className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode
-                                          ? "bg-gray-600 text-white placeholder-gray-400"
-                                          : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
-                                          }`}
-                                      />
-                                      <div className="flex justify-end space-x-2 mt-2">
-                                        <button
-                                          onClick={handleCancelReply}
-                                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${darkMode
-                                            ? "bg-gray-600 hover:bg-gray-500 text-gray-300"
-                                            : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                                            }`}
-                                        >
-                                          Cancel
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleAddReply(comment.id)
-                                          }
-                                          disabled={!replyText.trim()}
-                                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${replyText.trim()
-                                            ? darkMode
-                                              ? "bg-green-600 hover:bg-green-700 text-white"
-                                              : "bg-green-500 hover:bg-green-600 text-white"
-                                            : darkMode
-                                              ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                                              : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                            }`}
-                                        >
-                                          Reply
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
+                            {/* Reply Input */}
+{replyingTo === comment.id && isAuthenticated && (
+  <div
+    className={`ml-12 mt-2 p-3 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"
+      }`}
+  >
+    <div className="flex space-x-3">
+      {/* Replace the placeholder div with actual avatar image */}
+      {(() => {
+        const currentUserProfile = getCurrentUserProfile();
+        return (
+          <img
+            src={currentUserProfile?.avatar || default_profile}
+            alt="Your profile"
+            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+            onError={(e) => {
+              e.target.src = default_profile;
+            }}
+          />
+        );
+      })()}
+      <div className="flex-1">
+        <textarea
+          value={replyText}
+          onChange={(e) => setReplyText(e.target.value)}
+          placeholder={`Reply to ${comment.user.name}...`}
+          rows="2"
+          autoFocus
+          className={`w-full px-3 py-2 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${darkMode
+            ? "bg-gray-600 text-white placeholder-gray-400"
+            : "bg-white text-gray-900 placeholder-gray-500 border border-gray-200"
+            }`}
+        />
+        <div className="flex justify-end space-x-2 mt-2">
+          <button
+            onClick={handleCancelReply}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${darkMode
+              ? "bg-gray-600 hover:bg-gray-500 text-gray-300"
+              : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+              }`}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => handleAddReply(comment.id)}
+            disabled={!replyText.trim()}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${replyText.trim()
+              ? darkMode
+                ? "bg-green-600 hover:bg-green-700 text-white"
+                : "bg-green-500 hover:bg-green-600 text-white"
+              : darkMode
+                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+          >
+            Reply
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
                               {/* Replies List */}
                               {comment.replies &&
                                 comment.replies.length > 0 && (
