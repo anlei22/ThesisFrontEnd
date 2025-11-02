@@ -513,6 +513,10 @@ const NewsFeed = ({
   const applyClientSideFilters = (postsArray) => {
     let filtered = [...postsArray];
 
+    // ✅ Filter out soldout posts
+    filtered = filtered.filter(
+        (post) => post.animalInfo?.availability !== "soldout"
+    );
     // Filter by category
     if (postCategory && postCategory !== "all") {
       filtered = filtered.filter(
