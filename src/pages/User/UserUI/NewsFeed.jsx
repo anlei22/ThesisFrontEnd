@@ -1806,11 +1806,12 @@ const handleAddPostReply = async (postId, commentId, text) => {
                   {/* Image Gallery */}
                   {selectedPost.images && selectedPost.images.length > 0 && (
                     <div className="relative mb-6">
-                      <img
-                        src={selectedPost.images[currentImageIndex]}
-                        alt={selectedPost.animalInfo.title}
-                        className="w-full h-80 object-cover rounded-xl"
-                      />
+                   <img
+  src={selectedPost.images[currentImageIndex]}
+  alt={selectedPost.animalInfo.title}
+  className="w-full h-80 object-contain rounded-xl bg-gray-200"
+ />
+
 
                       {selectedPost.images.length > 1 && (
                         <>
