@@ -42,7 +42,7 @@ const Notifications = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:8000/api/reports', {
+      const response = await fetch('https://thesis-backend-main-oin9yk.laravel.cloud/api/reports', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -123,7 +123,7 @@ const Notifications = () => {
     setIsDeleting(true);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/reports/delete/${notificationToDelete.id}`, {
+      const response = await fetch(`https://thesis-backend-main-oin9yk.laravel.cloud/api/reports/delete/${notificationToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

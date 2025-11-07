@@ -2654,7 +2654,7 @@ const DeleteConfirmationModal = ({
 export default function UserViewProfile({
   darkMode = false,
   onBack,
-  apiBaseUrl = "http://localhost:8000/api",
+  apiBaseUrl = "https://thesis-backend-main-oin9yk.laravel.cloud/api",
 }) {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
   const { user } = useAuth();

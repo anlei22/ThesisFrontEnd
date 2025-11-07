@@ -21,7 +21,7 @@ import { useAuth } from '../context/AuthContext';
 import LoginModal from './LoginModal';
 import RegisterModal from './Register';
 import LogoutConfirmModal from './LogoutConfirmModal';
-
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePost }) => {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -29,7 +29,7 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-  
+    const navigate = useNavigate(); // Add this line
   const { user, logout, isAuthenticated } = useAuth();
   
   const role = user?.role || '';
@@ -67,7 +67,12 @@ const Navbar = ({ activeTab, setActiveTab, darkMode, toggleDarkMode, onCreatePos
     setAuthModalType('login');
     setShowAuthModal(true);
   };
-
+const handleAdminDashboardClick = () => {
+  console.log('Admin Dashboard clicked - using navigate'); // Add this
+  navigate('/admin/dashboard');
+  setShowProfileDropdown(false);
+  setShowMobileSidebar(false);
+};
   const handleShowRegister = () => {
     setAuthModalType('register');
     setShowAuthModal(true);
@@ -216,21 +221,18 @@ className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
                             : 'bg-white border-gray-200'
                         }`}>
                           <div className="py-1">
-                            {(role === 'Super' || role === 'Admin') && (
-                              <button
-                                onClick={() => {
-                                  window.location.href = '/Admin/Dashboard';
-                                  setShowProfileDropdown(false);
-                                }}
-                                className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                                  darkMode
-                                    ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                                    : 'text-gray-700 hover:bg-gray-100'
-                                }`}
-                              >
-                                Admin Dashboard
-                              </button>
-                            )}
+                             {(role === 'Super' || role === 'Admin') && (
+    <button
+      onClick={handleAdminDashboardClick}  // Changed this line
+      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+        darkMode
+          ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
+          : 'text-gray-700 hover:bg-gray-100'
+      }`}
+    >
+      Admin Dashboard
+    </button>
+  )}
                             <button
                               onClick={handleProfileMenuClick}
                               className={`w-full text-left px-4 py-2 text-sm transition-colors ${
@@ -389,22 +391,19 @@ className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
               <div className={`border-t my-3 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}></div>
 
               {/* Profile Menu Items */}
-              {(role === 'Super' || role === 'Admin') && (
-                <div
-                  onClick={() => {
-                    window.location.href = '/Admin/Dashboard';
-                    setShowMobileSidebar(false);
-                  }}
-                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                    darkMode
-                      ? "text-gray-300 hover:bg-gray-800 hover:text-white"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-green-600"
-                  }`}
-                >
-                  <Settings className="w-5 h-5" />
-                  <span className="font-medium text-sm">Admin Dashboard</span>
-                </div>
-              )}
+               {(role === 'Super' || role === 'Admin') && (
+    <div
+      onClick={handleAdminDashboardClick}  // Changed this line
+      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+        darkMode
+          ? "text-gray-300 hover:bg-gray-800 hover:text-white"
+          : "text-gray-700 hover:bg-gray-50 hover:text-green-600"
+      }`}
+    >
+      <Settings className="w-5 h-5" />
+      <span className="font-medium text-sm">Admin Dashboard</span>
+    </div>
+  )}
 
               <div
                 onClick={() => {

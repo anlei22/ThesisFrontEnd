@@ -176,12 +176,31 @@ const handleSubmit = async () => {
       formData.append('status', 'available');
       
       // Append images
-      selectedImages.forEach((image, index) => {
-        formData.append(`images[${index}]`, image.file);
-      });
+     // Append images - FIXED VERSION
+console.log('🔍 Checking images before submission:');
+let validImageCount = 0;
+selectedImages.forEach((image, index) => {
+  console.log(`Image ${index}:`, {
+    hasFile: !!image.file,
+    isFile: image.file instanceof File,
+    fileName: image.file?.name,
+    fileType: image.file?.type,
+    fileSize: image.file?.size
+  });
+
+  if (image.file instanceof File) {
+    formData.append(`images[${index}]`, image.file);
+    validImageCount++;
+    console.log(`✅ Image ${index} added successfully`);
+  } else {
+    console.error(`❌ Image ${index} is not a File object:`, image);
+  }
+});
+
+console.log(`📷 Total valid images being sent: ${validImageCount}`);
 
       // API Configuration (match your backend)
-      const API_BASE_URL = 'http://localhost:8000/api';
+      const API_BASE_URL = 'https://thesis-backend-main-oin9yk.laravel.cloud/api';
       const API_KEY = 'gY7uVz2QeTXB1oLkwA@mJ5fPR9dNshv03tKMiC!bznqESGUlxyWcHmZ86OFD4rja';
       
       const endpoint = 'news-feed/add';
@@ -269,27 +288,39 @@ const handleSubmit = async () => {
            location;
   };
 
-  const handleImageSelect = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length + selectedImages.length > 10) {
-      alert('You can only select up to 10 images');
+const handleImageSelect = (e) => {
+  const files = Array.from(e.target.files);
+  if (files.length + selectedImages.length > 10) {
+    alert('You can only select up to 10 images');
+    return;
+  }
+
+  files.forEach(file => {
+    // Verify it's a valid image file
+    if (!file.type.startsWith('image/')) {
+      console.error('Invalid file type:', file.type);
+      alert(`${file.name} is not a valid image file`);
       return;
     }
 
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const newImage = {
-          id: Date.now() + Math.random(),
-          url: e.target.result,
-          file: file
-        };
-        setSelectedImages(prev => [...prev, newImage]);
-      };
-      reader.readAsDataURL(file);
+    console.log('✅ Valid image file:', {
+      name: file.name,
+      type: file.type,
+      size: file.size
     });
-  };
 
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const newImage = {
+        id: Date.now() + Math.random(),
+        url: e.target.result,
+        file: file  // Make sure this is the actual File object
+      };
+      setSelectedImages(prev => [...prev, newImage]);
+    };
+    reader.readAsDataURL(file);
+  });
+};
   const removeImage = (imageId) => {
     setSelectedImages(prev => prev.filter(img => img.id !== imageId));
   };
