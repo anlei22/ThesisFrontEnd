@@ -166,39 +166,116 @@
       setFormData((prev) => ({ ...prev, [field]: file }));
     };
 
-    // Form validation functions
-    const validateStep1 = async () => {
-      return (
-        formData.firstname &&
-        formData.lastname &&
-        formData.phone &&
-        formData.address &&
-        formData.birthdate &&
-        formData.age &&
-        formData.sex &&
-        formData.user_type
+ // Update the validateStep1 function to be more thorough
+const validateStep1 = (showError = false) => {
+  const requiredFields = {
+    firstname: formData.firstname?.trim(),
+    lastname: formData.lastname?.trim(),
+    phone: formData.phone?.trim(),
+    address: formData.address?.trim(),
+    birthdate: formData.birthdate,
+    age: formData.age,
+    sex: formData.sex,
+    user_type: formData.user_type,
+  };
+
+  const allFieldsFilled = Object.values(requiredFields).every(
+    (value) => value && String(value).length > 0
+  );
+
+  if (!allFieldsFilled) {
+    if (showError) {
+      const missingFields = Object.entries(requiredFields)
+        .filter(([_, value]) => !value || String(value).length === 0)
+        .map(([key]) => key.replace(/_/g, " "));
+
+      setStatusMessage(
+        `Please fill in all required fields: ${missingFields.join(", ")}`
       );
-      
-    };
+    }
+    return false;
+  }
 
-    const validateStep2 = () => {
-      
-      return formData.verificationCode && formData.verificationCode.length === 6;
-    };
+  if (formData.phone.length !== 10) {
+    if (showError) setStatusMessage("Phone number must be 10 digits");
+    return false;
+  }
 
-    const validateStep3 = () => {
-      return (
-        formData.email &&
-        formData.password &&
-        formData.confirmPassword &&
-        formData.password === formData.confirmPassword &&
-        isPasswordStrong()
+  if (isNaN(formData.age) || Number(formData.age) <= 0) {
+    if (showError) setStatusMessage("Please enter a valid age");
+    return false;
+  }
+
+  return true;
+};
+
+// Update validateStep2 function
+const validateStep2 = (showError = false) => {
+  if (!formData.verificationCode || formData.verificationCode.trim().length === 0) {
+    if (showError) setStatusMessage("Please enter the verification code");
+    return false;
+  }
+
+  if (formData.verificationCode.length !== 6) {
+    if (showError) setStatusMessage("Verification code must be 6 digits");
+    return false;
+  }
+
+  return true;
+};
+
+// Update validateStep3 function
+const validateStep3 = (showError = false) => {
+  if (!formData.email || formData.email.trim().length === 0) {
+    if (showError) setStatusMessage("Please enter an email address");
+    return false;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(formData.email)) {
+    if (showError) setStatusMessage("Please enter a valid email address");
+    return false;
+  }
+
+  if (!formData.password || formData.password.length === 0) {
+    if (showError) setStatusMessage("Please enter a password");
+    return false;
+  }
+
+  if (!formData.confirmPassword || formData.confirmPassword.length === 0) {
+    if (showError) setStatusMessage("Please confirm your password");
+    return false;
+  }
+
+  if (formData.password !== formData.confirmPassword) {
+    if (showError) setStatusMessage("Passwords do not match");
+    return false;
+  }
+
+  if (!isPasswordStrong()) {
+    if (showError)
+      setStatusMessage(
+        "Password must contain at least 8 characters, 1 uppercase letter, 1 number, and 1 special character (!@#$%^&*)"
       );
-    };
+    return false;
+  }
 
-    const validateStep4 = () => {
-      return formData.valid_id_picture && formData.selfie_with_id_picture;
-    };
+  return true;
+};
+// Update validateStep4 function
+const validateStep4 = (showError = false) => {
+  if (!formData.valid_id_picture) {
+    if (showError) setStatusMessage("Please upload your ID picture");
+    return false;
+  }
+
+  if (!formData.selfie_with_id_picture) {
+    if (showError) setStatusMessage("Please upload your selfie with ID");
+    return false;
+  }
+
+  return true;
+};
 
     const isPasswordStrong = () => {
       const password = formData.password;
@@ -231,46 +308,62 @@
       return { strength, text: "Strong", color: "green", requirements };
     };
 
-    const canProceed = () => {
-      switch (currentStep) {
-        case 1:
-          return validateStep1();
-        case 2:
-          return validateStep2();
-        case 3:
-          return validateStep3();
-        case 4:
-          return validateStep4();
-        default:
-          return true;
-      }
-    };
+const canProceed = () => {
+  switch (currentStep) {
+    case 1:
+      return validateStep1(false);
+    case 2:
+      return validateStep2(false);
+    case 3:
+      return validateStep3(false);
+    case 4:
+      return validateStep4(false);
+    default:
+      return true;
+  }
+};
 
-
-  const nextStep = () => {
+const nextStep = () => {
   if (currentStep < 5) {
     if (currentStep === 2) {
-      // Ensure both codes are strings and trimmed
+      if (!validateStep2(true)) {
+        return;
+      }
+
       if (
         formData.verificationCode &&
         CodeVerify &&
         formData.verificationCode.trim() === String(CodeVerify).trim()
       ) {
-        setStatusMessage(""); // Clear error
-        setCurrentStep(currentStep + 1); // ✅ code is true, go to next step
+        setStatusMessage("");
+        setCurrentStep(currentStep + 1);
       } else {
-        setStatusMessage("Invalid verification code"); // ❌ code is false
+        setStatusMessage("Invalid verification code");
       }
-      return; // prevents the rest from running
+      return;
     }
 
-    if(currentStep === 4){
-      CreateRegistration();
+    if (currentStep === 4) {
+      if (validateStep4(true)) {
+        CreateRegistration();
+      }
+      return;
     }
-      
 
-    if (canProceed()) {
-      // For step 1, trigger sendCode before moving to next step
+    let isValid = false;
+    switch (currentStep) {
+      case 1:
+        isValid = validateStep1(true);
+        break;
+      case 3:
+        isValid = validateStep3(true);
+        break;
+      default:
+        isValid = canProceed();
+    }
+
+    if (isValid) {
+      setStatusMessage("");
       if (currentStep === 1) {
         sendCode();
       }
@@ -279,13 +372,14 @@
   }
 };
 
-
     
     const prevStep = () => {
       if (currentStep > 1) {
         setCurrentStep(currentStep - 1);
       }
     };
+
+   
 
     const renderStepContent = () => {
 
@@ -294,6 +388,12 @@
         return (
           
           <div className="space-y-6">
+                  {statusMessage && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700 text-sm font-medium">{statusMessage}</p>
+        </div>
+      )}
+
             <div className="text-center mb-8">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
           Personal Information
@@ -309,6 +409,7 @@
           <input
             type="text"
             value={formData.firstname}
+                required 
             onChange={(e) =>
               handleInputChange("firstname", e.target.value)
             }
@@ -416,7 +517,7 @@
             value={formData.age}
             onChange={(e) => handleInputChange("age", e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            placeholder="Enter age"
+            placeholder="Age Auto Calcuated"
             readOnly // Age is now auto-calculated
           />
         </div>
@@ -457,6 +558,11 @@
       case 2:
     return (
       <div className="space-y-6">
+         {statusMessage && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700 text-sm font-medium">{statusMessage}</p>
+        </div>
+      )}
         <div className="max-w-md mx-auto text-center">
           <Phone className="w-16 h-16 text-blue-500 mx-auto mb-4" />
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
@@ -500,6 +606,11 @@
           const passwordStrength = getPasswordStrength();
           return (
             <div className="space-y-6">
+                {statusMessage && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700 text-sm font-medium">{statusMessage}</p>
+        </div>
+      )}
               <div className="max-w-lg mx-auto">
                 <div className="text-center mb-8">
                   <Mail className="w-16 h-16 text-blue-500 mx-auto mb-4" />
@@ -696,6 +807,11 @@
         case 4:
           return (
             <div className="space-y-6">
+                {statusMessage && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700 text-sm font-medium">{statusMessage}</p>
+        </div>
+      )}
               <div className="max-w-lg mx-auto">
                 <div className="text-center mb-8">
                   <Camera className="w-16 h-16 text-blue-500 mx-auto mb-4" />

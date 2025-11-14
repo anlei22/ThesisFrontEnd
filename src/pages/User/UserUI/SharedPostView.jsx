@@ -321,7 +321,7 @@ useEffect(() => {
                       Age
                     </h4>
                     <p className={darkMode ? "text-gray-400" : "text-gray-600"}>
-                      {post.age} years old
+                      {post.age}
                     </p>
                   </div>
                 )}

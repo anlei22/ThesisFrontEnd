@@ -32,42 +32,42 @@ const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
     { 
       id: "baboy", 
       name: "Baboy", 
-      displayName: "Baboy (Pig)",
+      displayName: "Baboy",
     },
     { 
       id: "baka", 
       name: "Baka",
-      displayName: "Baka (Cow)", 
+      displayName: "Baka", 
     },
     { 
       id: "bangus", 
       name: "Bangus",
-      displayName: "Bangus (Milkfish)", 
+      displayName: "Bangus", 
     },
     { 
       id: "galunggong", 
       name: "Galunggong",
-      displayName: "Galunggong (Round Scad)", 
+      displayName: "Galunggong", 
     },
     { 
       id: "kambing", 
       name: "Kambing",
-      displayName: "Kambing (Goat)", 
+      displayName: "Kambing", 
     },
     { 
       id: "kalabaw", 
       name: "Kalabaw",
-      displayName: "Kalabaw (Carabao)", 
+      displayName: "Kalabaw", 
     },
     { 
       id: "kalapati", 
       name: "Kalapati",
-      displayName: "Kalapati (Pigeon)", 
+      displayName: "Kalapati", 
     },
     { 
       id: "manok", 
       name: "Manok",
-      displayName: "Manok (Chicken)", 
+      displayName: "Manok", 
     },
     { 
       id: "rabbit", 
@@ -82,13 +82,12 @@ const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
     { 
       id: "tulingan", 
       name: "Tulingan",
-      displayName: "Tulingan (Skipjack Tuna)", 
+      displayName: "Tulingan", 
     }
   ];
 
   const locations = [
     { id: "abelo", name: "Abelo" },
-    { id: "alas-as", name: "Alas-as" },
     { id: "balete", name: "Balete" },
     { id: "baluk-baluk", name: "Baluk-baluk" },
     { id: "bancoro", name: "Bancoro" },
@@ -100,7 +99,6 @@ const CreatePostModal = ({ darkMode = false, onClose = () => {} }) => {
     { id: "munlawin", name: "Munlawin" },
     { id: "pansipit", name: "Pansipit" },
     { id: "poblacion", name: "Poblacion" },
-    { id: "pulang-bato", name: "Pulang-Bato" },
     { id: "santo-nino", name: "Santo Niño" },
     { id: "sinturisan", name: "Sinturisan" },
     { id: "tagudtod", name: "Tagudtod" },
@@ -596,6 +594,7 @@ const handleImageSelect = (e) => {
             <option value="">Select</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
+            <option value="not_specified">Not Specified</option>
           </select>
         </div>
 

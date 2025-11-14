@@ -104,7 +104,6 @@ const Mainboard = () => {
   const locations = [
     { id: "all", name: "All Locations" },
     { id: "abelo", name: "Abelo" },
-    { id: "alas-as", name: "Alas-as" },
     { id: "balete", name: "Balete" },
     { id: "baluk-baluk", name: "Baluk-baluk" },
     { id: "bancoro", name: "Bancoro" },
@@ -116,7 +115,6 @@ const Mainboard = () => {
     { id: "munlawin", name: "Munlawin" },
     { id: "pansipit", name: "Pansipit" },
     { id: "poblacion", name: "Poblacion" },
-    { id: "pulang-bato", name: "Pulang-Bato" },
     { id: "santo-nino", name: "Santo Niño" },
     { id: "sinturisan", name: "Sinturisan" },
     { id: "tagudtod", name: "Tagudtod" },

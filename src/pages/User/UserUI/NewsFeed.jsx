@@ -667,7 +667,7 @@ const getAvatarUrl = (profilePicture, firstName = 'U', lastName = 'U') => {
             type: post.animal_type?.name || "Unknown",
             title: post.title || "Untitled",
             description: post.description || "",
-            age: post.age ? `${post.age} years old` : "Age not specified",
+            age: post.age ? `${post.age}` : "Age not specified",
             sex: post.sex || "N/A",
             price:
               post.price === "0"
