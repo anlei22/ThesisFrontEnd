@@ -167,15 +167,7 @@ const Mainboard = () => {
                 name: `${performer.FirstName || "Unknown"} ${
                   performer.LastName || "User"
                 }`,
-                avatar: (() => {
-                  if (performer.profile_picture) {
-                    const baseUrl =
-                      import.meta.env.VITE_BACKEND_URI?.replace("/api/", "") ||
-                      "http://127.0.0.1:8000";
-                    return `${baseUrl}/storage/profile_pictures/${performer.profile_picture}`;
-                  }
-                 return default_profile;  // ✅ Use default_profile instead
-                })(),
+avatar: performer.avatar || `https://ui-avatars.com/api/?name=${performer.FirstName || "U"}+${performer.LastName || "U"}&background=10b981&color=fff`,
                 rating: parseFloat(performer.average_rating || 0),
                 location:
                   profileUser.location ||
@@ -203,17 +195,7 @@ const Mainboard = () => {
                 name: `${performer.FirstName || "Unknown"} ${
                   performer.LastName || "User"
                 }`,
-                avatar: (() => {
-                  if (performer.profile_picture) {
-                    const baseUrl =
-                      import.meta.env.VITE_BACKEND_URI?.replace("/api/", "") ||
-                      "http://127.0.0.1:8000";
-                    return `${baseUrl}/storage/profile_pictures/${performer.profile_picture}`;
-                  }
-                  return `https://ui-avatars.com/api/?name=${
-                    performer.FirstName || "U"
-                  }+${performer.LastName || "U"}&background=10b981&color=fff`;
-                })(),
+              avatar: performer.avatar || `https://ui-avatars.com/api/?name=${performer.FirstName || "U"}+${performer.LastName || "U"}&background=10b981&color=fff`,
                 rating: parseFloat(performer.average_rating || 0),
                 location: performer.location || "Unknown Location",
                 type:
