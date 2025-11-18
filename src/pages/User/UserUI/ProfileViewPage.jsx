@@ -187,7 +187,7 @@ const ProfileViewPage = ({ darkMode = false }) => {
         setError(null);
 
         const cleanUsername = username.replace('@', '');
-        const apiUrl = `https://thesis-backend-main-oin9yk.laravel.cloud/api/profile/get-by-username/${cleanUsername}`;
+        const apiUrl = `http://localhost:8000/api/profile/get-by-username/${cleanUsername}`;
         
         console.log('Fetching from:', apiUrl);
         

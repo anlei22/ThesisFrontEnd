@@ -11,8 +11,8 @@ const SharedPostView = ({ darkMode = false }) => {
   const [error, setError] = useState(null);
 
   // Get API URL from environment
-  const API_URL = import.meta.env.VITE_BACKEND_URI || "https://thesis-backend-main-oin9yk.laravel.cloud/api";
-  const STORAGE_URL = import.meta.env.VITE_BACKEND_URI?.replace('/api', '') || "https://thesis-backend-main-oin9yk.laravel.cloud";
+  const API_URL = import.meta.env.VITE_BACKEND_URI || "http://localhost:8000/api";
+  const STORAGE_URL = import.meta.env.VITE_BACKEND_URI?.replace('/api', '') || "http://localhost:8000";
 useEffect(() => {
   const fetchPost = async () => {
     try {
@@ -23,7 +23,7 @@ useEffect(() => {
       }
 
       // Remove trailing slashes from env variables
-      const API_URL = (import.meta.env.VITE_BACKEND_URI || "https://thesis-backend-main-oin9yk.laravel.cloud/api").replace(/\/+$/, '');
+      const API_URL = (import.meta.env.VITE_BACKEND_URI || "http://localhost:8000/api").replace(/\/+$/, '');
       const STORAGE_URL = API_URL.replace('/api', '');
       
       console.log("🔍 Fetching post ID:", id);

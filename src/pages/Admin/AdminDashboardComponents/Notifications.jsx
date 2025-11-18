@@ -42,7 +42,7 @@ const Notifications = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('https://thesis-backend-main-oin9yk.laravel.cloud/api/reports', {
+      const response = await fetch('http://localhost:8000/api/reports', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

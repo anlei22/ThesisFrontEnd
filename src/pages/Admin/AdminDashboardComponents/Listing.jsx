@@ -13,7 +13,7 @@
 import default_profile from "../../defaultprofile/default_profile.jpg";
   // ===== API CONFIGURATION =====
   // TODO: Update these values with your actual backend URL and API key
-  const API_BASE_URL = 'https://thesis-backend-main-oin9yk.laravel.cloud/api'; // Change to your Laravel backend URL
+  const API_BASE_URL = 'http://localhost:8000/api'; // Change to your Laravel backend URL
   const API_KEY = 'gY7uVz2QeTXB1oLkwA@mJ5fPR9dNshv03tKMiC!bznqESGUlxyWcHmZ86OFD4rja'; // Change to your actual API key
 
   // Helper function to get auth token

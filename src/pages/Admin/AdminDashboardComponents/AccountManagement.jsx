@@ -43,7 +43,7 @@ const User = () => {
   });
 
   // API Configuration
-  const API_BASE_URL = 'https://thesis-backend-main-oin9yk.laravel.cloud/api';
+  const API_BASE_URL = 'http://localhost:8000/api';
   const API_KEY = 'gY7uVz2QeTXB1oLkwA@mJ5fPR9dNshv03tKMiC!bznqESGUlxyWcHmZ86OFD4rja';
   
   const getAuthToken = () => {
