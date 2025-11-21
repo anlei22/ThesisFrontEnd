@@ -2278,7 +2278,8 @@ const handleSubmitReview = async () => {
     // Prepare payload expected by backend: feed_id, rating, feedback, user_id (the user being rated), raters (the reviewer id)
     const payload = {
       feed_id: feedId,
-      user_id: currentUser?.id, // the user being reviewed
+      // user being reviewed should be the searched/profile user (not the logged-in reviewer)
+      user_id: user?.id,
       raters: raterId, // the reviewer (backend expects 'raters')
       rating: reviewRating,
       feedback: reviewText,
