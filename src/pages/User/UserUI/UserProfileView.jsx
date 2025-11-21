@@ -28,6 +28,7 @@ import ProfileQRModal from "../../../components/profileQrModal";
 import { QRCodeCanvas } from "qrcode.react";
 import { apiPost } from "../../../context/utils/apiPost";
 import { apiPostFormData } from "../../../context/utils/apiFormData";
+import { apiGet } from "../../../context/utils/apiGet";
 
 import default_profile from "../../defaultprofile/default_profile.jpg";
 
@@ -480,13 +481,7 @@ const PostListItem = ({
   onShare, // ✅ ADD THIS PROP
 }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
-  console.log("PostListItem render:", {
-    postId: post.id,
-    isLiked: post.isLiked,
-    isBookmarked: post.isBookmarked,
-    likes: post.likes,
-    bookmarks: post.bookmarks,
-  });
+  
 
   return (
     <div
@@ -588,7 +583,7 @@ const PostListItem = ({
                 ? "grid-cols-2"
                 : "grid-cols-2"
             }`}
-            onClick={onImageClick}
+            onClick={() => onImageClick(post)}
           >
             {post.images.slice(0, 4).map((image, i) => (
               <div
@@ -631,7 +626,7 @@ const PostListItem = ({
       >
         {/* Like Button */}
         <button
-          onClick={onLike}
+          onClick={() => onLike(post.id)}
           className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
             post.isLiked
               ? darkMode
@@ -652,7 +647,7 @@ const PostListItem = ({
 
         {/* Comment Button */}
         <button
-          onClick={onImageClick}
+          onClick={() => onImageClick(post)}
           className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
             darkMode
               ? "text-gray-400 hover:bg-gray-700 hover:text-blue-400"
@@ -665,7 +660,7 @@ const PostListItem = ({
 
         {/* Bookmark Button */}
         <button
-          onClick={onBookmark}
+          onClick={() => onBookmark(post.id)}
           className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
             post.isBookmarked
               ? darkMode
@@ -701,31 +696,51 @@ const PostListItem = ({
   );
 };
 
-// Review Item
+// Review Item (robust to missing user object)
 const ReviewItem = ({ review, darkMode }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
 
+  const raterName = review?.user?.name || review?.name || "Anonymous";
+  const avatarUrl =
+    review?.user?.avatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(raterName)}&background=6ee7b7&color=000`;
+  const text = review?.text || review?.feedback || "";
+  const rawTimestamp = review?.timestamp || review?.created_at || "";
+
+  // Format timestamps: show relative time for recent dates, otherwise a short human date.
+  let formattedTimestamp = rawTimestamp;
+  if (rawTimestamp && rawTimestamp !== "just now") {
+    const parsed = new Date(rawTimestamp);
+    if (!Number.isNaN(parsed.getTime())) {
+      const now = new Date();
+      const diffSeconds = Math.floor((now - parsed) / 1000);
+      if (diffSeconds < 60) {
+        formattedTimestamp = `${diffSeconds}s ago`;
+      } else if (diffSeconds < 3600) {
+        formattedTimestamp = `${Math.floor(diffSeconds / 60)}m ago`;
+      } else if (diffSeconds < 86400) {
+        formattedTimestamp = `${Math.floor(diffSeconds / 3600)}h ago`;
+      } else {
+        formattedTimestamp = parsed.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+      }
+    }
+  }
+
   return (
-    <div
-      className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}
-    >
+    <div className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}>
       <div className="flex items-start space-x-3">
-        <img
-          src={review.user.avatar}
-          alt={review.user.name}
-          className="w-10 h-10 rounded-full object-cover"
-        />
+        <img src={avatarUrl} alt={raterName} className="w-10 h-10 rounded-full object-cover" />
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
-            <h4 className={`font-semibold ${scheme.text}`}>
-              {review.user.name}
-            </h4>
-            <span className={`text-xs ${scheme.muted}`}>
-              {review.timestamp}
-            </span>
+            <h4 className={`font-semibold ${scheme.text}`}>{raterName}</h4>
+            <span className={`text-xs ${scheme.muted}`}>{formattedTimestamp}</span>
           </div>
-          <RatingStars rating={review.rating} darkMode={darkMode} />
-          <p className={`mt-2 text-sm ${scheme.text}`}>{review.text}</p>
+          <RatingStars rating={review?.rating || 0} darkMode={darkMode} />
+          <p className={`mt-2 text-sm ${scheme.text}`}>{text}</p>
         </div>
       </div>
     </div>
@@ -1957,10 +1972,15 @@ export default function UserViewProfile({
   const [selectedPost, setSelectedPost] = useState(null);
   const [postComments, setPostComments] = useState({});
 
-    const [reviewRating, setReviewRating] = useState(0);
-const [hoverRating, setHoverRating] = useState(0);
-const [reviewText, setReviewText] = useState("");
-const [userReviews, setUserReviews] = useState(SAMPLE_REVIEWS);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  // Keep SAMPLE_REVIEWS as fallback until a successful fetch replaces them
+  const [userReviews, setUserReviews] = useState(SAMPLE_REVIEWS);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState(null);
+  const [reviewsAverage, setReviewsAverage] = useState(null);
+  const [reviewsCount, setReviewsCount] = useState(null);
   // ✅ State for posts list
   const [postsList, setPostsList] = useState([]);
 
@@ -1972,20 +1992,37 @@ const [userReviews, setUserReviews] = useState(SAMPLE_REVIEWS);
         : userPosts.length > 0
         ? userPosts
         : SAMPLE_POSTS;
+    // Avoid unnecessary state updates which can cause render loops
+    const areSameLength = postsList.length === initialPosts.length;
+    const isSameContent = areSameLength
+      ? initialPosts.every((p, idx) => {
+          const existing = postsList[idx];
+          return (
+            existing &&
+            existing.id === p.id &&
+            existing.isLiked === p.isLiked &&
+            existing.isBookmarked === p.isBookmarked &&
+            existing.likes === p.likes &&
+            existing.bookmarks === p.bookmarks
+          );
+        })
+      : false;
 
-    setPostsList(initialPosts);
+    if (!isSameContent) {
+      setPostsList(initialPosts);
 
-    // Initialize liked/bookmarked sets
-    const liked = new Set();
-    const bookmarked = new Set();
+      // Initialize liked/bookmarked sets
+      const liked = new Set();
+      const bookmarked = new Set();
 
-    initialPosts.forEach((post) => {
-      if (post.isLiked) liked.add(post.id);
-      if (post.isBookmarked) bookmarked.add(post.id);
-    });
+      initialPosts.forEach((post) => {
+        if (post.isLiked) liked.add(post.id);
+        if (post.isBookmarked) bookmarked.add(post.id);
+      });
 
-    setLikedPosts(liked);
-    setBookmarkedPosts(bookmarked);
+      setLikedPosts(liked);
+      setBookmarkedPosts(bookmarked);
+    }
   }, [user?.posts, userPosts]);
 
   useEffect(() => {
@@ -1997,6 +2034,55 @@ const [userReviews, setUserReviews] = useState(SAMPLE_REVIEWS);
     });
     setPostComments(initialComments);
   }, [postsList]);
+
+  // Fetch ratings/feedback for the displayed user (safe: only include token when present)
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchReviews = async () => {
+      if (!user || !user.id) return;
+      setReviewsLoading(true);
+      setReviewsError(null);
+
+      try {
+        const hasToken = !!localStorage.getItem('login-token');
+        const data = await apiGet(`ratings-feedback/get/${user.id}`, hasToken);
+
+        if (!mounted) return;
+
+        // Map backend response to the local review shape
+        const mapped = (data.data || []).map((item) => ({
+          id: item.id,
+          // If backend doesn't return a rater name, show anonymous
+          name: item.rater_name || item.raters_name || 'Anonymous',
+          user: item.rater || null,
+          rating: item.rating,
+          text: item.feedback || item.text || '',
+          feedback: item.feedback,
+          timestamp: item.created_at || item.timestamp || '',
+        }));
+
+        if (mapped.length > 0) {
+          setUserReviews(mapped);
+        }
+
+        setReviewsAverage(data.average_rating ? parseFloat(data.average_rating) : null);
+        setReviewsCount(Array.isArray(data.data) ? data.data.length : 0);
+      } catch (err) {
+        console.warn('Could not fetch reviews:', err.message || err);
+        if (mounted) setReviewsError(err.message || 'Failed to load reviews');
+        // keep existing SAMPLE_REVIEWS as fallback
+      } finally {
+        if (mounted) setReviewsLoading(false);
+      }
+    };
+
+    fetchReviews();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
 
   // ✅ Helper function
   const getCurrentUserId = () => {
@@ -2166,9 +2252,9 @@ const [userReviews, setUserReviews] = useState(SAMPLE_REVIEWS);
     }
   };
 const handleSubmitReview = async () => {
-  const userId = getCurrentUserId();
-  
-  if (!userId) {
+  const raterId = getCurrentUserId();
+
+  if (!raterId) {
     alert("Please log in to write a review");
     return;
   }
@@ -2179,33 +2265,54 @@ const handleSubmitReview = async () => {
   }
 
   try {
-    const formData = new FormData();
-    formData.append("user_id", userId);
-    formData.append("rated_user_id", currentUser.id);
-    formData.append("rating", reviewRating);
-    formData.append("comment", reviewText);
+    // Determine feed_id to associate the review with. The backend requires a valid feed id.
+    // Prefer a selected post in the UI, otherwise fall back to the first post in postsList.
+    const feedId = (typeof selectedPost !== 'undefined' && selectedPost)?.id || (postsList && postsList.length > 0 ? postsList[0].id : null);
 
-    // Uncomment when API is ready
-    // const response = await apiPostFormData("reviews/create", formData, true);
+    if (!feedId) {
+      // Backend validation requires feed_id to exist in animal_feed_tables.
+      alert("Please select a post/feed to associate this review with before submitting.");
+      return;
+    }
 
-    // Add review to list immediately
-    const newReview = {
-      id: userReviews.length + 1,
-      user: {
-        name: "You",
-        avatar: "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
-      },
+    // Prepare payload expected by backend: feed_id, rating, feedback, user_id (the user being rated), raters (the reviewer id)
+    const payload = {
+      feed_id: feedId,
+      user_id: currentUser?.id, // the user being reviewed
+      raters: raterId, // the reviewer (backend expects 'raters')
       rating: reviewRating,
-      text: reviewText,
-      timestamp: "just now",
+      feedback: reviewText,
     };
 
-    setUserReviews([newReview, ...userReviews]);
-    setReviewRating(0);
-    setReviewText("");
-    alert("Review submitted successfully!");
+    // Call backend endpoint
+    const response = await apiPost("ratings-feedback/add", payload, true);
+
+    // Expect response.success or response.status; be resilient
+    if (response && (response.success || response.status === "success" || response.code === 200)) {
+      // Add review locally for immediate UI feedback
+      const newReview = {
+        id: (userReviews?.length || 0) + 1,
+        user: {
+          name: "You",
+          avatar: "https://ui-avatars.com/api/?name=You&background=10b981&color=fff",
+        },
+        rating: reviewRating,
+        text: reviewText,
+        timestamp: "just now",
+      };
+
+      setUserReviews([newReview, ...(userReviews || [])]);
+      setReviewRating(0);
+      setReviewText("");
+
+      // Optionally notify the user
+      alert("Review submitted successfully!");
+    } else {
+      console.error("Unexpected response from ratings-feedback/add:", response);
+      alert("Failed to submit review");
+    }
   } catch (error) {
-    console.error("Error submitting review:", error);
+    console.error("Error submitting review to ratings-feedback/add:", error);
     alert("Failed to submit review");
   }
 };
@@ -2340,15 +2447,13 @@ const handleSubmitReview = async () => {
               }`}
             >
               <div className="flex items-center justify-center space-x-1 mb-1">
-                <RatingStars rating={currentUser.rating} darkMode={darkMode} />
+                <RatingStars
+                  rating={typeof reviewsAverage === 'number' ? reviewsAverage : currentUser.rating}
+                  darkMode={darkMode}
+                />
               </div>
-              <div
-                className={`text-sm ${
-                  darkMode ? "text-gray-400" : "text-gray-600"
-                }`}
-              >
-                {currentUser.rating.toFixed(1)} ({currentUser.totalReviews}{" "}
-                reviews)
+              <div className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                {(typeof reviewsAverage === 'number' ? reviewsAverage : currentUser.rating).toFixed(1)} ({typeof reviewsCount === 'number' ? reviewsCount : currentUser.totalReviews} reviews)
               </div>
             </div>
           </div>
@@ -2399,9 +2504,9 @@ const handleSubmitReview = async () => {
                         darkMode={darkMode}
                         likedPosts={likedPosts}
                         bookmarkedPosts={bookmarkedPosts}
-                        onLike={() => toggleLike(post.id)}
-                        onBookmark={() => toggleBookmark(post.id)}
-                        onImageClick={() => setSelectedPost(post)}
+                        onLike={toggleLike}
+                        onBookmark={toggleBookmark}
+                        onImageClick={setSelectedPost}
                         onShare={handleShareClick} // ✅ ADD THIS
                       />
                     )}
@@ -2413,13 +2518,19 @@ const handleSubmitReview = async () => {
       {activeTab === "reviews" && (
   <div className="space-y-4">
     {/* Existing reviews */}
-    {userReviews.map((review) => (
-      <ReviewItem
-        key={review.id}
-        review={review}
-        darkMode={darkMode}
-      />
-    ))}
+    {reviewsLoading ? (
+      <div className={`text-center py-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading reviews...</div>
+    ) : reviewsError ? (
+      <div className={`text-center py-6 text-red-500`}>Error loading reviews: {reviewsError}</div>
+    ) : userReviews && userReviews.length > 0 ? (
+      userReviews.map((review) => (
+        <ReviewItem key={review.id} review={review} darkMode={darkMode} />
+      ))
+    ) : (
+      <div className={`text-center py-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+        No reviews yet.
+      </div>
+    )}
 
     {/* Divider */}
     <hr

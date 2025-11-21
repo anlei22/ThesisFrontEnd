@@ -27,6 +27,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { ShareIcon } from "@heroicons/react/24/outline";
 import { QRCodeCanvas } from "qrcode.react";
 import default_profile from "../../defaultprofile/default_profile.jpg";
+import { apiGet } from "../../../context/utils/apiGet";
 const getCurrentUserId = () => {
   let userId = localStorage.getItem("user_id");
   if (!userId) {
@@ -1075,31 +1076,51 @@ const PostListItem = ({
   );
 };
 
-// Review Item
+// Review Item (defensive: handles missing rater/user)
 const ReviewItem = ({ review, darkMode }) => {
   const scheme = darkMode ? COLORS.dark : COLORS.light;
 
+  const raterName = review?.user?.name || review?.name || "Anonymous";
+  const avatarUrl =
+    (review?.user && review.user.avatar) ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(raterName)}&background=6ee7b7&color=000`;
+  const text = review?.text || review?.feedback || "";
+  const rawTimestamp = review?.timestamp || review?.created_at || "";
+
+  // Simple relative/short formatter
+  let formattedTimestamp = rawTimestamp;
+  if (rawTimestamp && rawTimestamp !== "just now") {
+    const parsed = new Date(rawTimestamp);
+    if (!Number.isNaN(parsed.getTime())) {
+      const now = new Date();
+      const diffSeconds = Math.floor((now - parsed) / 1000);
+      if (diffSeconds < 60) {
+        formattedTimestamp = `${diffSeconds}s ago`;
+      } else if (diffSeconds < 3600) {
+        formattedTimestamp = `${Math.floor(diffSeconds / 60)}m ago`;
+      } else if (diffSeconds < 86400) {
+        formattedTimestamp = `${Math.floor(diffSeconds / 3600)}h ago`;
+      } else {
+        formattedTimestamp = parsed.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+      }
+    }
+  }
+
   return (
-    <div
-      className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}
-    >
+    <div className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}>
       <div className="flex items-start space-x-3">
-        <img
-          src={review.user.avatar}
-          alt={review.user.name}
-          className="w-10 h-10 rounded-full object-cover"
-        />
+        <img src={avatarUrl} alt={raterName} className="w-10 h-10 rounded-full object-cover" />
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
-            <h4 className={`font-semibold ${scheme.text}`}>
-              {review.user.name}
-            </h4>
-            <span className={`text-xs ${scheme.muted}`}>
-              {review.timestamp}
-            </span>
+            <h4 className={`font-semibold ${scheme.text}`}>{raterName}</h4>
+            <span className={`text-xs ${scheme.muted}`}>{formattedTimestamp}</span>
           </div>
-          <RatingStars rating={review.rating} darkMode={darkMode} />
-          <p className={`mt-2 text-sm ${scheme.text}`}>{review.text}</p>
+          <RatingStars rating={review?.rating || 0} darkMode={darkMode} />
+          <p className={`mt-2 text-sm ${scheme.text}`}>{text}</p>
         </div>
       </div>
     </div>
@@ -2242,6 +2263,11 @@ const ProfileCardPreview = ({ user, darkMode, onViewProfile }) => {
           <span className={`text-sm font-medium ${scheme.text}`}>
             {user.rating.toFixed(1)} ({user.totalReviews} reviews)
           </span>
+            {typeof myRating === 'number' && (
+              <div className={`text-xs mt-1 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                Your rating: <span className="font-semibold">{myRating}.0</span>
+              </div>
+            )}
         </div>
 
         {/* Contact Button */}
@@ -2679,6 +2705,14 @@ export default function UserViewProfile({
   const [showShareModal, setShowShareModal] = useState(false);
   const [loading, setLoading] = useState(true); // ADD THIS
   const [error, setError] = useState(null); // ADD THIS
+  // Logged-in user's review for this profile (if any)
+  const [myRating, setMyRating] = useState(null);
+  const [myReviewId, setMyReviewId] = useState(null);
+  const [myReviewText, setMyReviewText] = useState("");
+  // Reviews for the displayed profile
+  const [reviews, setReviews] = useState(SAMPLE_REVIEWS);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState(null);
   // FETCH PROFILE DATA FROM API
   useEffect(() => {
     const fetchProfile = async () => {
@@ -2780,6 +2814,62 @@ const transformedPosts = (data.animal_feeds || []).map(feed => {
 
           setProfileData(transformedProfile);
           setPostsList(transformedPosts);
+
+          // Also fetch the logged-in user's reviews and see if they rated this profile
+          try {
+            const currentUserId = getCurrentUserId();
+            if (currentUserId) {
+              const hasToken = !!localStorage.getItem("login-token");
+              const reviewsResp = await apiGet(`ratings-feedback/get/${currentUserId}`, hasToken);
+              const myReview = (reviewsResp.data || []).find(r => {
+                // backend may use user_id for the profile being reviewed
+                return r.user_id === transformedProfile.id || r.user_id === transformedProfile.id;
+              });
+              if (myReview) {
+                setMyRating(myReview.rating || null);
+                setMyReviewId(myReview.id || null);
+                setMyReviewText(myReview.feedback || myReview.text || "");
+              } else {
+                setMyRating(null);
+                setMyReviewId(null);
+                setMyReviewText("");
+              }
+            }
+          } catch (e) {
+            console.warn("Could not fetch logged user's reviews:", e);
+          }
+
+          // Fetch all reviews for the displayed profile and show them in the Reviews tab
+          try {
+            const hasToken2 = !!localStorage.getItem("login-token");
+            setReviewsLoading(true);
+            setReviewsError(null);
+            const resp = await apiGet(`ratings-feedback/get/${transformedProfile.id}`, hasToken2);
+            const mapped = (resp.data || []).map((item) => ({
+              id: item.id,
+              name: item.rater_name || item.raters_name || (item.rater && item.rater.name) || 'Anonymous',
+              user: item.rater || null,
+              rating: item.rating,
+              text: item.feedback || item.text || '',
+              timestamp: item.created_at || item.timestamp || '',
+            }));
+
+            if (mapped.length > 0) setReviews(mapped);
+
+            // If backend returned an average rating, update profileData so stars reflect it
+            if (resp.average_rating) {
+              setProfileData((prev) => ({
+                ...(prev || {}),
+                rating: parseFloat(resp.average_rating),
+                totalReviews: Array.isArray(resp.data) ? resp.data.length : prev.totalReviews,
+              }));
+            }
+          } catch (e) {
+            console.warn('Could not fetch profile reviews:', e);
+            setReviewsError(e.message || 'Failed to load reviews');
+          } finally {
+            setReviewsLoading(false);
+          }
 
           // Set liked/bookmarked posts
           const liked = new Set();
@@ -3246,6 +3336,11 @@ const transformedPosts = (data.animal_feeds || []).map(feed => {
                   {profileData.rating.toFixed(1)} ({profileData.totalReviews}{" "}
                   reviews)
                 </div>
+                {typeof myRating === 'number' && (
+                  <div className={`text-xs mt-1 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                    Your rating: <span className="font-semibold">{myRating}.0</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -3295,13 +3390,17 @@ const transformedPosts = (data.animal_feeds || []).map(feed => {
 
               {activeTab === "reviews" && (
                 <div className="space-y-4">
-                  {SAMPLE_REVIEWS.map((review) => (
-                    <ReviewItem
-                      key={review.id}
-                      review={review}
-                      darkMode={darkMode}
-                    />
-                  ))}
+                  {reviewsLoading ? (
+                    <div className={`text-center py-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading reviews...</div>
+                  ) : reviewsError ? (
+                    <div className={`text-center py-6 text-red-500`}>Error loading reviews: {reviewsError}</div>
+                  ) : reviews && reviews.length > 0 ? (
+                    reviews.map((review) => (
+                      <ReviewItem key={review.id} review={review} darkMode={darkMode} />
+                    ))
+                  ) : (
+                    <div className={`text-center py-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>No reviews yet.</div>
+                  )}
                 </div>
               )}
             </div>
