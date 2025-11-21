@@ -123,39 +123,7 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Social Share Buttons */}
-        <div className="flex space-x-2">
-          <button
-            onClick={() =>
-              window.open(
-                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-                "_blank"
-              )
-            }
-            className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-              darkMode
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
-            }`}
-          >
-            Facebook
-          </button>
-          <button
-            onClick={() =>
-              window.open(
-                `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`,
-                "_blank"
-              )
-            }
-            className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-              darkMode
-                ? "bg-sky-600 hover:bg-sky-700 text-white"
-                : "bg-sky-500 hover:bg-sky-600 text-white"
-            }`}
-          >
-            Twitter
-          </button>
-        </div>
+     
       </div>
     </div>
   );

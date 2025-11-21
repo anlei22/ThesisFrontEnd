@@ -709,6 +709,7 @@ const EditProfileModal = ({ user, darkMode, onClose, onSave }) => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
+                     readOnly
                     placeholder="juan@example.com"
                     className={`w-full px-4 py-2.5 rounded-lg border ${
                       darkMode
@@ -728,6 +729,8 @@ const EditProfileModal = ({ user, darkMode, onClose, onSave }) => {
                     name="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
+                        readOnly
+
                     placeholder="+63 912 345 6789"
                     className={`w-full px-4 py-2.5 rounded-lg border ${
                       darkMode
@@ -1286,6 +1289,7 @@ const EditPostModal = ({ post, darkMode, onClose, onSave }) => {
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
+                  readOnly
                   placeholder="e.g., Premium Cattle"
                   required
                   className={`w-full px-4 py-2.5 rounded-lg border ${
@@ -1309,6 +1313,7 @@ const EditPostModal = ({ post, darkMode, onClose, onSave }) => {
                     name="type"
                     value={formData.type}
                     onChange={handleInputChange}
+                    readOnly
                     placeholder="Cattle"
                     className={`w-full px-4 py-2.5 rounded-lg border ${
                       darkMode
@@ -1394,8 +1399,7 @@ const EditPostModal = ({ post, darkMode, onClose, onSave }) => {
                   >
                     <option value="available">Available</option>
                     <option value="soldout">Sold Out</option>
-                    <option value="out_of_stock">Out of Stock</option>
-                    <option value="discontinued">Discontinued</option>
+                  
                   </select>
                 </div>
               </div>
